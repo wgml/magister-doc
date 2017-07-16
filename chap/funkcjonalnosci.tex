@@ -1,0 +1,176 @@
+\chapter{Badane funkcje układu}
+
+\section{Obsługa SSH}
+\label{sec:ssh}
+Po połączeniu układu z komputerem przez interfejs USB, możliwe jest otworzenie konsoli komunikacji przy użyciu protokołu transmisji szeregowej. Komunikacja odbywa się z prędkością 115200 bodów, ośmioma bitami danych, jednym bitem stopu i bez bitu parzystości.
+
+Komunikacja przy użyciu transmisji szeregowej jest jednak ograniczona do sytuacji, w których możliwy jest bezpośredni dostęp do układu. Ponadto, nie zapewnia wysokiej przepustowości transmisji czy możliwości przesyłu plików. Z tych powodów, korzystne staje się wykorzystanie protokołu \emph{SSH} do nawiązania komunikacji sieciowej.
+Omawiany protokół wspierany jest przez zdecydowaną większość dystrybucji systemu Linux i nie wymaga dodatkowej konfiguracji na etapie budowania systemu. Połączenie odbywa się przy użyciu poniższego polecenia.
+
+\begin{lstlisting}[breaklines=true]
+ssh root@(*@\textit{}adres-ip-urządzenia}@*)
+\end{lstlisting}
+
+Domyślne hasło administratora w przypadku dystrybucji \emph{PetaLinux} to \texttt{root}. Może być ono zmienione na etapie konfiguracji systemu.
+
+
+\begin{lstlisting}[breaklines=true]
+petalinux-config -c rootfs
+Petalinux RootFS Settings ---> Root password
+\end{lstlisting}
+
+Aby uprościć proces logowania, wykorzystać można mechanizm wymiany kluczy, zapewniany przez protokół.
+
+\begin{lstlisting}[breaklines=true]
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@(*@\textit{adres-ip-urządzenia}@*)
+\end{lstlisting}
+
+Umożliwia to logowanie bez konieczności podania hasła użytkownika. Skonfigurowany w opisany sposób, protokół daje dostęp do pełnego zbioru narzędzi, w tym zdalnej obsługi konsoli użytkownika, przesyłania plików, tunelowania portów czy zdalnego montowania systemów plików.
+\section{FPU i technologia NEON}
+\label{sec:arm-neon}
+Układ \emph{ZYBO} wyposażony jest w koprocesor arytmetyczny oraz wspiera polecenia wykorzystujące technologię NEON. \cite{neon-home} Elementy te pozwalają na zwiększenie wydajności projektowanych aplikacji w przypadku, gdy wykonywane operacje wymagają przeprowadzania obliczeń na liczbach zmiennoprzecinkowych lub działań wektorowych.
+
+Koprocesor arytmetyczny, FPU (ang. \emph{floating-point unit}), to układ działający we współpracy z jednostką procesora, dedykowany do wykonywania obliczeń na liczbach zmiennoprzecinkowych. Wykorzystanie dedykowanego układu pozwala na zwiększenie szybkości wykonywania operacji arytmetycznych, pierwiastkowania i przesunięć bitowych. W przypadku braku dedykowanego układu FPU, konieczne jest symulowanie jego działania przez wykonywanie większej liczby operacji na liczbach całkowitych, co wiąże się ze spadkiem wydajności.
+
+Technologia NEON pozwala na rozszerzenie puli rozkazów procesora ARM o polecenia wykorzystujące architekturę SIMD zdefiniowaną przez taksonomię Flynna.\cite{Flynn1972}
+
+SIMD (ang. \emph{Single Instruction streams, Multiple Data streams}) to klasa systemów, które pozwalają na przetwarzanie wielu strumieni danych na podstawie jednego strumienia instrukcji. Zastosowania tej architektury obejmują zagadnienia, w których dla wielu wartości wejściowych konieczne jest wykonanie tej samej operacji. Cechę tę posiada wiele operacji związanych z przetwarzaniem sygnałów i obrazów, w tym  wyznaczanie wartości szybkiej transformaty Fouriera, implementacje filtrów FIR i IIR czy operacje skalowania, rotacji i filtracji uśredniającej obrazu.
+
+Rozpatrzono możliwość wykorzystania architektury NEON w zagadnieniach przetwarzania sygnałów. Działanie testowano na podstawie programu wyznaczającego wartość iloczynu skalarnego dwóch wektorów zadanej długości. Porównano trzy implementacje algorytmu, którego kod źródłowy zawarto w dodatku \ref{cha:neon-source}.
+Wykorzystano implementację bazową oraz z wykorzystaniem poleceń dostępnych w architekturze NEON i porównano wyniki z implementacją zaprojektowaną w asemblerze.
+
+Implementacja w architekturze NEON wykorzystuje dedykowane funkcje, udostępnione w bibliotece \texttt{arm\_neon.h}, które mają na celu maksymalne zwiększenie wydajności aplikacji. W przypadku pozostałych implementacji, wykorzystywane są polecenia wykonywane na koprocesorze VFP (ang. \emph{Vector Floating-Point}). VFP pozwala na wykonanie tej jednej instrukcji dla wektora danych wejściowych. Układ ten nie należy do rodziny SIMD i wykonuje instrukcje sekwencyjnie, w przeciwieństwie do architektury NEON.
+
+
+Wyniki testów wydajności zebrano w tabeli \ref{tab:neon-time-results}.
+
+\begin{table}[h]
+	\caption{Wyniki testu wydajnościowego.}
+	\centering
+	\label{tab:neon-time-results}
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		\multicolumn{4}{|c|}{Bez optymalizacji} \\ \hline
+		Implementacja & min {[}s{]} & max {[}s{]} & średnio {[}s{]} \\ \hline
+		Bazowa & 0,4266 & 0,4339 & 0,4296 \\ \hline
+		NEON & 0,1103 & 0,1108 & 0,1105 \\ \hline
+		ASM & 0,4082 & 0,4086 & 0,4083 \\ \hline
+		\multicolumn{4}{|c|}{Z optymalizacjami} \\ \hline
+		Bazowa & 0,1080 & 0,1152 & 0,1092 \\ \hline
+		NEON & 0,1088 & 0,1147 & 0,1090 \\ \hline
+		ASM & 0,1087 & 0,1144 & 0,1089 \\ \hline
+	\end{tabular}
+\end{table}
+
+Rozpatrzono przeprowadzenie procesu komplikacji z wyłączonymi optymalizacjami kompilatora (flaga \texttt{-O0}) oraz z włączonymi wszystkimi optymalizacjami (\texttt{-O3}).
+
+Wykorzystane poleceń NEON wymaga użycia odpowiadających im parametrów kompilacji. Poniżej przedstawiono polecenie kompilacji testowej implementacji wykorzystującej NEON.
+
+\begin{lstlisting}[breaklines]
+arm-linux-gnueabihf-gcc -Wall -O3 -mcpu=cortex-a9 -mfpu=neon -ftree-vectorize -mvectorize-with-neon-quad -mfloat-abi=hard -ffast-math -g -c -o "src/main.o" "../src/main.c"
+\end{lstlisting}
+
+W sytuacji, gdy wyłączono optymalizacje na etapie kompilacji, zauważalny jest znaczny wzrok wydajności w przypadku wykorzystania instrukcji udostępnianych przez architekturę NEON. Pozwala ona na niemal czterokrotne zwiększenie szybkości działania programu względem pozostałych implementacji. Różnica ta zanika w przypadku wykorzystania możliwości optymalizacji kodu programu na etapie kompilacji. Różnica w szybkości wykonania programu NEON jest niewielka, jednak pozostałe implementacje zostały zoptymalizowane do stanu, w którym koszt ich wykonania porównywalny jest z implementacją w NEON.
+
+Wyniki pozwalają wnioskować o słuszności wykorzystania instrukcji udostępnianych przez architekturę NEON ze względu na możliwy wzrost wydajności. Istotna jest jednak weryfikacja wyników i potwierdzenie poprawy działania aplikacji. W przypadku, gdy różnice między programami są niewielkie, użycie instrukcji NEON może być niekorzystne ze względu na zwiększoną latencję wykonania rozkazów.
+
+\section{Protokół AXI}
+\label{sec:axi-std}
+Protokół AXI (ang. \emph{Advanced eXtensible Interface}) zdefiniowany został w specyfikacji AMBA (ang. \emph{Advanced Microcontroller Bus Architecture}) 3. W kolejnej wersji dokumentu sprecyzowano standard w najnowszej wersji - AXI4. \cite{axi-spec} Protokół wykorzystywany jest do komunikacji pomiędzy elementami układu lub modułami zbudowanymi wewnątrz logiki reprogramowalnej i jest dedykowany systemom o dużej wydajności i pracującym z wysoką częstotliwością.
+
+Specyfikacja definiuje trzy typy interfejsu:
+\begin{itemize}
+	\item AXI4 - wykorzystujące technikę MMIO (ang. \emph{Memory-Mapped Input/Output}) do odwzorowania rejestrów w przestrzeni adresowej pamięci RAM i dedykowanej aplikacjom wymagającym dużej wydajności komunikacji.
+	\item AXI4-Lite - uproszczona wersja protokołu, wykorzystująca MMIO i dedykowana aplikacjom o mniej rozbudowanych wymaganiach komunikacyjnych.
+	\item AXI4-Stream - wersja przepływowa protokołu, nie wykorzystująca technik MMIO.
+\end{itemize}
+
+Interfejsy wykorzystujące technikę MMIO stosowane są powszechnie w zadaniach konfiguracji modułów aplikacji czy przesyłania informacji, takich jak ramka sygnału wizyjnego do pamięci procesora. Dzięki reprezentacji elementów logiki reprogramowalnej w pamięci, możliwa jest jednolita analiza działania całego systemu.
+
+Interfejs w wersji \emph{Stream} wykorzystywany jest natomiast do przesyłania sygnału pomiędzy kolejnymi elementami układu, na przykład transmisji kolejnych pikseli obrazu pomiędzy kolejnymi składowymi algorytmu przetwarzania obrazu. Proces przesyłania danych w takiej formie charakteryzuje się większą wydajnością, analiza działania aplikacji jest jednak utrudniona ze względu na brak reprezentacji przesyłanych danych w pamięci.
+
+Możliwe jest również połączenie obu typów interfejsu wewnątrz jednego elementu. Technika ta wykorzystana została w przypadku elementu AXI VDMA, umożliwiając manipulowanie ramkami obrazu wizyjnego przesyłanymi przy użyciu interfejsu \emph{Stream} dzięki buforowaniu w pamięci RAM. Zagadnienie to szerzej opisano w sekcji \ref{sec:axi-vdma}. Podobne techniki wykorzystano również w przypadku interfejsu Ethernet DMA, umożliwiającego komunikację przy użyciu protokołu Ethernet.
+
+\subsection{Przebieg transakcji}
+
+Transakcja komunikacyjna odbywa się pomiędzy dwoma urządzeniami - \emph{master} i \emph{slave}, jednak dzięki zastosowaniu elementów \emph{AXI-Interconnect} możliwe jest połączenie wielu urządzeń, co przedstawiono na schemacie \ref{fig:axi-interconnect}.
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{8cm}
+	\input{img/axi-interconnect.pdf_tex}
+	\caption{Schemat połączenia Interconnect w protokole AXI.}
+	\label{fig:axi-interconnect}
+\end{figure}
+
+
+Komunikacja odbywa się przy użyciu pięciu niezależnych kanałów:
+\begin{itemize}
+	\item Read Address
+	\item Write Address
+	\item Read Data
+	\item Write Data
+	\item Write Response
+\end{itemize}
+
+Każdy kanał zawiera zbiór sygnałów wykorzystywanych w trakcie wymiany danych.
+
+Transmisja rozpoczyna się od wykorzystania sygnałów \emph{valid} i \emph{ready}. Urządzenie źródłowe wymusza stan wysoki sygnału \emph{valid} i oczekuje na zmianę wartości sygnału \emph{ready} urządzenia docelowego na stan wysoki. W chwili, gdy oba sygnały znajdują się w tym stanie, właściwe dane mogą zostać przesłane z urządzenia źródłowego do docelowego. Pozwala to na przekazanie takich danych jak adres odczytu/zapisu do pamięci, odczytywanych lub zapisywanych danych i potwierdzenia zapisu. Proces nawiązania transakcji odbywa się niezależnie dla każdego wykorzystywanego kanału.
+
+Procedura odczytu danych składa się z dwóch etapów:
+\begin{enumerate}
+	\item Zdefiniowanie  przez urządzenie \emph{master} adresu i parametrów transmisji danych na kanale \emph{Read Address}.
+	\item Przesłanie przez urządzenie \emph{slave} jednej lub więcej wartości danych na kanale \emph{Read Data}.
+\end{enumerate}
+
+Natomiast procedura zapisu wymaga trzech etapów:
+\begin{enumerate}
+	\item Zdefiniowanie  przez urządzenie \emph{master} adresu i parametrów transmisji danych na kanale \emph{Write Address}.
+	\item Przesłanie przez urządzenie \emph{master} jednej lub więcej wartości danych na kanale \emph{Write Data}.
+	\item Przesłanie przez urządzenie \emph{slave} odpowiedzi na kanale \emph{Write Response}.
+\end{enumerate}
+
+Protokół pozwala ponadto na przesłanie do 256 wartości danych w trakcie jednej transmisji dzięki technice \emph{burst}, a transakcje odczytu i zapisu danych mogą odbywać się równolegle.
+
+Przepływ danych w interfejsie AXI4-Stream odbywa się wyłącznie w jednym kierunku i nie jest możliwy odczyt danych przesłanych wcześniej przez urządzenie \emph{master} do \emph{slave}. Procedura ta jest podobna do transakcji zapisu, jest jednak rozszerzona o możliwość dzielenia operacji na kilka mniejszych i łączenia wielu transakcji w jedną.
+
+\subsection{AXI DMA}
+DMA (ang. \emph{Direct Memory Access}) to technika często stosowana w przypadku konieczności wykonywania operacji na pamięci RAM urządzenia z dużą częstotliwością. Wykorzystanie kontrolera DMA pozwala przeprowadzać operacje odczytu i zapisu do pamięci operacyjnej bez konieczności użycia głównej jednostki procesora. Dzięki temu, procesor odpowiada wyłącznie za skonfigurowanie kontrolera DMA i może wykonywać inne operacje w trakcie transmisji danych. Ponadto, stosowanie kontrolera DMA pozwala zwykle na uzyskanie wyższej przepustowości komunikacji z pamięcią i zmniejszenie zużycia energii. Kontroler DMA może również przeprowadzać podstawowe operacje konwersji sygnałów, na przykład, w przypadku sygnału wizyjnego, konwersję sygnałów synchronizacji obrazu. 
+
+DMA pozwala na przesłanie wielu wartości danych w ramach jednej transakcji w trybie \emph{burst}. \emph{Master} przesyła wyłącznie adres pierwszego bajta danych, a kolejne adresy wyznaczane są w trakcie operacji przez urządzenie \emph{slave}. Wyznaczany adres może być inkrementowany, w przypadku, gdy operacja wykonywana jest w pamięci, bądź mieć stałą wartość, co ma miejsce w przypadku zapisu lub odczytu z kolejki FIFO (\emph{First In, First Out}). Interfejs pozwala również na ograniczenie dostępnej przestrzeni adresowej, w efekcie czego wartość adresu po przekroczeniu górnej granicy zakresu przyjmuje ponownie najniższą dopuszczalną wartość. Własność ta może być wykorzystana do projektowania linii buforujących.
+
+Protokół AXI DMA wykorzystuje kolejność bitów, w której najmniej znaczący bajt umieszczony jest jako pierwszy.
+
+Dzięki zastosowaniu techniki DMA możliwa jest konfiguracja parametrów pracy algorytmu zaprojektowanego w układzie logiki reprogramowalnej oraz obserwacja jego działania na etapie wykonania z poziomu procesora ARM. W szerszej perspektywie, pozwala to na udostępnienie interfejsu użytkownika, umożliwiającego nadzór nad pracą algorytmu, na przykład z poziomu konsoli dostępnej przez \emph{ssh} lub w formie interfejsu strony internetowej. Możliwe jest również wykorzystanie modułu umożliwiającego przesyłanie z poziomu logiki FPGA notyfikacji do procesora ARM w celu wymuszenia jego reakcji lub powiadomienia o osiągnięciu zadanego stanu, na przykład przesłanie informacji o ukończeniu iteracji algorytmu dla aktualnej ramki obrazu. Można w tym celu wykorzystać mechanizm przerwań systemowych, co szerzej opisano w sekcji \ref{sec:axi-interrupts}.
+
+Mechanizm DMA zbadano na przykładzie projektu modułu umożliwiającego modyfikację parametrów oraz odczyt aktualnego stanu parametrów. Schemat strukturalny modułu przedstawiono na rysunku \ref{fig:axi-dma-diagram}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[]{img/algorithm-parameters.png}
+	\caption{Graficzna reprezentacja modułu AXI DMA w programie Vivado.}
+	\label{fig:axi-dma-diagram}
+\end{figure}
+
+Proces projektowania oraz komunikacji z modułem przedstawiono w sekcji \ref{sec:vivado-axi-dma}.
+
+Moduł wyposażony jest w interfejs AXI, podpisany \texttt{ctl} oraz związane z nim sygnały, zegarowy - \texttt{ctl\_aclk} oraz reset - \texttt{ctl\_aresetn}. Sygnały wyjściowe pozwalają na odczyt zdefiniowanych parametrów z poziomu innych modułów logiki reprogramowalnej. Dzięki wydzieleniu modułu odpowiedzialnego za konfigurację algorytmu z części wykonującej obliczenia algorytmiczne, możliwe jest uproszczenie kodu języka opisu sprzętu związanego z każdym z modułów oraz zwiększenie czytelności schematu. Jeden moduł konfiguracyjny może być związany z kilkoma, działającymi niezależnie, modułami algorytmicznymi. Ponadto, zmiany w strukturze algorytmu są uproszczone.
+
+
+\subsection{AXI Video DMA}
+\label{sec:axi-vdma}
+Interfejs AXI VDMA pozwala na wykorzystanie techniki DMA w przypadku aplikacji przetwarzających sygnał wizyjny.
+
+Mechanizm \emph{Video DMA} oparty został na wykorzystaniu protokołu AXI w wersji Stream oraz Memory Mapped w połączeniu z techniką DMA do buforowania sygnału wizyjnego. 
+Sygnał wizyjny przesyłany jest do modułu przy użyciu protokołu strumieniowego, gdzie następnie jest buforowany i zapisywany do komórek pamięci RAM. Zapisany obraz może być odczytany z poziomu procesora ARM. Moduł wspiera również komunikację w drugą stronę, pozwalając na odczyt obrazu z pamięci i przesłanie go dalej w postaci strumienia. Połączenie tych technik pozwala na wykorzystanie modułu do buforowania obrazu lub w celu rozdzielenia zadań algorytmicznych pomiędzy FPGA i CPU.
+
+Moduł VDMA pozwala na zdefiniowanie do trzydziestu dwóch buforów ramek obrazu. Operacje mogą być wykonywane cyklicznie na każdym buforze lub stale na jednym z nich. Pozwala to na wielokrotną transmisję jednej klatki obrazu.
+
+Powszechnie wykorzystywanym zastosowaniem modułu jest mechanizm potrójnego buforowania, umożliwiający zmianę częstotliwości taktowania zegara sygnału wizyjnego. Zapis i odczyt danych może odbywać się niezależnie z tego samego lub różnych buforów. Dzięki zastosowaniu trzech buforów, zagwarantować można, że zapis i odczyt danych zawsze odbywa się z niezależnych obszarów pamięci, co pozwala uniknąć zjawiska nadpisania przechowywanych danych przed ich wyświetleniem.
+
+W niniejszej pracy rozpatrzono możliwość wykorzystania modułu VDMA w celu obsługi algorytmów wymagających kontekstu w postaci dwóch kolejnych ramek obrazu.
+
+\section{OpenMP}
+
+\section{Przerwania systemowe}
+\label{sec:axi-interrupts}

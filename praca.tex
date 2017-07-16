@@ -1,6 +1,6 @@
 \documentclass[11pt]{aghdpl}
 % \documentclass[en,11pt]{aghdpl}  % praca w języku angielskim
-
+\usepackage{lipsum}
 % Lista wszystkich języków stanowiących języki pozycji bibliograficznych użytych w pracy.
 % (Zgodnie z zasadami tworzenia bibliografii każda pozycja powinna zostać utworzona zgodnie z zasadami języka, w którym dana publikacja została napisana.)
 \usepackage[english,polish]{babel}
@@ -58,6 +58,12 @@ backend=bibtex
 \usepackage{courier}
 
 \usepackage{listings}
+\lstset{escapeinside={(*@}{@*)}}
+
+\usepackage[toc,page]{appendix}
+
+\usepackage[hidelinks]{hyperref}
+
 \lstloadlanguages{TeX}
 
 \lstset{
@@ -101,7 +107,6 @@ backend=bibtex
 
 % defines the X column to use m (\parbox[c]) instead of p (`parbox[t]`)
 \newcolumntype{C}[1]{>{\hsize=#1\hsize\centering\arraybackslash}X}
-
 
 %---------------------------------------------------------------------------
 
@@ -148,7 +153,6 @@ backend=bibtex
 
 \titlepages
 
-% Ponowne zdefiniowanie stylu `plain`, aby usunąć numer strony z pierwszej strony spisu treści i poszczególnych rozdziałów.
 \fancypagestyle{plain}
 {
 	% Usuń nagłówek i stopkę
@@ -164,6 +168,22 @@ backend=bibtex
 
 \include{chap/wstep}
 
+\include {chap/platforma}
+
+\include {chap/funkcjonalnosci}
+
+\include{chap/projekt}
+
+\include{chap/podsumowanie}
+\addcontentsline{toc}{chapter}{Podsumowanie}
+\appendix
+\chapter*{Dodatki}
+\addcontentsline{toc}{chapter}{Dodatki}
+\renewcommand{\thesection}{\Alph{section}}
+
+\input {chap/dodatek-vivado}
+
+\include {chap/dodatek-neon}
 
 \printbibliography
 

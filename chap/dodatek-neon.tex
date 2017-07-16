@@ -1,0 +1,52 @@
+\section{Aplikacja w architekturze NEON}
+\label{cha:neon-source}
+
+\begin{lstlisting}[breaklines=true, language=C, caption=Implementacja bazowa]
+float dot_product(float *first, float *second, unsigned int len) {
+	float sum = 0.0;
+	for (unsigned int i = 0; i < len; i++)
+		sum += first[i] * second[i];
+	return sum;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[breaklines=true, language=C, caption=Implementacja w architekturze NEON. (Źródło: \cite{xilinx-neon})]
+float dot_product_asm(float * restrict first, float * restrict second, unsigned int len) {
+	float32x4_t vec1_q, vec2_q;
+	float32x4_t sum_q = {0.0, 0.0, 0.0, 0.0};
+	float32x2_t tmp[2];
+	float result;
+	for( int i=0; i<( len & ~3); i+=4 )
+	{
+		vec1_q=vld1q_f32(&first[i]);
+		vec2_q=vld1q_f32(&second[i]);
+		sum_q = vmlaq_f32(sum_q, vec1_q, vec2_q );
+	}
+	tmp[0] = vget_high_f32(sum_q);
+	tmp[1] = vget_low_f32 (sum_q);
+	tmp[0] = vpadd_f32(tmp[0], tmp[1]);
+	tmp[0] = vpadd_f32(tmp[0], tmp[0]);
+	result = vget_lane_f32(tmp[0], 0);
+return result;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[breaklines=true, language=C, caption=Implementacja w asemblerze. (Źródło: \cite{dot-product-asm})]
+float dot_product_neon(float * restrict first, float * restrict second, unsigned int len) {
+	float net1D=0.0f;
+	asm volatile (
+		"vmov.f32 q8, #0.0"
+		"1:"
+		"subs %3, %3, #4"
+		"vld1.f32 {d0,d1}, [%1]!"
+		"vld1.f32 {d4,d5}, [%2]!"
+		"vmla.f32 q8, q0, q2"
+		"bgt 1b"
+		"vpadd.f32 d0, d16, d17"
+		"vadd.f32 %0, s0, s1"
+		: "=w"(net1D)
+		: "r"(first), "r"(second), "r"(len)
+		: "q0", "q2", "q8");
+	return net1D;
+}
+\end{lstlisting}
