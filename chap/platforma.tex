@@ -55,58 +55,13 @@ Praca z pakietem wymaga ponadto wykorzystania oprogramowania \emph{Vivado Design
 
 Pierwszym krokiem jest wykonanie projektu w pakiecie \emph{Vivado}. Szczegóły procesu opisano w dodatku \ref{sec:vivado-conf}. Wyeksportowany projekt jest konieczny do przeprowadzenia procesu budowania systemu.
 
-Utworzenie struktury katalogów projektu wykonywane jest przy użyciu poniższego polecenia.
-
-\begin{lstlisting}[breaklines=true]
-petalinux-create -t project --template zynq --name (*@\textit{nazwa-projektu}@*)
-cd (*@\textit{nazwa-projektu}@*)
-\end{lstlisting}
-
-Powstała struktura zintegrowana jest z systemem kontroli wersji \emph{git}, co pozwala utrzymać uporządkowanie danych wewnątrz projektu oraz wersjonowanie. Zarządzanie repozytorium wykorzystuje podstawowe komendy narzędzia.
-
-Kolejnym krokiem jest zaimportowanie projektu \emph{Vivado}.
-
-\begin{lstlisting}[breaklines=true]
-petalinux-config --get-hw-description=(*@\textit{/sciezka/do/projektu/projekt.sdk/}@*)
-\end{lstlisting}
-
-Jeśli polecenie wywołane zostało po raz pierwszy dla danego projektu, uruchomione zostanie narzędzie konfiguracyjne, domyślne ustawienia są jednak poprawne.
-
-Konfiguracja projektu odbywa się przy użyciu polecenia \texttt{petalinux-config}.
-Skonfigurować należy metodę uruchamiania systemu - w omawianym przypadku, uruchomienie następuje na bazie plików znajdujących się na karcie SD.
-\begin{lstlisting}[breaklines=true]
-petalinux-config
-Image Packaging Configuration ---> Root filesystem type ---> SD card
-\end{lstlisting}
-
-Następnie, przeprowadzić należy proces budowania systemu oraz wygenerować pliki wynikowe.
-
-\begin{lstlisting}[breaklines=true]
-petalinux-build
-petalinux-package --boot --fsbl images/linux/zynq_fsbl.elf --fpga images/linux/system_wrapper.bit --u-boot --force
-petalinux-package --image -c rootfs --format initramfs
-\end{lstlisting}
-
-Uruchomienie systemu wymaga przygotowania karty SD - musi ona posiadać dwie partycje, pierwszą, z etykietą \emph{boot} i systemem plików \emph{fat32}, drugą - odpowiednio \emph{sys} i \emph{ext4}. Pierwsza z nich, zawierająca pliki wymagane na etapie inicjalizacji systemu, musi być poprzedzona 4 MB niezaalokowanej przestrzeni i mieć rozmiar co najmniej 40 MB. Druga partycja zawiera pliki systemowe, jej rozmiar powinien wynosić co najmniej kilkaset megabajtów. Proces formatowania przeprowadzić można przy użyciu narzędzia \emph{gparted}.
-
-Pliki wynikowe należy przenieść na kartę SD, korzystając z poleceń.
-
-\begin{lstlisting}[breaklines=true]
-rm -rf /(*@\textit{punkt-montowania}@*)/sys/*
-cp images/linux/BOOT.BIN /(*@\textit{punkt-montowania}@*)/boot/
-cp images/linux/image.ub /(*@\textit{punkt-montowania}@*)/boot/
-cp images/linux/rootfs.cpio /(*@\textit{punkt-montowania}@*)/sys/
-cd /(*@\textit{punkt-montowania}@*)/
-pax -rvf rootfs.cpio
-sync
-cd -
-\end{lstlisting}
-
-Ze względu na mechanizm buforowania przez kontroler operacji zapisu danych, pamiętać należy o wywołaniu polecenia \texttt{sync}, zapewniającego zachowanie integralności danych.
-
-Karta SD pozwala na uruchomienie systemu operacyjnego na układzie i przechowywanie danych użytkownika pomiędzy startami układu. Dalsza praca z systemem odbywać się może przez protokoły komunikacji \emph{SSH} lub \emph{UART}.
+Proces konfiguracji projektu PetaLinux opisano w dodatku \ref{sec:petalinux-config}.
 
 Pakiet udostępnia możliwość dodania do budowanego systemu zbioru programów i bibliotek. Dostępne jest kilkaset pakietów oprogramowania dostępnego na zasadach wolnych licencji, w tym biblioteki do przetwarzania obrazów. Ponadto, pakiet umożliwia dodanie własnoręcznie zbudowanych aplikacji. Pozwala to na integrację etapu projektowania aplikacji oraz budowy i uruchamiania systemu operacyjnego w jednym procesie.
+
+Projekt PetaLinux jest niezależny od projektu Vivado i może powstawać równolegle. Zmiany w strukturze modułów logiki reprogramowalnej wymagają ponownego zbudowania plików wynikowych systemu, jednak proces ten został wydzielony z oprogramowania Vivado. Pozwala to na wykorzystanie jednego projektu opisującego logikę współpracującego z aplikacjami bare metal i systemowymi. 
+
+Proces budowania systemu jest czasochłonny, na etapie prototypowania aplikacji praktyczne jest zastosowanie oprogramowania pracującego w trybie bare metal. Pozwala to na przeprowadzanie procesu debugowania aplikacji bezpośrednio z poziomu oprogramowania Vivado/SDK. Po upewnieniu się, że sprzętowa część algorytmu działa poprawnie, zaprojektować można aplikację systemową, odpowiedzialną za komunikację, monitorowanie wykorzystanie wyników działania algorytmu w kompletnym projekcie.
 
 \section{Inne dystrybucje systemu}
 Po zapoznaniu się z możliwościami pakietu \emph{Petalinux}, zbadano również inne możliwości konfiguracji systemu operacyjnego do zastosowania na układzie \emph{ZYBO}. Wśród dostępnych opcji, zdecydowano się na zapoznanie z dystrybucją \emph{Ubuntu Core} oraz badano możliwość budowy systemu Linux ze źródeł.

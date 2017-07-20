@@ -1,13 +1,130 @@
 \section{Konfiguracja projektu}
 \label{sec:vivado-conf}
+http://svenand.blogdrive.com/archive/169.html
+
+https://embeddedgreg.com/2014/03/13/step-1-hardware-design-for-zybo/
 
 \subsection{Podstawowa konfiguracja projektu}
-http://svenand.blogdrive.com/archive/169.html
-https://embeddedgreg.com/2014/03/13/step-1-hardware-design-for-zybo/
+
+Wykorzystany w projekcie układ - Digilent ZYBO - nie jest bezpośrednio wspierany przez środowisko Vivado. Wynika z tego konieczność sprecyzowania parametrów układu na etapie tworzenia projektu. W trakcie modyfikowania projektu, w przypadku dodania modułów wykorzystujących interfejs wejścia/wyjścia, konieczna jest również konfiguracja parametrów interfejsu. Aby uprościć proces projektowania, zalecane jest skonfigurowanie obsługi układu przed utworzeniem projektu. Proces ten opisano w dokumentacji producenta. \cite{zybo-in-vivado}
 
 \subsubsection{Vivado}
 
+Utworzyć należy projektu typu \emph{,,RTL Project''}, z odznaczoną opcją \emph{,,Do not specify sources at this time''}.
+
+W kroku \emph{,,Add Constraints''} dodać należy plik konfiguracyjny dla wybranego układu. W przypadku ZYBO, plik ten jest dostępny na stronie producenta. W kolejnym kroku możliwe jest skonfigurowanie parametrów układu. Wykorzystać do tego należy zakładkę \emph{,,Boards''} i wybrać wykorzystywany model.
+
+Po utworzeniu projektu, skonfigurować należy właściwą przestrzeń roboczą dla projektu, wykorzystując do tego opcję \emph{,,IP Integrator -> Create Block Design''}.
+
+Do nowo utworzonej przestrzeni dodać należy moduł IP reprezentujący procesor ZYNQ - \emph{,,ZYNQ7 Processing System''}.
+
+W kolejnych krokach należy dokonać konfiguracji modułu procesora, klikając dwukrotnie na moduł.
+
+\begin{itemize}
+	\item Kanały interfejsu AXI mogą być konfigurowane przez zakładkę \emph{,,PS-PL Configuration''}. Możliwa jest aktywacja kanałów ogólnego przeznaczenia (\emph{GP}), oraz wysokiej wydajności (\emph{HP}).
+	
+	\item Interfejsy komunikacji konfigurowane mogą być z poziomu zakładki \emph{,,MIO Configuration''}. Zalecane jest aktywowanie interfejsów \emph{ENET 0}, \emph{SD 0} i \emph{UART 1} ze względu na ich wykorzystanie na dalszym etapie pracy.
+	
+	Przykład konfiguracji interfejsów wejścia/wyjścia przedstawiono na rysunku \ref{fig:vivado-mio-configuration}.
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[height=8cm]{img/vivado/mio-configuration.png}
+		\caption{Okno konfiguracji interfejsów wejścia i wyjścia.}
+		\label{fig:vivado-mio-configuration}
+	\end{figure}
+	
+	\item Parametry sygnałów zegarowych dostępnych z poziomu układów logiki reprogramowalnej modyfikować można w zakładce \emph{,,Clock Configuration/PL Fabric Clocks''}.
+	
+	\item Częstotliwość pracy procesora oraz pamięci zmienić można w zakładce \emph{,,Clock Configuration/Processor/Memory Clocks''}.
+\end{itemize}
+
+Po ukończeniu etapu konfiguracji procesora i powrocie do głównego okna programu, należy użyć opcji \emph{,,Run Block Automation''}. Utworzone zostaną połączenia interfejsów pamięci \texttt{DDR} oraz \texttt{FIXED\_IO}.
+
+W przypadku zdefiniowania interfejsów AXI, połączyć należy właściwe sygnały zegarowe. Przykład wynikowej konfiguracji projektu przedstawiono na rysunku \ref{fig:vivado-config-result}.
+
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[]{img/vivado/vivado-config-result.png}
+		\caption{Okno projektu.}
+		\label{fig:vivado-config-result}
+	\end{figure}
+	
+Przedstawiona konfiguracja stanowi podstawę każdego projektu wykorzystującego moduł procesora ZYNQ.
+
+Po zakończeniu konfiguracji, wygenerować należy warstwę HDL, korzystając z opcji \emph{,,Create HDL Wrapper''} dostępnej po kliknięciu prawym przyciskiem myszy na utworzony wcześniej plik źródłowy.
+
+Skonfigurowany w ten sposób projekt może być budowany i uruchamiany na platformie ZYBO.
+\subsubsection{SDK}
+
+W celu utworzenia projektu aplikacji w SDK, konieczne jest wyeksportowanie plików opisujących projekt z poziomu Vivado, wykorzystując do tego opcję \emph{,,File/Export/Export Hardware''} z zaznaczoną opcją \emph{,,Include bitstream''}.
+
+W efekcie, dostępna powinna być aplikacja \texttt{\textit{nazwa\_projektu}\_hw\_platform\_0}, zawierająca plik \texttt{nazwa\_projektu.hdf}. Aplikacja ta stanowi podstawę każdego budowanego programu bare-metal.
+
+W przypadku budowania aplikacji na platformę PetaLinux, na etapie tworzenia projektu, zmodyfikować należy pole \emph{,,OS Platform''} na wartość \emph{,,linux''}, \emph{,,Processor Type''} na \emph{,,ps7\_cortexa9''}, oraz wybrać właściwy język programowania.
+
+W kontekście tak utworzonej aplikacji nie znajdują się biblioteki dostarczane przez firmę \emph{Xilinx}, wykorzystywane w aplikacjach bare metal, dostępna jest jednak pełna biblioteka języka \emph{C} oraz \emph{C++}.
+
+W celu uruchomienia aplikacji systemowej na platformie ZYBO, przeprowadzić należy proces budowania i skopiować wynikowy plik z katalogu \texttt{Debug} lub \texttt{Release} do systemu plików systemu PetaLinux. Wykorzystać można do tego narzędzie SSH:
+
+\begin{lstlisting}[breaklines=true]
+scp Debug/hello-world.elf root@adres-ip:~/
+\end{lstlisting}
+
+Aplikację uruchomić można przy użyciu konsoli użytkownika, również stosując narzędzie SSH.
 \subsubsection{PetaLinux}
+\label{sec:petalinux-config}
+
+Utworzenie struktury katalogów projektu wykonywane jest przy użyciu poniższego polecenia.
+
+\begin{lstlisting}[breaklines=true]
+petalinux-create -t project --template zynq --name (*@\textit{nazwa-projektu}@*)
+cd (*@\textit{nazwa-projektu}@*)
+\end{lstlisting}
+
+Powstała struktura zintegrowana jest z systemem kontroli wersji \emph{git}, co pozwala utrzymać uporządkowanie danych wewnątrz projektu oraz wersjonowanie. Zarządzanie repozytorium wykorzystuje podstawowe komendy narzędzia.
+
+Kolejnym krokiem jest zaimportowanie projektu \emph{Vivado}.
+
+\begin{lstlisting}[breaklines=true]
+petalinux-config --get-hw-description=(*@\textit{/sciezka/do/projektu/projekt.sdk/}@*)
+\end{lstlisting}
+
+Jeśli polecenie wywołane zostało po raz pierwszy dla danego projektu, uruchomione zostanie narzędzie konfiguracyjne, domyślne ustawienia są jednak poprawne.
+
+Konfiguracja projektu odbywa się przy użyciu polecenia \texttt{petalinux-config}.
+Skonfigurować należy metodę uruchamiania systemu - w omawianym przypadku, uruchomienie następuje na bazie plików znajdujących się na karcie SD.
+\begin{lstlisting}[breaklines=true]
+petalinux-config
+Image Packaging Configuration ---> Root filesystem type ---> SD card
+\end{lstlisting}
+
+Następnie, przeprowadzić należy proces budowania systemu oraz wygenerować pliki wynikowe.
+
+\begin{lstlisting}[breaklines=true]
+petalinux-build
+petalinux-package --boot --fsbl images/linux/zynq_fsbl.elf --fpga images/linux/system_wrapper.bit --u-boot --force
+petalinux-package --image -c rootfs --format initramfs
+\end{lstlisting}
+
+Uruchomienie systemu wymaga przygotowania karty SD - musi ona posiadać dwie partycje, pierwszą, z etykietą \emph{boot} i systemem plików \emph{fat32}, drugą - odpowiednio \emph{sys} i \emph{ext4}. Pierwsza z nich, zawierająca pliki wymagane na etapie inicjalizacji systemu, musi być poprzedzona 4 MB niezaalokowanej przestrzeni i mieć rozmiar co najmniej 40 MB. Druga partycja zawiera pliki systemowe, jej rozmiar powinien wynosić co najmniej kilkaset megabajtów. Proces formatowania przeprowadzić można przy użyciu narzędzia \emph{gparted}.
+
+Pliki wynikowe należy przenieść na kartę SD, korzystając z poleceń.
+
+\begin{lstlisting}[breaklines=true]
+rm -rf /(*@\textit{punkt-montowania}@*)/sys/*
+cp images/linux/BOOT.BIN /(*@\textit{punkt-montowania}@*)/boot/
+cp images/linux/image.ub /(*@\textit{punkt-montowania}@*)/boot/
+cp images/linux/rootfs.cpio /(*@\textit{punkt-montowania}@*)/sys/
+cd /(*@\textit{punkt-montowania}@*)/
+pax -rvf rootfs.cpio
+sync
+cd -
+\end{lstlisting}
+
+Ze względu na mechanizm buforowania przez kontroler operacji zapisu danych, pamiętać należy o wywołaniu polecenia \texttt{sync}, zapewniającego zachowanie integralności danych.
+
+Karta SD pozwala na uruchomienie systemu operacyjnego na układzie i przechowywanie danych użytkownika pomiędzy startami układu. Dalsza praca z systemem odbywać się może przez protokoły komunikacji \emph{SSH} lub \emph{UART}.
+
 \subsection{Konfiguracja modułu AXI DMA}
 \label{sec:vivado-axi-dma}
 
@@ -181,4 +298,26 @@ i aktywować funkcjonalność DMA:
 \begin{lstlisting}[breaklines]
 Device Drivers -> DMA Engine Support
 Device Drivers -> DMA Engine Support -> Xilinx AXI DMAS Engine
+\end{lstlisting}
+
+\subsection{Obliczenia równoległe}
+\label{sec:multithreading-config}
+Użycie rozwiązań omawianych w rozdziale \ref{sec:openmp} wymaga aktywacji właściwych funkcji kompilacji.
+
+W przypadku zastosowania wątków natywnych lub biblioteki dostępnej w standardzie C++ wymagane jest zastosowanie przełączników:
+
+\begin{lstlisting}[language=bash]
+g++ main.cpp -o main.out (*@\textbf{-pthread -std=c++11}@*)
+\end{lstlisting}
+
+Dla biblioteki TBB wymagane jest przeprowadzenie linkowania względem jej kodu źródłowego:
+
+\begin{lstlisting}[language=bash]
+g++ main.cpp -o main.out (*@\textbf{-ltbb}@*)
+\end{lstlisting}
+
+Natomiast dla interfejsu OpenMP, konieczne jest użycie przełącznika:
+
+\begin{lstlisting}[language=bash]
+g++ main.cpp -o main.out (*@\textbf{-fopenmp}@*)
 \end{lstlisting}
