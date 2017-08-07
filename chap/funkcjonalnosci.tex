@@ -170,6 +170,8 @@ Powszechnie wykorzystywanym zastosowaniem modułu jest mechanizm potrójnego buf
 
 W niniejszej pracy rozpatrzono możliwość wykorzystania modułu VDMA w celu obsługi algorytmów wymagających kontekstu w postaci dwóch kolejnych ramek obrazu.
 
+Proces konfiguracji modułu przedstawiono w dodatku \ref{sec:vivado-axi-vdma}.
+
 \section{Obliczenia równoległe}
 \label{sec:openmp}
 
@@ -216,12 +218,81 @@ Część rozwiązań wymaga wsparcia kompilatora, część ograniczona jest do p
 
 W ramach pracy nie omówiono kilku innych popularnych rozwiązań związanych z obliczeniami wielowątkowymi, w tym \emph{OpenCL} oraz \emph{MPI}, ze względu na ograniczone możliwości ich wykorzystania w systemie PetaLinux działającego na platformie ZYBO.
 
-Omawiane zagadnienie stanowi temat obszernych dyskusji, których wyniki odnaleźć można w publikowanych pracach.\cite{choosing-thread-framework,Kegel2009}
+Omawiane zagadnienie stanowi temat obszernych dyskusji, których wyniki odnaleźć można w publikowanych pracach. \cite{choosing-thread-framework,Kegel2009}
 
 W dodatku \ref{sec:multithreading-config} opisano kroki wymagane do zastosowania omawianych bibliotek w aplikacjach uruchamianych w systemie PetaLinux.
 \section{OpenCV}
-\label{sec:opencv}
-% osobny rozdział?
+\label{sec:opencv-lib}
+
+Algorytmy wizyjne znajdują zastosowanie w wielu aplikacjach realizowanych w ramach projektów związanych z szerokim spektrum dziedzin techniki. Ze względu na swoją popularność, część rozwiązań została zintegrowana w zbiorze bibliotek OpenCV. \cite{opencv-library} Zbiór ten zawiera wydajne implementacje najczęściej stosowanych algorytmów, dedykowanych uruchamianiu na układach CPU oraz GPU. Biblioteka jest szeroko stosowana ze względu na wysoką wydajność, stabilność działania i możliwość przenoszenia rozwiązań pomiędzy platformami o różnych architekturach.
+
+Zastosowanie zewnętrznej biblioteki pozwala, w porównaniu do autorskiej implementacji algorytmu, na ograniczenie czasu wymaganego do zbudowania działającego prototypu algorytmu. Ponadto, gotowe rozwiązania zapewniają większą stabilność i wystarczającą wydajność w większości przypadków. Kluczowym ograniczeniem względem autorskiej implementacji jest brak możliwości dostosowania implementacji algorytmu do rozpatrywanego przypadku. Może to wiązać się z koniecznością sprowadzenia danych algorytmu do struktury wspieranej przez bibliotekę, co może prowadzić do ograniczenia wydajności działania aplikacji.
+
+Wśród algorytmów dostępnych w bibliotece znajdują się procedury detekcji i rozpoznawania twarzy, klasyfikacji zachowań, śledzenia obiektów, czy identyfikacji obrazów podobnych.
+
+Wykorzystanie biblioteki OpenCV w aplikacjach bare-metal może być niemożliwe ze względu na liczbę zależności, które należy dostarczyć do poprawnego jej działania. Dostępność systemu operacyjnego, takiego jak PetaLinux, pozwala na dołączenie do systemu plików bibliotek, wybierając je z puli prekompilowanych zasobów, dostępnych w pakiecie PetaLinux lub dostarczając zewnętrzny zbiór bibliotek, przygotowany przez użytkownika. Możliwości te zbadano w pracy na przykładzie biblioteki OpenCV w wersjach 2.4 oraz 3.1.
+
+Pakiet PetaLinux oferuje dostęp do prekompilowanej biblioteki w wersji 3.1. Wydanie to wciąż znajduje się w początkowej fazie rozwoju i nie zostało w pełni zaadaptowane w części środowisk. Z tego powodu, wersja 2.4 biblioteki wciąż znajduje zastosowanie.
+
+OpenCV w wersji 2.4 nie jest jednak oficjalnie dostępne w środowisku PetaLinux. Jego użycie wymaga zbudowania biblioteki na bazie kodu źródłowego wraz z zależnościami i dodanie plików wynikowych do zbioru bibliotek dostępnych w projekcie PetaLinux.
+
+Przebieg procesu dla obu przypadków opisano w dodatku \ref{sec:opencv-config}.
+
+\section{Integracja algorytmów w FPGA i CPU}
+Zagadnienie integracji rozwiązań algorytmicznych wewnątrz logiki reprogramowalnej z obliczeniami prowadzonymi przez procesor ARM może pozwalać na zwiększenie wydajności działania aplikacji względem algorytmów realizowanych wyłącznie w jednym z tych układów.
+
+Podział algorytmu na sekwencję etapów, wykonywanych przez układy logiki reprogramowalnej lub klasyczny układ obliczeniowy pozwala wykorzystać zalety obu narzędzi. Układy FPGA pozwalają na użycie zbioru algorytmów w technice strumieniowej, co umożliwia dokonać przetwarzania obrazów w czasie zbliżonym do rzeczywistego. 
+
+Implementacja części algorytmów w sposób umożliwiający przetwarzanie strumieniowe może być niemożliwe. Procedury wymagające dużego kontekstu na etapie wykonania lub dostępu do danych historycznych projektowane są w celu uruchamiania na układach CPU o swobodnym dostępie do pamięci operacyjnej.
+
+Podział algorytmu wizyjnego na etapy wykonywane naprzemiennie w układach logicznych i procesorze ARM wymaga transmisji danych pomiędzy dwoma modułami. Realizacja tego zadania w obu kierunkach może być dokonana przy użyciu elementów AXI VDMA.
+
+W ramach pracy, zbadano możliwość wykorzystania modułu VDMA do transmisji danych wizyjnych z poziomu FPGA do procesora ARM, w celu ich odczytu i prezentacji z wykorzystaniem komunikacji sieciowej.
+
+Zbadano również możliwość konwersji danych do struktur dostępnych w bibliotece OpenCV, co umożliwia wykorzystanie biblioteki do realizacji algorytmów wizyjnych. Procedury odczytu oraz zapisu danych przedstawiono w dodatku \ref{sec:vdma-to-opencv}.
+
+Sprawdzono szybkość działania procedur transmisji danych pomiędzy dwoma elementami obliczeniowymi dla sygnału wizyjnego o rozdzielczości HD, przyjmując rozmiar piksela równy trzydziestu dwóm bitom na bazie dziesięciu tysięcy iteracji odczytu i zapisu.
+
+Biblioteka OpenCV pozwala na użycie zewnętrznych źródeł danych do budowy struktur obrazu, pozwalając pominąć etap kopiowania pamięci udostępnianej przez sterownik VDMA. W takim przypadku, czas odczytu i zapisu pełnej ramki obrazu nie przekracza kilkunastu mikrosekund. Należy jednak pamiętać, że stosując tę technikę, zagwarantować trzeba, że przetwarzanie obrazu zakończy się do chwili rozpoczęcia odczytu danych z wykorzystywanego bufora przez moduł VDMA. W przypadku zastosowania układu trzech buforów i sygnału wejściowego o częstotliwości sześćdziesięciu klatek na sekundę, daje to okno przetwarzania o długości szesnastu milisekund. Przekroczenie tej wartości może wpłynąć na błędną pracę algorytmu ze względu na nadpisanie danych przez moduł VDMA.
+
+Z tego względu, rozważyć należy skopiowane danych wejściowych do nowego bufora na etapie odczytu oraz ponowne skopiowanie danych do bufora źródłowego w trakcie zapisu. Procedura odczytu wymaga średnio piętnastu milisekund, natomiast zapis zajmuje nie więcej niż dwanaście milisekund. Zastosowanie tej techniki nie pozwala na przetwarzanie sygnału wizyjnego w czasie rzeczywistym, gwarantuje jednak nienaruszalność danych. W połączeniu z zastosowaniem modułu VDMA o większej liczbie buforów, pozwala na integrację algorytmu o dużej złożoności obliczeniowej pomiędzy elementami obliczeniowymi obu typów.
+%wydajność?
+% avg read = 0.000013, avg read_with_copy = 0.015134, avg write = 0.012156
 
 \section{Przerwania systemowe}
 \label{sec:axi-interrupts}
+Przerwanie to sygnał wysyłany przez urządzenie lub program, które ma na celu przekazanie do procesora informacji o zdarzeniu, które wymaga natychmiastowej obsługi.
+Przerwania podzielić można na maskowalne i niemaskowalne. Klasa przerwań maskowalnych może być zdefiniowana jako ignorowana przez właściwe ustawienie rejestrów kontrolera przerwań. Druga klasa przerwań związana jest zwykle ze zdarzeniami o krytycznym znaczeniu, tak jak zdarzenia związane z działaniem zegarów czy układu watchdog, więc ich wystąpienie nie może zostać zignorowane przez układ procesora.
+
+Wykorzystanie przerwań pozwala na zaprojektowanie interfejsu aplikacji współpracującej ze zbiorem urządzeń peryferyjnych, takich jak czujniki, przyciski, czy klawiatury. W przypadku układu \emph{ZYBO}, rolę urządzeń emitujących przerwania przyjąć mogą również elementy logiki reprogramowalnej, takie jak układy VDMA, zegary, czy moduły zaprojektowane przez użytkownika.
+
+Układ Zynq wyposażony jest w moduł \emph{Generic Interrupt Controller (GIC)}, który pełni rolę kontrolera przerwań, odpowiedzialnego za obsługę zdarzeń. \emph{GIC} obsługuje przerwania z kilku źródeł:
+\begin{itemize}
+	\item przerwania programowe - zbiór nie więcej niż szesnastu zdarzeń, które pozwalają na wywołanie procedury obsługi przerwania bezpośrednio z kodu aplikacji. Zachowanie to pozwala na komunikację z systemem operacyjnym i jest zwykle wykorzystywane do wywoływania operacji wejścia lub wyjścia. 
+	
+	Innym zastosowaniem przerwań programowych jest wysłanie sygnału \emph{yield}, który pozwala na dobrowolne wywłaszczenie obecnie aktywnego procesu przez układ planisty systemowego.
+	
+	\item przerwania systemowe - współdzielone i prywatne - zdarzenia emitowane przez sprzęt, na przykład klawiatury, moduły DMA czy układy pamięci. Dla każdego urządzenia lub zbioru zdefiniowana jest unikalna linia przerwania, a do kategorii zdarzenia przypisany jest identyfikator. Obsługa przerwania przez system operacyjny polega na wywołaniu agenta obsługi zdarzeń związanego z wyemitowanym identyfikatorem.
+	
+	Przerwania współdzielone pozwalają na komunikację pomiędzy procesorem a urządzeniami peryferyjnymi oraz układem FPGA, mogą być definiowane przez użytkownika i być obsługiwane przez dowolny rdzeń procesora. Zdarzenia prywatne to przerwania definiowane niezależnie dla każdego rdzenia i pozwalają na obsługę zdarzeń zegarowych czy watchdoga.
+\end{itemize}
+
+W trakcie obsługi przerwania z dowolnego źródła, wykonanie kodu aplikacji jest przerywane na czas wywołania kodu agenta obsługi zdarzenia. Stan rejestrów zapisywany jest na stosie i wykonywany jest kod odpowiedzialny za obsługę przerwania. Po zakończeniu wykonania, deklarowanego przez wywołanie instrukcji procesora \emph{RETI}, przywracany jest zapamiętany stan aplikacji i wznawiane jest jej wykonanie.
+
+Przerwania to zdarzenia wywoływane asynchronicznie, co może prowadzić do sytuacji, w której kilka linii przerwań sygnalizuje stan alarmu jednocześnie, co może powodować problemy z właściwą obsługą zdarzeń. Procesor ARM pozwala na priorytetyzowanie przerwań. Przyznanie pierwszeństwa pewnemu zbiorowi krytycznych zdarzeń umożliwia rozwiązanie problemu kolejności wykonania w przypadku, gdy dwa zdarzenia o różnym priorytecie zostaną zgłoszone w tym samym czasie, a także na przerwanie obsługi przerwania o niskim priorytecie na rzecz wywołania agenta krytycznego zdarzenia.
+
+Ze względu na charakter przerwań, część zdarzeń może mieć krytyczne znaczenie dla poprawnego wykonania aplikacji, a brak ich obsługi może prowadzić do zatrzymania działania procesora lub przeprowadzenia procesu restartu.
+
+Procedury obsługi przerwań mogą być definiowane zarówno w aplikacjach typu bare-metal jak i w systemach operacyjnych, takich jak PetaLinux.
+
+Obsługa przerwań w aplikacji bare-metal wymaga wykorzystania kontrolera do zarejestrowania agenta zdarzeń, w formie funkcji aplikacji.
+
+W przypadku systemu operacyjnego, konieczne jest wykorzystanie sterownika sprzętowego. W skład PetaLinux wchodzą sterowniki dedykowane zbiorowi modułów definiowanych w logice reprogramowalnej. Obsługa zdarzenia w niestandardowym module, zaprojektowanym przez użytkownika, wymagać może napisania dedykowanego sterownika urządzenia. Zagadnienie to wykracza poza zakres niniejszej pracy i stanowi rozbudowany proces, wymagający szerokiej wiedzy na temat działania systemów operacyjnych. Temat ten omawiany jest w pracach \cite{Love2014,Corbet2005}.
+
+W ramach pracy, zbadano możliwość wykorzystania przerwania emitowanego przez moduł AXI Timer, pozwalającego na wykonywanie operacji odliczania czasu oraz przerwań modułu AXI VDMA, pozwalających na przesłanie notyfikacji związanych ze zdarzeniami odczytu lub zapisu kolejnych ramek obrazu na właściwy im kanał.
+
+Moduł AXI Timer wykorzystać można do odliczania czasu pomiędzy kolejnymi wykonaniami procedury, która powinna być wywoływania cyklicznie, w regularnych odstępach czasu. Podobne zachowanie uzyskać można korzystając z funkcji procesora i związanych z nim zegarów. Wykorzystanie modułu AXI Timer pozwala jednak na warunkowe związanie wykonania procedury z kontekstem dostępnym w części aplikacji zbudowanej wewnątrz logiki reprogramowalnej. Działanie modułu AXI Timer może być warunkowane przez sygnały innych modułów logiki. Pozwala to na zaprojektowanie aplikacji, w której pewne zadanie wykonywane jest cyklicznie, pod warunkiem wystąpienia zdefiniowanego zdarzenia na poziomie logiki, a kontekst tego zdarzenia nie musi być znany z poziomu aplikacji wykonywanej przez procesor - na przykład, wykonanie przez aplikację operacji analizy danych uzyskiwanych przez algorytm wizyjny cyklicznie, pod warunkiem, że moduł algorytmu wykonywany przez układ logiczny ustawił sygnał spójności wyników.
+
+Przerwania definiowane przez moduł AXI VDMA pozwalają na emisję zdarzenia po wykonaniu procesu odczytu lub zapisu określonej liczby ramek obrazu lub po upływie określonego czasu od uzyskania sygnałów synchronizacji obrazu. Wykorzystanie tych mechanizmów pozwala na zaprojektowanie procedur aplikacji, które powinny być wykonane co określoną liczbę klatek sygnału wizyjnego. W szczególnym przypadku, mechanizm ten pozwala na wykonanie przez procesor operacji algorytmicznych dla każdej ramki obrazu, których implementacja sprzętowa byłaby trudna lub niemożliwa. Mechanizm ten pozwala również na przeprowadzenie operacji końcowej analizy wyników algorytmu wizyjnego, zaimplementowanego w układach logicznych.
+
+Proces konfiguracji projektu wykorzystującego mechanizm przerwań opisano w dodatku \ref{sec:interrupts-config}.

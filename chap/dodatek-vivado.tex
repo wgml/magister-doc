@@ -1,8 +1,5 @@
 \section{Konfiguracja projektu}
 \label{sec:vivado-conf}
-http://svenand.blogdrive.com/archive/169.html
-
-https://embeddedgreg.com/2014/03/13/step-1-hardware-design-for-zybo/
 
 \subsection{Podstawowa konfiguracja projektu}
 
@@ -98,6 +95,13 @@ petalinux-config
 Image Packaging Configuration ---> Root filesystem type ---> SD card
 \end{lstlisting}
 
+Należy również zmodyfikować argumenty przekazywane systemowi na etapie uruchamiania, umożliwiając wykorzystanie sterowników do modułów logiki reprogramowalnej.
+
+\begin{lstlisting}[breaklines=true]
+petalinux-config
+Kernel Bootargs -> deaktywować opcję Generate boot args automatically i zdefiniować własną wartość
+console=ttyPS0,115200 earlyprintk uio_pdrv_genirq.of_id=generic-uio root=/dev/mmcblk0p2 rw rootwait 
+\end{lstlisting}
 Następnie, przeprowadzić należy proces budowania systemu oraz wygenerować pliki wynikowe.
 
 \begin{lstlisting}[breaklines=true]
@@ -192,9 +196,10 @@ Po ukończeniu modyfikacji modułu, konieczne jest zapisanie zmian i wygenerowan
 Należy wybrać opcję \emph{Merge changes}, umożliwiającą zintegrowanie wprowadzonych zmian z projektem bazowym. Następnie, można zakończyć edycję projektu przez wybór opcji \emph{Re-Package IP}. Moduł będzie dostępny z poziomu interefejsu wyszukiwania modułów IP.
 
 \subsubsection{SDK}
-Konfiguracja wartości parametrów modułu opiera się na zapisie do właściwych sektorów pamięci. W przypadku pracy w trybie \emph{base metal}, wykorzystać można instrukcję \emph{Xil\_Out32} z biblioteki \emph{xil\_io.h}. W przypadku pracy z systemem \emph{PetaLinux}, wykorzystać należy biblioteki systemowe. Implementację \emph{bare metal} przedstawiono na listingu \ref{listing:axi-dma-bare-metal}, natomiast systemową na listingach \ref{listing:axi-dma-petalinux-main}, \ref{listing:axi-dma-petalinux-axi-h} i \ref{listing:axi-dma-petalinux-axi-c}.
+\label{sec:vivado-axi-dma-sdk}
+Konfiguracja wartości parametrów modułu opiera się na zapisie do właściwych sektorów pamięci. W przypadku pracy w trybie \emph{base metal}, wykorzystać można instrukcję \emph{Xil\_Out32} z biblioteki \emph{xil\_io.h}. W przypadku pracy z systemem \emph{PetaLinux}, wykorzystać należy biblioteki systemowe. Implementację \emph{bare metal} przedstawiono na listingu \ref{lis:axi-dma-bare-metal}, natomiast systemową na listingach \ref{lis:axi-dma-petalinux-main}, \ref{lis:axi-dma-petalinux-axi-h} i \ref{lis:axi-dma-petalinux-axi-c}.
 
-\begin{lstlisting}[breaklines, language=C, label=listing:axi-dma-bare-metal, caption=Obsługa modułu w trybie \emph{bare metal}.]
+\begin{lstlisting}[breaklines, language=C, label=lis:axi-dma-bare-metal, caption=Obsługa modułu w trybie \emph{bare metal}.]
 #include "xparameters.h"
 #include "platform.h"
 #include "xil_io.h"
@@ -220,7 +225,7 @@ int main()
 \end{lstlisting}
 
 
-\begin{lstlisting}[breaklines, language=C, label=listing:axi-dma-petalinux-main, caption=Obsługa modułu w trybie systemowym - \texttt{main.c}.]
+\begin{lstlisting}[breaklines, language=C, label=lis:axi-dma-petalinux-main, caption=Obsługa modułu w trybie systemowym - \texttt{main.c}.]
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -265,7 +270,7 @@ int main() {
 }
 \end{lstlisting}
 
-\begin{lstlisting}[breaklines, language=C, label=listing:axi-dma-petalinux-axi-h, caption=Obsługa modułu w trybie systemowym - \texttt{axi.h}.]
+\begin{lstlisting}[breaklines, language=C, label=lis:axi-dma-petalinux-axi-h, caption=Obsługa modułu w trybie systemowym - \texttt{axi.h}.]
 #include <stdbool.h>
 
 typedef unsigned int* virt_address;
@@ -278,7 +283,7 @@ struct axi_interface {
 void axi_write(virt_address virt_addr, int location, unsigned int value);
 \end{lstlisting}
 
-\begin{lstlisting}[breaklines, language=C, label=listing:axi-dma-petalinux-axi-c, caption=Obsługa modułu w trybie systemowym - \texttt{axi.c}.]
+\begin{lstlisting}[breaklines, language=C, label=lis:axi-dma-petalinux-axi-c, caption=Obsługa modułu w trybie systemowym - \texttt{axi.c}.]
 #include "axi.h"
 
 void axi_write(virt_address virt_addr, int location, unsigned int value) {
@@ -287,6 +292,7 @@ void axi_write(virt_address virt_addr, int location, unsigned int value) {
 \end{lstlisting}
 
 \subsubsection{PetaLinux}
+\label{sec:vivado-axi-dma-petalinux}
 W celu wykorzystania techniki DMA w aplikacji działającej w systemie PetaLinux, konieczna jest aktywacja właściwych parametrów konfiguracji na etapie budowania systemu. W tym celu wykonać należy polecenie:
 
 \begin{lstlisting}[breaklines]
@@ -300,7 +306,46 @@ Device Drivers -> DMA Engine Support
 Device Drivers -> DMA Engine Support -> Xilinx AXI DMAS Engine
 \end{lstlisting}
 
+\subsection{Konfiguracja modułu AXI VDMA}
+\label{sec:vivado-axi-vdma}
+Proces konfiguracji modułu VDMA składa się z kroków podobnych do opisanych w sekcji poświęconej modułom AXI DMA.
+
+\subsubsection{Vivado}
+Do projektu dołączyć należy moduł \textit{AX I Video Direct Memory Access}. Okno konfiguracji związane z nim pozwala na wybór obsługiwanych kanałów:
+\begin{itemize}
+	\item write (S2MM) - kanał zapisu, pozwalający na transmisję danych z formatu strumieniowego do pamięci operacyjnej,
+	\item read (MM2S) - kanał odczytu, umożliwiający konwersję danych przechowywanych w pamięci do strumienia.
+\end{itemize}
+
+Ustawienia pozwalają na wybór szerokości strumienia informacji dla jednego piksela, maksymalną liczbę buforów w pamięci oraz długość linii buforujących, związanych z oboma kanałami.
+
+Wartości wielkości strumienia danych oraz liczby buforów związane są ściśle z projektowanym algorytmem, natomiast długość linii buforujących może wpłynąć na stabilność działania systemu. Zwiększenie tej wartości może poprawić działanie algorytmu w przypadku, gdy operacje związane z pamięcią operacyjną wykonywane są z opóźnieniem.
+
+Zakładka ustawień zaawansowanych pozwala na zdefiniowanie parametrów związanych ze sterowaniem kanałami transmisji.
+
+Wartość parametru \textit{Fsync Options} w aplikacjach nie wymagających zewnętrznej sytuacji powinna być zdefiniowana jako \texttt{tuser} dla kanału zapisu oraz \texttt{none} dla kanału odczytu, dzięki czemu sygnał synchronizacji modułu będzie związany z wejściowym strumieniem AXI. Część aplikacji może wymagać synchronizacji strumienia odczytu z drugim strumieniem danych, na przykład z inną ramką sygnału wizyjnego. W takiej sytuacji wykorzystać należy opcję synchronizacji \texttt{fsync}, a wejście układu \texttt{mm2s\_fsync} połączyć z właściwym sygnałem synchronizacji.
+
+W ramach pracy wykorzystywano również synchronizację pomiędzy kanałami przy użyciu parametru \texttt{GenLock}, o wartości \texttt{master} dla kanału zapisu i \texttt{slave} dla odczytu. Pozwalało to zachować przesunięcie o stałej, definiowanej z poziomu aplikacji, wartości pomiędzy buforami wykorzystywanymi przez oba kanały.
+
+Ze względu na dużą wartość przepływu danych przez oba kanały, do komunikacji z procesorem wykorzystać należy połączenia o wysokiej wydajności. Kanały te można aktywować korzystając z opcji konfiguracyjnych modułu ZYNQ: \path{PL-PS Configuration/HP Slave AXI Interface}, i aktywując jeden lub wiele kanałów.
+
+Z modułem AXI VDMA powiązać należy sygnał zegarowy o częstotliwości nie mniejszej od wartości zegara strumienia wejściowego. Sygnał ten powinien być generowany przez układ ZYNQ, a nie powiązany bezpośrednio z zegarem strumienia obrazu.
+
+\subsubsection{SDK}
+Konfiguracja modułu VDMA wymaga zastosowania technik opisanych w sekcji \ref{sec:vivado-axi-dma-sdk}.
+
+Proces uruchamiania transmisji dla modułu wymaga wykonania kroków zdefiniowanych przez producenta i opisanych w sekcji \textit{Programming Sequence} dokumentacji. \cite{axi-vdma-guide}
+\subsubsection{Petalinux}
+Konfiguracja projektu zgodna jest z opisem dla modułów DMA, przedstawionym w sekcji \ref{sec:vivado-axi-dma-petalinux}.
+
+W przypadku projektu aplikacji działającej pod kontrolą systemu operacyjnego, pamiętać należy, że konfiguracja buforów obrazu wymaga użycia adresów fizycznych, które mogą różnić się od adresów wirtualnych komórek pamięci.
+
+Zdefiniować należy adresy buforów, odległe od siebie co najmniej o rozmiar jednej ramki sygnału wizyjnego. Zagwarantować należy nienaruszalność pamięci z perspektywy systemu operacyjnego. Efekt ten najprościej jest osiągnąć przez ograniczenie rozmiaru pamięci dostępnej dla systemu operacyjnego i zdefiniowanie adresów buforów poza tym zakresem. Wykorzystać do tego można argument \textit{mem} przekazywany na etapie uruchamiania systemu, na przykład \texttt{mem=224M}. Proces dodawania argumentów uruchamiania systemu opisano w sekcji \ref{sec:petalinux-config}.
+
+Adres fizyczny pamięci nie może być odczytany bezpośrednio, w tym celu musi zostać powiązany z adresem wirtualnym. Odpowiedzialną za to procedurę \texttt{setup\_virtual\_memory} przestawiono na listingu \ref{lis:axi-dma-petalinux-main}, przy czym parametr \texttt{base\_addr} to adres fizyczny pierwszej komórki pamięci bufora. 
+
 \subsection{Obliczenia równoległe}
+
 \label{sec:multithreading-config}
 Użycie rozwiązań omawianych w rozdziale \ref{sec:openmp} wymaga aktywacji właściwych funkcji kompilacji.
 
@@ -321,3 +366,297 @@ Natomiast dla interfejsu OpenMP, konieczne jest użycie przełącznika:
 \begin{lstlisting}[language=bash]
 g++ main.cpp -o main.out (*@\textbf{-fopenmp}@*)
 \end{lstlisting}
+
+
+\subsection{Biblioteka OpenCV}
+\label{sec:opencv-config}
+\subsubsection{OpenCV 2}
+Biblioteka OpenCV w wersji 2.4 nie jest oficjalnie dostępna w pakiecie PetaLinux, może jednak zostać dołączona do systemu operacyjnego dzięki mechanizmowi aplikacji użytkownika.
+
+Twórcy biblioteki nie udostępniają prekompilowanych plików bibliotek na platformę ARM i konieczne jest procesu kompilacji kodu źródłowego wraz z zależnościami.
+
+Poniżej przedstawiono proces instalacji zależności.
+
+\begin{lstlisting}[breaklines=true, language=Bash, caption=Definicja zmiennych środowiskowych.]
+export ARMPREFIX=(*@\textit{ścieżka/instalacji}@*)
+export CCPREFIX=arm-linux-gnueabihf-
+\end{lstlisting}
+Zmienna \texttt{CCPREFIX} wskazuje na prefiks kompilatora zawartego w pakiecie PetaLinux, a zmienna \texttt{ARMPREFIX} wskazuje na ścieżkę, gdzie zainstalowane zostanę pliki wynikowe.
+
+\begin{lstlisting}[breaklines=true, caption=Kompilacja biblioteki \textit{xVideo}.]
+wget http://downloads.xvid.org/downloads/xvidcore-1.3.3.tar.gz
+tar -zxvf xvidcore-1.3.3.tar.gz
+cd xvidcore/build/generic/
+./configure --prefix=${ARMPREFIX} --host=arm-linux-gnueabihf --disable-assembly
+make
+make install
+\end{lstlisting}
+
+\begin{lstlisting}[breaklines=true, caption=Kompilacja biblioteki \textit{x264}.]
+git clone git://git.videolan.org/x264
+cd x264
+./configure --enable-shared --host=arm-linux-gnueabihf --disable-asm --prefix=${ARMPREFIX} --cross-prefix=${CCPREFIX}
+make
+make install
+\end{lstlisting}
+
+\begin{lstlisting}[breaklines=true, caption=Kompilacja biblioteki \textit{ffmpeg}.]
+git clone git://source.ffmpeg.org/ffmpeg.git
+cd ffmpeg
+git checkout release/2.6
+./configure --enable-cross-compile --cross-prefix=${CCPREFIX} --target-os=linux \
+	--arch=arm --enable-shared --disable-static --enable-gpl --enable-nonfree \
+	--enable-ffmpeg --disable-ffplay --enable-ffserver --enable-swscale \
+	--enable-pthreads --disable-yasm --disable-stripping --enable-libx264 \
+	--disable-libxvid --prefix=${ARMPREFIX} --extra-cflags="-I"${ARMPREFIX}"/include" \
+	--extra-ldflags="-L"${ARMPREFIX}"/lib"
+make
+make install
+\end{lstlisting}
+
+Po zainstalowaniu zależności, przystąpić można do pobrania i instalacji biblioteki OpenCV.
+
+\begin{lstlisting}[breaklines=true, caption=Pobieranie biblioteki OpenCV w wersji 2.4.10.]
+git clone https://github.com/Itseez/opencv.git
+cd opencv
+git checkout 2.4.10
+\end{lstlisting}
+
+\begin{lstlisting}[breaklines=true, caption=Kompilacja biblioteki \textit{OpenCV}.]
+mkdir build && cd build
+cmake -DBUILD_DOCS=OFF -DBUILD_TESTS=OFF -DWITH_1394=OFF -DWITH_CUDA=OFF \
+	-DWITH_CUFFT=OFF -DWITH_EIGEN=OFF -DWITH_GSTREAMER=OFF -DWITH_GTK=OFF \
+	-DWITH_JASPER=OFF -DWITH_JPEG=OFF -DWITH_LIBV4L=OFF -DWITH_OPENEXR=OFF \
+	-DWITH_PNG=OFF -DWITH_PVAPI=OFF -DWITH_TIFF=OFF -DWITH_V4L=OFF \
+	-DENABLE_PRECOMPILED_HEADERS=OFF -DWITH_FFMPEG=ON \
+	-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=arm \
+	-DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
+	-DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
+	-DCMAKE_INSTALL_PREFIX=$ARMPREFIX \
+	-DCMAKE_FIND_ROOT_PATH=(*@\textit{katalog/zawierający/narzędzia/kompilacji}@*) ../
+make
+make install
+\end{lstlisting}
+
+Aby zmniejszyć rozmiar biblioteki, a także skrócić proces instalacji, część modułów została dezaktywowana. Wartość zmiennej \texttt{CMAKE\_FIND\_ROOT\_PATH} to ścieżka zawierająca strukturę katalogów wykorzystywanego kompilatora. W przypadku pakietu PetaLinux w wersji 2016.3, właściwa ścieżka względem punktu instalacji pakietu to \path{Xilinx/Petalinux/tools/linux-i386/gcc-arm-linux-gnueabi/arm-linux-gnueabihf}.
+
+Po zakończeniu procesu, pliki wynikowe znaleźć można w katalogu \texttt{\$ARMPREFIX/lib}.
+
+Pliki te mogą być dołączone do budowanego systemu operacyjnego jako dodatkowe pliki. W tym celu wykorzystać należy polecenie:
+
+\begin{lstlisting}[breaklines=true]
+petalinux-create -t libs --template install --name opencv2
+\end{lstlisting}
+
+Utworzona zostanie struktura katalogów \path{components/libs/opencv2}, do której skopiować należy pliki wynikowe kompilacji biblioteki i jej zależności. Następnie, zmodyfikować należy plik \texttt{Makefile}, zgodnie z instrukcjami zawartymi w nim instrukcjami. W przypadku biblioteki OpenCV, wykorzystać można do tekst generowany w wyniku wywołania polecenia:
+
+\begin{lstlisting}[breaklines=true]
+for f in $(find . -type f -name "*.so*" -printf '%P\n'); \
+	do echo -e '\t$(TARGETINST) -d' $f /lib/$f; done
+\end{lstlisting}
+
+Aktywacja biblioteki wewnątrz projektu wymaga wywołania polecenia przedstawionego na listingu \ref{lis:petalinux-activate-lib} i wyboru biblioteki w zakładce \textit{Libs}. 
+
+\begin{lstlisting}[caption=Dołączenie biblioteki do projektu PetaLinux., label=lis:petalinux-activate-lib]
+petalinux-config -c rootfs
+\end{lstlisting}
+
+
+\subsubsection{OpenCV 3}
+Biblioteka OpenCV w wersji 3.1 dołączona jest do pakietu PetaLinux. W celu jej aktywacji, wykorzystać należy polecenie przedstawione na listingu \ref{lis:petalinux-activate-lib} i wybrać biblioteki w zakładce \path{Filesystem Packages/libs/opencv}.
+
+\subsubsection{SDK}
+Wykorzystanie bibliotek w projekcie SDK wymaga wskazania katalogu ze źródłami oraz bibliotekami w ustawieniach projektu.
+
+W przypadku użycia biblioteki w wersji 3.1, wystarczające jest utworzenie aplikacji w języku C++ i typu \textit{OpenCV Example Application}.
+
+Dla wersji 2.4, konieczne jest ręczne zmodyfikowanie parametrów kompilacji projektu, w sposób analogiczny do konfiguracji aplikacji wykorzystującej OpenCV i działającej na platformie x86, wskazując jednak na skompilowane wcześniej pliki dla platformy ARM.
+\subsection{Wykorzystanie mechanizmu przerwań systemowych}
+\label{sec:interrupts-config}
+Użycie mechanizmu przerwań systemowych wymaga zbudowania połączeń wewnątrz logiki programowalnej oraz konfiguracji agentów przerwań na poziomie aplikacji użytkownika. Poniżej opisano kroki wymagane do użycia omawianego mechanizmu w aplikacjach bare-metal oraz działających na systemie PetaLinux.
+
+\subsubsection{Vivado}
+Moduły wspierające mechanizm przerwań wyposażone są w dedykowane połączenia wyjściowe, wykorzystywane do transmisji sygnału przerwania. W przypadku modułu AXI Timer, właściwe połączenie ma sygnaturę \emph{interrupt}, natomiast w przypadku modułu AXI VDMA, sygnały przerwań dla kanałów odczytu i zapisu mają odpowiednio nazwy \emph{mm2s\_introut} oraz \emph{s2mm\_introut}.
+
+Obsługa przerwań wymaga konfiguracji modułu procesora. Aktywować należy ścieżkę \emph{Fabric Interrupts -> PL-PS Interrupt Ports -> IRQ\_F2P} wewnątrz zakładki \emph{Interrupts}. W rezultacie, dostępne będzie wejście procesora \emph{IRQ\_F2P} o szerokości do szesnastu linii. We wspomnianej zakładce ustawień aktywować można również inne połączenia przerwań, w tym szybkie przerwania w kierunku procesora oraz połączenia prowadzone od procesora do układów logiki, pozwalające na transmisję zdarzeń z interfejsów procesora, takich jak DMA, UART czy Ethernet.
+
+Kanał \emph{IRQ\_F2P} pozwala na połączenie nie więcej niż szesnastu linii przerwań. W przypadku wykorzystania mechanizmu na platformie PetaLinux, pierwszym ośmiu liniom, zaczynając od najmłodszego bitu, przypisane będą identyfikatory przerwań w zakresie [61-68], natomiast pozostałym ośmiu - [84-91].
+
+W przypadku konieczności zaprojektowania interfejsu wykorzystującego więcej niż szesnaście linii przerwań, konieczne jest zastosowanie układu dedykowanego obsłudze zdarzeń - \emph{AXI Interrupt Controller}. Pozwala on na połączenie nie więcej niż trzydziestu dwóch linii przerwań do jednej linii na wejściu procesora i udostępnia interfejs umożliwiający identyfikację układu odpowiedzialnego za wysłanie sygnału przerwania. Zapewnia również mechanizmy priorytetyzacji i zagnieżdżania przerwań.
+
+W sytuacji, gdy interfejs nie zawiera więcej niż szesnastu przerwań, wystarczające jest użycie modułu konkatenacji sygnałów zdarzeń do jednego wektora, którego wyjście połączone jest z wejściem \emph{IRQ\_F2P} procesora.
+
+\subsubsection{Aplikacja bare-metal}
+Wykorzystanie przerwań wymaga napisania procedury odpowiedzialnej za obsługę zdarzeń oraz zarejestrowanie jej jako agenta danego przerwania. Ponadto, zwykle wymagane jest przeprowadzenie konfiguracji modułu w taki sposób, aby aktywować emisję przerwań.
+
+Wymagane funkcje znaleźć można w plikach nagłówkowych \texttt{xparameters.h}, \texttt{xscugic.h}, \texttt{xil\_exception.h}, oraz \texttt{xaxivdma.h} dla modułu AXI VDMA i \texttt{xtmrctr.h} dla AXI Timer.
+
+Procedurę konfiguracji obsługi przerwań podzielić można na kilka etapów:
+\begin{enumerate}
+	\item Zdefiniowanie agentów zdarzeń.
+	
+Konieczne jest zdefiniowane funkcji, które będą wywołane w przypadku wystąpienia przerwania. W najprostszym rozwiązaniu, ich celem jest akceptacja zdarzenia i przeprowadzenie konfiguracji modułu w taki sposób, aby umożliwić jego dalsze działanie - w przypadku modułu zegarowego jest to wykonanie restartu zegara. Moduł AXI VDMA nie wymaga żadnych kroków na etapie wywołania przerwania.
+
+Ponadto, procedura jest odpowiedzialna za wykonanie obliczeń związanych z wystąpieniem przerwania.
+
+Na listingu \ref{lis:interrupt-handlers} przedstawiono funkcje agentów przerwań dla modułu zegara oraz obu kanałów AXI VDMA.
+
+\begin{lstlisting}[breaklines=true, language=C, caption=Procedury obsługi przerwań., label=lis:interrupt-handlers]
+void Timer_InterruptHandler(void *data, u8 id) {
+	// dodatkowe obliczenia
+	
+	// zerowanie przerwania
+	XTmrCtr_Stop(data, id);
+	XTmrCtr_Reset(data, id);
+	XTmrCtr_Start(data, id);
+}
+
+void AxiRead_InterruptHandler(void *data, u32) {
+	// dodatkowe obliczenia
+}
+
+void AxiWrite_InterruptHandler(void *data, u32) {
+	// dodatkowe obliczenia
+}
+\end{lstlisting}
+
+	\item Konfiguracja modułów.
+	
+Oba omawiane moduły wymagają przeprowadzenia dodatkowych kroków konfiguracji. W przypadku modułu zegarowego, konieczne jest aktywacja obsługi przerwań w rejestrze kontrolnym - \texttt{TCSR\textit{n}}, natomiast w przypadku modułu VDMA, parametryzacja odbywa się przez rejestry \texttt{MM2S\_VDMACR} dla kanału zapisu oraz \texttt{S2MM\_VDMACR} dla kanału odczytu.
+
+Ponadto, konieczna jest rejestracja agentów przerwań dla obu modułów. Proces ten przedstawiono na listingu \ref{lis:interrupt-handlers-2}, zmienne \texttt{TimerInstancePtr} i \texttt{AxiVdmaInstancePtr} są wskaźnikami do wykorzystywanych struktur typu \texttt{XTmrCtr} i \texttt{XAxiVdma}.
+
+\begin{lstlisting}[language=C, caption=Rejestracja agentów przerwań., label=lis:interrupt-handlers-2]
+XAxiVdma_SetCallBack(AxiVdmaInstancePtr, XAXIVDMA_HANDLER_GENERAL,
+	&AxiWrite_InterruptHandler, AxiVdmaInstancePtr, XAXIVDMA_WRITE);
+
+XAxiVdma_SetCallBack(AxiVdmaInstancePtr, XAXIVDMA_HANDLER_GENERAL,
+	&AxiRead_InterruptHandler, AxiVdmaInstancePtr, XAXIVDMA_READ);
+
+XTmrCtr_SetHandler(TimerInstancePtr, Timer_InterruptHandler, TimerInstancePtr);
+\end{lstlisting}
+
+	\item Konfiguracja kontrolera przerwań.
+	
+Ostatni krok wymaga skonfigurowania kontrolera zdarzeń. Procedurę przedstawiono na listingu \ref{lis:interrupt-controller}.
+
+\begin{lstlisting}[language=C, caption=Konfiguracja kontrolera przerwań., label=lis:interrupt-controller]
+XScuGic InterruptController;
+XScuGic_Config *GicConfig;
+int ScuGicInterrupt_Init(u16 DeviceId, XTmrCtr *TimerInstancePtr,
+	XAxiVdma * AxiVdmaIntancePtr) {
+	int Status;
+	GicConfig = XScuGic_LookupConfig(DeviceId);
+	if (NULL == GicConfig)
+		return XST_FAILURE;
+	
+	Status = XScuGic_CfgInitialize(&InterruptController, GicConfig,
+		GicConfig->CpuBaseAddress);
+	if (Status != XST_SUCCESS)
+		return XST_FAILURE;
+	
+	Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_INT,
+		(Xil_ExceptionHandler) XScuGic_InterruptHandler,
+		&InterruptController);
+	Xil_ExceptionEnable();
+	
+	Status = XScuGic_Connect(&InterruptController,
+		XPAR_FABRIC_AXI_TIMER_0_INTERRUPT_INTR,
+		(Xil_ExceptionHandler) XTmrCtr_InterruptHandler,
+		TimerInstancePtr);
+	if (Status != XST_SUCCESS)
+		return XST_FAILURE;
+	
+	Status = XScuGic_Connect(&InterruptController,
+		XPAR_FABRIC_AXI_VDMA_RESULT_S2MM_INTROUT_INTR,
+		(Xil_ExceptionHandler) (XAxiVdma_WriteIntrHandler),
+		AxiVdmaIntancePtr);
+	if (Status != XST_SUCCESS)
+		return XST_FAILURE;
+	
+	XScuGic_Enable(&InterruptController,
+		XPAR_FABRIC_AXI_TIMER_0_INTERRUPT_INTR);
+	
+	XScuGic_Enable(&InterruptController,
+		XPAR_FABRIC_AXI_VDMA_RESULT_S2MM_INTROUT_INTR);
+	XScuGic_Enable(&InterruptController,
+		XPAR_FABRIC_AXI_VDMA_RESULT_MM2S_INTROUT_INTR);
+	return XST_SUCCESS;
+}
+\end{lstlisting}
+
+Kolejne operacje wykonywane wewnątrz procedury odpowiadają za uruchomienie kontrolera przerwań, rejestrację w nim obu omawianych modułów AXI oraz uruchomienie trzech kanałów obsługi przerwań.
+\end{enumerate}
+
+\subsubsection{PetaLinux}
+
+Obsługa przerwań w systemie PetaLinux wymaga wykorzystania dedykowanych sterowników sprzętu i przeprowadzenia przy ich użyciu procesu konfiguracji. Pakiet PetaLinux udostępnia sterowniki do modułów AXI, które ich wymagają i w ramach pracy ograniczono się do ich wykorzystania. W przypadku konieczności obsługi przerwania z niestandardowego modułu, konieczne może być dostarczenie dedykowanego mu sterownika, co wymaga szerokiej wiedzy z dziedziny działania systemów operacyjnych i komunikacji z urządzeniami peryferyjnymi.
+
+Aby uzyskać dostęp do elementów logiki, konieczna jest aktywacja modułów systemowych.
+
+\begin{lstlisting}[breaklines=true, caption=Konfiguracja modułów systemowych.]
+petalinux-config -c kernel
+
+Device Drivers -> Userspace I/O drivers
+Device Drivers -> Userspace I/O drivers -> Userspace I/O platform driver with generic IRQ handling
+Device Drivers -> Userspace I/O drivers -> Userspace I/O platform driver with generic iqr and dynamic memory
+\end{lstlisting}
+
+Konieczna jest również znajomość identyfikatorów linii przerwań. Można je odczytać z poziomu SDK, po utworzeniu projektu \emph{Board Support Package} dla wykorzystywanej konfiguracji sprzętowej. Identyfikatory linii przerwań zdefiniowane są w pliku \texttt{xparameters.h}, na przykład:
+
+\begin{lstlisting}[language=C]
+/* Definitions for Fabric interrupts connected to ps7_scugic_0 */
+#define XPAR_FABRIC_AXI_VDMA_RESULT_MM2S_INTROUT_INTR 61
+#define XPAR_FABRIC_AXI_VDMA_RESULT_S2MM_INTROUT_INTR 62
+#define XPAR_FABRIC_AXI_TIMER_0_INTERRUPT_INTR 63
+\end{lstlisting}
+
+Wartości te mogą być również znalezione w strukturze \textit{device tree}, generowanej przez pakiet PetaLinux na etapie parametryzacji, w której zdefiniowane są informacje o konfiguracji sprzętowej, wymagane do poprawnego działania systemu.
+
+Wymagane informacje znajdują się w pliku \path{subsystems/linux/configs/device-tree/pl.dtsi}. Na listingu poniżej przedstawiono fragment konfiguracji związany z modułem AXI Timer.
+
+\begin{lstlisting}
+axi_timer_0: timer@42800000 {
+	# ...
+	compatible = "xlnx,xps-timer-1.00.a";
+	interrupt-parent = <&intc>;
+	interrupts = <0 31 4>;
+	reg = <0x42800000 0x10000>;
+	# ...
+};
+\end{lstlisting}
+Kolejne wpisy w konfiguracji definiują informacje o sterowniku, który powinien być odpowiedzialny za obsługę modułu z poziomu procesora, module odpowiedzialnym za kontrolę przerwań oraz definicję zdarzeń. Ostatni wpis zawiera informację o adresie urządzenia w pamięci oraz rozmiarze tego zasobu.
+
+Definicja przerwania zawiera trzy elementy, z których kluczowa jest wartość \texttt{31}. Ze względu na specyfikę formatu danych, w celu uzyskania właściwego identyfikatora przerwania, konieczne jest zwiększenie jej o \texttt{32}. Uzyskany wynik - \texttt{63} jest zgodny z definicją wewnątrz pliku \texttt{xparameters.h}.
+
+W razie konieczności zaprojektowania dedykowanego sterownika sprzętu, wymagana jest wiedza na temat struktury \textit{device tree} oraz zasad budowy oprogramowania tego typu. Informacje na ten temat znaleźć można we właściwych źródłach. \cite{Corbet2005,device-tree-tutorial}
+
+Pakiet PetaLinux pozwala na dodanie do konfiguracji własnych modułów systemowych. W celu utworzenia struktury plików dla nowego modułu, wykorzystać można polecenie:
+
+\begin{lstlisting}[breaklines=true]
+petalinux-create -t modules -n (*@\textit{nazwa\_modułu}@*) --enable
+\end{lstlisting}
+
+W wyniku działania polecenia, utworzona zostanie struktura, którą następnie należy zmodyfikować, dodając funkcjonalności sterownika.
+
+Skompilowany na etapie budowania projektu moduł znajduje się w ścieżce \path{/lib/modules/identyfikator-kernela/extra} i może być uruchomiony poleceniem
+
+\begin{lstlisting}
+insmod (*@\textit{nazwa\_modułu}@*).ko
+\end{lstlisting}
+
+Logowane przez moduł wiadomości mogą być odczytane przy użyciu polecenia \texttt{dmesg}.
+
+W celu weryfikacji poprawności konfiguracji przerwań systemowych, wykorzystać można interfejs \texttt{/proc/interrupts}.
+
+Wszystkie przerwania mogą być wypisane przy użyciu polecenia
+
+\begin{lstlisting}
+cat /proc/interrupts
+\end{lstlisting}
+
+W przypadku modułu AXI Timer, spodziewany jest wpis o treści:
+\begin{lstlisting}
+ 63:          1          0  axi-timer  40
+\end{lstlisting}
+Potwierdza on obecność linii przerwania o identyfikatorze \texttt{63}, związanej ze sterownikiem \texttt{axi-timer}, która została wywołana jeden raz w przypadku pierwszego rdzenia procesora.

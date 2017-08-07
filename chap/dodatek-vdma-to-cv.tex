@@ -1,0 +1,45 @@
+\section{Konwersja danych pomiędzy VDMA i OpenCV}
+\label{sec:vdma-to-opencv}
+
+Na listingu \ref{lis:vdma-to-opencv-code} zaprezentowano metodę konwersji sygnału wizyjnego pomiędzy elementami obliczeniowymi wykonanymi w architekturach FPGA i ARM.
+
+\begin{lstlisting}[language=C++, label=lis:vdma-to-opencv-code, caption=Konwersja sygnału wizyjnego pomiędzy AXI VDMA i \texttt{cv::Mat}.]
+#include "opencv2/core/core.hpp"
+
+cv::Mat const from_vdma(unsigned char *ptr, std::size_t width, std::size_t height,
+	std::size_t bytes_per_pixel)
+{
+	return cv::Mat(height, width, CV_8UC(bytes_per_pixel), ptr);
+}
+
+void to_vdma(cv::Mat const &image, std::size_t bytes_per_pixel, unsigned char *ptr)
+{
+	assert(image.isContinuous());
+	if (ptr != image.ptr())
+		std::memcpy(ptr, image.ptr(),
+			image.rows * image.cols * bytes_per_pixel);
+}
+
+int main(int, char**)
+{
+	const std::size_t width = 1280, height = 720, bytes_per_pixel = 4;
+	unsigned char framebuffer_ptr[width * height * bytes_per_pixel];
+	
+	for(int i =0; i < 10000;i++)
+	{
+		cv::Mat image = from_vdma(framebuffer_ptr,
+			width, height, bytes_per_pixel);
+		
+		// opcjonalna kopia
+		image = image.clone();
+		
+		algorithm(image);
+		
+		to_vdma(image, bytes_per_pixel, framebuffer_ptr);
+		
+		await_next_frame();
+	}
+	return 0;
+}
+
+\end{lstlisting}
