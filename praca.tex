@@ -166,7 +166,7 @@ backend=bibtex
 	\renewcommand{\footrulewidth}{0pt}
 }
 
-\setcounter{tocdepth}{2}
+\setcounter{tocdepth}{1}
 \tableofcontents
 \clearpage
 
@@ -178,16 +178,17 @@ backend=bibtex
 
 \include{chap/projekt}
 
+\include{chap/dodatek-vivado}
+
 \include{chap/podsumowanie}
-\addcontentsline{toc}{chapter}{Podsumowanie}
+
+
 \appendix
 \chapter*{Dodatki}
 \addcontentsline{toc}{chapter}{Dodatki}
 \renewcommand{\thesection}{\Alph{section}}
 
-\input {chap/dodatek-vivado}
-
-\include {chap/dodatek-neon}
+\input {chap/dodatek-neon}
 
 \include {chap/dodatek-vdma-to-cv}
 \printbibliography

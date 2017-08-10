@@ -171,7 +171,7 @@ Powszechnie wykorzystywanym zastosowaniem modułu jest mechanizm potrójnego buf
 
 W niniejszej pracy rozpatrzono możliwość wykorzystania modułu VDMA w celu obsługi algorytmów wymagających kontekstu w postaci dwóch kolejnych ramek obrazu.
 
-Proces konfiguracji modułu przedstawiono w dodatku \ref{sec:vivado-axi-vdma}.
+Proces konfiguracji modułu przedstawiono w sekcji \ref{sec:vivado-axi-vdma}.
 
 \section{Obliczenia równoległe}
 \label{sec:openmp}
@@ -181,9 +181,6 @@ Ze względu na wykorzystanie w układzie ZYBO procesora ARM o dwóch rdzeniach, 
 Stosując prawo Amdahla, wykazać można, że maksymalne przyspieszenie, jakie można uzyskać w systemie wieloprocesorowym jest proporcjonalne do liczby elementów obliczeniowych. Zależność ta zachodzi po warunkiem, że całe zadanie może być realizowane w sposób równoległy. W przypadku omawianego procesora, spodziewać się można korzyści nie przekraczających dwukrotnego zwiększenia szybkości wykonania algorytmu.
 
 Zagadnienia związane z obliczeniami równoległymi stanowią obszar aktualnych badań, których efekty pozwoliły na zaprojektowanie zbioru bibliotek ułatwiających wykorzystanie własności systemów wieloprocesorowych w praktyce. W ramach pracy rozważono możliwości wykorzystania wątków natywnych oraz bibliotek \emph{Intel Threading Building Blocks} i \emph{OpenMP} do budowy aplikacji wielowątkowych.
-
-% dodatek
-% linkowanie z pthread, tbb, openMP...
 
 \subsection{Wątki natywne}
 
@@ -221,7 +218,7 @@ W ramach pracy nie omówiono kilku innych popularnych rozwiązań związanych z 
 
 Omawiane zagadnienie stanowi temat obszernych dyskusji, których wyniki odnaleźć można w publikowanych pracach. \cite{choosing-thread-framework,Kegel2009}
 
-W dodatku \ref{sec:multithreading-config} opisano kroki wymagane do zastosowania omawianych bibliotek w aplikacjach uruchamianych w systemie PetaLinux.
+W sekcji \ref{sec:multithreading-config} opisano kroki wymagane do zastosowania omawianych bibliotek w aplikacjach uruchamianych w systemie PetaLinux.
 \section{OpenCV}
 \label{sec:opencv-lib}
 
@@ -237,7 +234,7 @@ Pakiet PetaLinux oferuje dostęp do prekompilowanej biblioteki w wersji 3.1. Wyd
 
 OpenCV w wersji 2.4 nie jest jednak oficjalnie dostępne w środowisku PetaLinux. Jego użycie wymaga zbudowania biblioteki na bazie kodu źródłowego wraz z zależnościami i dodanie plików wynikowych do zbioru bibliotek dostępnych w projekcie PetaLinux.
 
-Przebieg procesu dla obu przypadków opisano w dodatku \ref{sec:opencv-config}.
+Przebieg procesu dla obu przypadków opisano w sekcji \ref{sec:opencv-config}.
 
 \section{Integracja algorytmów w FPGA i CPU}
 Zagadnienie integracji rozwiązań algorytmicznych wewnątrz logiki reprogramowalnej z obliczeniami prowadzonymi przez procesor ARM może pozwalać na zwiększenie wydajności działania aplikacji względem algorytmów realizowanych wyłącznie w jednym z tych układów.
@@ -296,4 +293,4 @@ Moduł AXI Timer wykorzystać można do odliczania czasu pomiędzy kolejnymi wyk
 
 Przerwania definiowane przez moduł AXI VDMA pozwalają na emisję zdarzenia po wykonaniu procesu odczytu lub zapisu określonej liczby ramek obrazu lub po upływie określonego czasu od uzyskania sygnałów synchronizacji obrazu. Wykorzystanie tych mechanizmów pozwala na zaprojektowanie procedur aplikacji, które powinny być wykonane co określoną liczbę klatek sygnału wizyjnego. W szczególnym przypadku, mechanizm ten pozwala na wykonanie przez procesor operacji algorytmicznych dla każdej ramki obrazu, których implementacja sprzętowa byłaby trudna lub niemożliwa. Mechanizm ten pozwala również na przeprowadzenie operacji końcowej analizy wyników algorytmu wizyjnego, zaimplementowanego w układach logicznych.
 
-Proces konfiguracji projektu wykorzystującego mechanizm przerwań opisano w dodatku \ref{sec:interrupts-config}.
+Proces konfiguracji projektu wykorzystującego mechanizm przerwań opisano w sekcji \ref{sec:interrupts-config}.
