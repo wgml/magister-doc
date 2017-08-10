@@ -1,10 +1,282 @@
-\chapter{Projekt}
+\chapter{Analiza sygnału wizyjnego przy użyciu platformy Zynq i systemu PetaLinux}
 \label{chap:projekt}
-
-\lipsum[1-3]
-
-% porownanie opencv vs fpga?
 
 %kamera usb?
 
 % wejscie -> frame diff ->(bg model?) -> median -> | cpu | -> scale? -> index? (every n frames?) -> save to file -> webserver
+
+Analiza sygnału wizyjnego to proces ekstrakcji informacji opisujących strumień danych przy użyciu algorytmu wizyjnego. Celem analizy jest zwykle redukcja informacji do stanu, który pozwala opisać istotne z punktu widzenia przyjętego zadania przy użyciu możliwie najmniejszej liczby parametrów. Sygnał wejściowy ma zwykle postać obrazu kolorowego, a wynik opisany jest jako obraz binarny lub zbiór cech.
+
+Analiza sygnału wizyjnego stanowi rozwinięcie zagadnienia analizy pojedynczego obrazu. W przypadku algorytmów przetwarzania sekwencji obrazów, na etapie analizy jednej klatki wykorzystać można informacje uzyskane w trakcie obliczeń dla poprzednich ramek sygnału. Rozszerzenie kontekstu o parametry historyczne pozwala na projektowanie bardziej zaawansowanych algorytmów analizy obrazów, zwykle wymaga jednak wykorzystania modułów zewnętrznej pamięci w celu przechowywania danych historycznych.
+
+Wśród algorytmów wymagających kontekstu związanego z więcej niż jedną ramką obrazu wyróżnić można między innymi:
+\begin{itemize}
+	\item detekcję obiektów pierwszoplanowych - umożliwia podział obrazu na elementy tła oraz znajdujące się na pierwszym planie, pozwalając zwykle ograniczyć obszar analizy sygnału do fragmentów, z którymi związane są obiekty pierwszoplanowe,
+
+	\item indeksację i śledzenie obiektów - indeksacja pozwala na przypisanie etykiet do obiektów i wyznaczenie zbioru niezależnych elementów obrazu. Pozwala to śledzić ruch każdego z obiektów oraz analizę zachowań,
+	
+	\item wyliczanie przepływu optycznego - pozwala na analizę ruchu obiektów znajdujących się w kadrze, umożliwiając estymację kształtu, odległości czy parametrów ruchu.
+\end{itemize}
+
+Implementacja wymienionych typów algorytmów w architekturze potokowej może być utrudniona lub niemożliwa bez użycia zewnętrznego elementu pamięciowego. Ponadto, końcowa analiza wyników algorytmu w architekturze FPGA jest odgórnie ograniczona do przewidywanych parametrów działania systemu - na przykład, zagadnienie śledzenia obiektów może być ograniczone do maksymalnej zadanej liczby niezależnych elementów.
+
+Ze względu na te ograniczenia, korzystny może okazać się podział algorytmu na niezależne etapy, wykonywane przez elementy logiki reprogramowalnej lub procesor ARM. 
+
+Klasyczny sekwencyjny element obliczeniowy pozwala na adaptację algorytmu do zmieniających się w czasie parametrów obrazu - na przykład na analizę ruchu zmieniającej się liczby obiektów pierwszoplanowych.
+
+Ponadto, użycie systemu operacyjnego pozwala wykorzystać zaawansowane możliwości prezentacji i przechowywania wyników działania algorytmu wizyjnego, na przykład prezentację wyników przy użyciu interfejsu sieciowego lub zapis wyników do bazy danych.
+
+W poniższym rozdziale zaproponowano metody wykorzystania platformy Zynq na przykładzie wybranych elementów systemów wizyjnych.
+
+\section{Moduł wyznaczania różnicy sekwencji obrazów}
+
+Wyznaczenie różnicy pomiędzy dwoma kolejnymi ramkami strumienia wizyjnego wymaga wyznaczenia dla każdego piksela wartości różnicy, opisanej formułą \ref{eq:frame-difference}.
+
+\begin{equation}
+\label{eq:frame-difference}
+d^i(x,y) = | p^i(x,y) - p^{i-1}(x,y) |
+\end{equation}
+gdzie:
+\begin{conditions}
+	x,y & współrzędne piksela, \\
+	i & indeks ramki w sekwencji obrazów, \\
+	p^i(x,y) & wartość w $i$-tej ramce dla piksela o współrzędnych $(x,y)$, \\
+	d^i(x,y) & wyznaczana wartość różnicy. \\
+\end{conditions}
+
+Sygnał źródłowy i wynikowy  mają zwykle charakter obrazu przedstawionego w odcieniach szarości. 
+Zagadnienie wyznaczania różnicy dwóch kolejnych obrazów w sekwencji może stanowić przykład algorytmu, którego realizacja w systemach potokowych, pomimo niskiej złożoności obliczeniowej, może być utrudniona. W praktycznych realizacjach, konieczne jest wykorzystanie modułów pamięci operacyjnej w celu zapamiętania ramki obrazu.
+
+Architekturę strumieniową realizującą omawiane zadanie przedstawiono na schemacie \ref{fig:frame-difference}.
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{\textwidth}
+	\input{img/frame-difference.pdf_tex}
+	\caption{Schemat architektury obliczającej różnicę sekwencji obrazów.}
+	\label{fig:frame-difference}
+\end{figure}
+
+Wykorzystano moduł AXI VDMA w roli bufora sygnału, opóźniającego dane o pełen cykl strumieniowania ramki obrazu.
+
+Realizacja techniczna bufora wymagała zaprojektowania mechanizmu synchronizacji dwóch niezależnych klatek sygnału wizyjnego. W tym celu wykorzystano moduł kolejki FIFO dla protokołu AXI4-Stream oraz dedykowany element synchronizujący kanał odczytu z bufora VDMA z sygnałem rozpoczęcia nowej ramki obrazu strumienia wejściowego.
+
+Założono, że algorytm będzie wykorzystywany w systemach wizyjnych czasu rzeczywistego, działających w architekturze potokowej. 
+
+Aplikację przystosowano do działania z sygnałem wizyjnym o dowolnej rozdzielczości o częstotliwości transmisji, składającym się z jednego lub wielu kanałów obrazu.
+
+Zastosowano kolejkę FIFO o długości 128 elementów oraz linie buforujące związane z modułem VDMA o tej samej długości.
+
+W celu weryfikacji działania elementu wyznaczającego różnicę sekwencji obrazów zaprojektowano strukturę rozszerzoną o elementy umożliwiające komunikację przy użyciu protokołu AXI oraz przepływ sygnału wizyjnego. Zaprojektowano aplikację umożliwiającą konfigurację modułu w trybie bare-metal oraz przy współpracy systemu PetaLinux.
+
+Sprawdzono działanie aplikacji dla sygnału wizyjnego o rozdzielczości $1280 \times 720$ pikseli i częstotliwości sześćdziesięciu ramek na sekundę.
+
+Szacowane zapotrzebowanie wynikowego systemu na energię elektryczną nie powinno przekroczyć $1,86W$. Właściwa energia wymagana do przeprowadzania operacji obliczeniowych nie przekracza wartości $1,723W$, w tym $1,559W$ ( $90\%$) to energia wymagana do obsługi układu ARM.
+
+W tabeli \ref{tab;frame-difference-utilization} przedstawiono zapotrzebowanie na zasoby FPGA układu ZYBO.
+
+\begin{table}[h]
+	\caption{Wykorzystanie zasobów przez aplikację.}
+	\centering
+	\label{tab;frame-difference-utilization}
+	\begin{tabular}{|l|c|c|c|}
+		\hline
+		\textbf{Rodzaj zasobu} & \textbf{Użycie} & \textbf{Dostępne} & \textbf{Procent użycia}      \\ \hline
+		FF                     & $3059$            & $17600$             & $17,38\%$                 \\ \hline
+		LUT 6                  & $5721$            & $17600$             & $32,51\%$                 \\ \hline
+		SLICE                  & $2550$            & $4400$             & $57,95\%$                 \\ \hline
+		DSP 48                 & $0$               & $80$                & $0\%$                    \\ \hline
+		BRAM                   & $6$               & $60$                & $10\%$                   \\ \hline
+	\end{tabular}
+\end{table}
+
+Moduł przeznaczony jest do pracy z częstotliwością $200MHz$, co pozwala na analizę sygnału wideo o rozdzielczości $1920 \times 1080$ pikseli i częstotliwości obrazu $60Hz$.
+
+\section{Moduł generacji tła}
+Poza najprostszymi przypadkami analizy ruchu, wyznaczenie różnicy obrazów wewnątrz sekwencji wizyjnej nie stanowi informacji wystarczającej do analizy strumienia obrazów. Zagadnienie to może być jednak elementem składowym bardziej rozbudowanych algorytmów, na przykład modułów realizujących algorytm generacji tła.
+
+Generacja tła to zadanie ekstrakcji elementów \textit{tła} badanego obrazu, a więc takich, które stanowią stały, niezmienny element sceny. Dzięki wydzieleniu obiektów tła, pozostałe elementy obrazu klasyfikowane są jako obiekty pierwszoplanowe. Zwykle, uważa się za nie elementy będące w ruchu. Bardziej zaawansowane metody generacji tła uwzględniają ponadto dodatkowe warunki klasyfikacji obiektów do dwóch z omawianych grup:
+\begin{itemize}
+	\item cienie - choć mogą być związane zarówno z elementami tła jak i pierwszoplanowymi, oczekiwane jest zwykle, by nie były uwzględniane w grupie obiektów wymagających analizy,
+	\item ruchome elementy tła - występujące na przykład pod wpływem wiatru ruchy roślin czy deszcz nie powinny być traktowane jako obiekty pierwszoplanowe,
+	\item obiekty o niejednorodnym ruchu - algorytm powinien klasyfikować poprawie obiekty pierwszoplanowe, które pojawiają się na scenie a następnie zatrzymują, nie traktując ich jako elementy tła,
+	\item obiekty wzajemnie przesłaniające się - elementy pierwszego planu mogą, w wyniku ruchu, został zasłonięte z perspektywy kamery przez elementy tła. Nie powinno to wpłynąć na zmianę klasyfikacji obiektów z obu grup.
+	\item warunki oświetlenia - możliwość zmiany warunków oświetlenia może wymagać ciągłej korekty parametrów generowanego tła. Uwzględnić należy zarówno zmiany długookresowe, wynikające na przykład z cyklu dobowego, jak i krótkookresowe, wynikające z nagłych zmian, takich jak włączenie lub wyłączenie sztucznego oświetlenia sceny.
+\end{itemize}
+
+Zagadnienie realizacji tła nie jest trywialne i wymaga metod uwzględniających część lub wszystkie z wymienionych powyżej ograniczeń. Opracowanie dostępnej literatury poruszającej ten temat znaleźć można w pracy \cite{Kryjak2012}.
+
+W ramach niniejszej pracy zdecydowano się na realizację modułu generacji tła przy pomocy metody modelu tła z bezwładnością, opisanej zależnością \ref{eq:background-model}.
+
+\begin{equation}
+\label{eq:background-model}
+b^i(x,y) = \alpha p^i(x,y) + (1-\alpha)b^{i-1}(x,y)
+\end{equation}
+gdzie:
+\begin{conditions}
+	x,y & współrzędne piksela, \\
+	i & indeks ramki w sekwencji obrazów, \\
+	p^i(x,y) & wartość w $i$-tej ramce dla piksela o współrzędnych $(x,y)$, \\
+	b^i(x,y) & wartość w $i$-tej ramce dla piksela modelu tła o współrzędnych $(x,y)$, \\
+	\alpha & współczynnik bezwładności tła z przedziału $(0, 1]$. \\
+\end{conditions}
+
+Wadą przedstawionej metody jest jej wrażliwość na krótkookresowe zmiany oświetlenia. Jedną z metod eliminacji zakłóceń występujących cyklicznie jest wprowadzenie możliwości zmiany modelu tła. Stosując kilka niezależnych modeli, budować można warianty obejmujące zbiór najczęściej występujących historycznie danych, uporządkowanych według prawdopodobieństwa wystąpienia. W takim przypadku obliczenia prowadzone są dla każdego modelu tła niezależnie, wartość nie jest jednak aktualizowana w przypadku, gdy stan piksela nie jest zbliżony do oczekiwanego.
+
+Nie zdecydowano się na realizację opisanej metody eliminacji zakłóceń, uzasadniając to zachowaniem czytelności implementacji.
+
+Algorytm dostosowano do pracy z sygnałem opisanym w przestrzeni barw \textit{YCbCr}. Procedura generacji tła odbywa się niezależnie dla każdej składowej sygnału.
+
+Przyjęto, że aktualizacja wartości modelu tła powinna mieć miejsce wyłącznie w przypadku, jeśli aktualnie badany piksel może być uznany za element tła. W tym celu wprowadzono dwa warunki wykonania obliczeń:
+\begin{enumerate}
+	\item Warunek ruchu.
+	
+	Aktualizacja powinna mieć miejsce wyłącznie w przypadku, jeśli spełniony jest wartość piksela nie uległa zmianie większej niż dopuszczalna względem poprzedniej ramki obrazu. W przeciwnym razie przyjąć można, że nastąpił ruch elementu i nie należy on do tła. Zależność opisano wzorem \ref{eq:background-model-movement-mask}.
+	
+	\begin{equation}
+	\label{eq:background-model-movement-mask}
+	d^i_Y(x,y) > T_{fd}
+	\end{equation}
+	gdzie:
+	\begin{conditions}
+		d^i_Y(x,y) & różnica sekwencji kanału $Y$ obrazu, opisana wzorem \ref{eq:frame-difference} \\
+		T_{fd} & współczynnik bezwładności ruchu z zakresu $[0,255]$, zwykle nie przekraczający $30$. 
+	\end{conditions}
+
+	Większe wartości współczynnika $T_{fd}$ pozwalają dokonać aktualizacji modelu tła dla elementów o coraz większej różnicy względem poprzedniej ramki obrazu.
+	
+	\item Warunek tła.
+	
+	Aktualizacja powinna mieć miejsce wyłącznie w przypadku, jeśli piksel może zostać sklasyfikowany jako element tła na bazie aktualnego modelu. Zależność opisano równaniem \ref{eq:background-model-background-mask-1}.
+	\begin{equation}
+	\label{eq:background-model-background-mask-1}
+	m^i_Y(x,y) + 2m^i_{Cb}(x,y) + 2m^i_{Cr}(x,y) > T_{bg}
+	\end{equation}
+	gdzie:
+	\begin{conditions}
+		m^i(x,y) & zmiana wartości piksela względem tła, opisana zależnością \ref{eq:background-model-background-mask-2}, \\
+		T_{bg} & współczynnik bezwładności przynależności do tła z zakresu $[0,255]$. \\
+	\end{conditions}
+	
+	\begin{equation}
+	\label{eq:background-model-background-mask-2}
+	m^i_k(x,y) = | p^i_k(x,y) - b^{i-1}_k(x,y)|
+	\end{equation}
+	gdzie:
+	\begin{conditions}
+		k & identyfikator kanału sygnału wizyjnego. \\
+	\end{conditions}
+	
+	Większe wartości parametru $T_{bg}$ pozwalają na aktualizację modelu tła w sytuacji, gdy różnica piksela względem aktualnego modelu tła jest znaczna. Jego wartość nie przekracza jednak zwykle $30$.
+\end{enumerate}
+
+Aktualizacja modelu tła powinna mieć miejsce wyłącznie w sytuacji, gdy spełnione są oba warunki przedstawione powyżej.
+
+Schemat blokowy algorytmu przestawiono na rysunku \ref{fig:background-model}.
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{\textwidth}
+	\input{img/background-model.pdf_tex}
+	\caption{Schemat architektury wyliczającej model tła.}
+	\label{fig:background-model}
+\end{figure}
+
+Algorytm wymaga wykorzystania dwóch buforów AXI VDMA. Jeden z nich przeznaczony jest do buforowania ramki obrazu wejściowego, natomiast drugi przechowuje aktualny model tła. Alternatywą jest zastosowanie wspólnego bufora i przechowywanie w nim dwóch scalonych sygnałów.
+
+Algorytm zintegrowano z układem umożliwiającym komunikację z procesorem ARM, aby umożliwić transmisję uzyskanego modelu tła i jego dalszą analizę. Wykorzystano w tym celu trzeci moduł AXI VDMA. W praktycznych zastosowaniach moduł ten może okazać się zbędny, ze względu na to, że w jednym z pozostałych modułów VDMA przechowywany jest model tła dla poprzedniej klatki obrazu. Opóźnienie jednego cyklu nie powinno wpłynąć negatywnie na jakość działania aplikacji. Niezależny moduł VDMA pozwala jednak na przesyłanie wyników również w przypadku, gdy algorytm generacji tła nie stanowi ostatniego etapu obliczeń.
+
+
+Ze względu na duże zapotrzebowanie algorytmu na elementy obliczeniowe logiki reprogramowalnej, zdecydowano się ograniczyć rozmiar kolejek FIFO do $64$ elementów.
+
+Sprawdzono działanie aplikacji dla sygnału wizyjnego o rozdzielczości $1280 \times 720$ pikseli i częstotliwości sześćdziesięciu ramek na sekundę.
+
+Szacowane zapotrzebowanie wynikowego systemu na energię elektryczną nie powinno przekroczyć $1,936W$. Właściwa energia wymagana do przeprowadzania operacji obliczeniowych nie przekracza wartości $1,797W$, w tym $1,565W$ ( $87\%$) to energia wymagana do obsługi układu ARM.
+
+
+W tabeli \ref{tab;background-model-utilization} przedstawiono zapotrzebowanie na zasoby FPGA układu ZYBO.
+
+\begin{table}[h]
+	\caption{Wykorzystanie zasobów przez aplikację.}
+	\centering
+	\label{tab;background-model-utilization}
+	\begin{tabular}{|l|c|c|c|}
+		\hline
+		\textbf{Rodzaj zasobu} & \textbf{Użycie} & \textbf{Dostępne} & \textbf{Procent użycia}      \\ \hline
+		FF                     & $6938$            & $17600$             & $39,42\%$                 \\ \hline
+		LUT 6                  & $13670$            & $17600$             & $77,67\%$                 \\ \hline
+		SLICE                  & $4400$            & $4400$             & $100\%$                 \\ \hline
+		DSP 48                 & $15$               & $80$                & $18,75\%$                    \\ \hline
+		BRAM                   & $12$               & $60$                & $20\%$                   \\ \hline
+	\end{tabular}
+\end{table}
+
+Proporcjonalnie duże zużycie zasobów wynika z konieczności wykorzystania wielu modułów AXI VDMA oraz innych elementów wykorzystujących interfejs AXI. Może ono być ograniczone przez wykorzystanie jednego modułu do obsługi buforowania zarówno ramki obrazu, jak i modelu tła. W przypadku złożonych aplikacji, konieczne może okazać się użycie układu o większym zbiorze dostępnych zasobów obliczeniowych.
+
+Moduł przeznaczony jest do pracy z częstotliwością $200MHz$, co pozwala na analizę sygnału wideo o rozdzielczości $1920 \times 1080$ pikseli i częstotliwości obrazu $60Hz$.
+\section{Integracja z systemem PetaLinux}
+Na etapie prototypowania, elementy logiki reprogramowalnej kontrolowane były przez aplikację działającą w trybie bare-metal. bez wsparcia dla systemu operacyjnego.
+
+Po zakończeniu tego etapu, możliwe stało się zaprojektowanie aplikacji działającej pod kontrolą systemu PetaLinux, umożliwiającej wykorzystanie zaawansowanych funkcji systemu.
+
+Założono, że projektowana aplikacja powinna spełniać szereg wymagań:
+
+\begin{itemize}
+
+	\item Konfiguracja modułów AXI i algorytmu.
+	
+	Podstawowym zadaniem aplikacji powinno być przeprowadzenie wstępnej konfiguracji modułów, wykorzystując w tym celu interfejs AXI. Proces ten powinien mieć miejsce na etapie uruchamiania aplikacji. Aplikacja powinna być też odpowiedzialna za przeprowadzenie procesu konfiguracji parametrów wykonywanego algorytmu wizyjnego.
+	
+	Ponadto, działanie algorytmu nie powinno zostać przerwane w razie wyłączenia programu.
+	
+	\item Konfiguracja aplikacji przy użyciu argumentów wiersza poleceń.
+	
+	Konfiguracja parametrów działania aplikacji, w tym rozmiar przetwarzanych obrazów i parametry algorytmu powinny być konfigurowane przy użyciu argumentów wiersza poleceń.
+	
+	\item Monitorowanie działania algorytmu.
+	
+	Aplikacja powinna udostępniać opcję monitorowania stanu elementów algorytmu, ze szczególnym uwzględnieniem modułów AXI VDMA, odpowiedzialnych za buforowanie danych oraz komunikację z procesorem.
+	
+	\item Zapis wyników pracy algorytmu.
+	
+	Program powinien być odpowiedzialny za zapis wyników działania algorytmu, na przykład w formie obrazów przechowywanych w pamięci.
+	
+	\item Wykorzystanie komunikacji sieciowej.
+	
+	Uruchomienie aplikacji nie powinno wymagać fizycznego dostępu do układu Zynq. Docelowym narzędziem komunikacji jest protokół SSH. Ponadto, aplikacja powinna udostępniać interfejs wykorzystujący protokół HTTP, umożliwiający weryfikację stanu aplikacji przy użyciu przeglądarki internetowej.
+	
+	\item Kompatybilność z procedurami biblioteki OpenCV
+	
+	Aplikacja powinna zapewniać zgodność z technikami programowania wykorzystywanymi przeze bibliotekę OpenCV w stopniu umożliwiającym użycie algorytmów biblioteki ze strukturami danych wykorzystywanymi przez program.
+\end{itemize}
+
+Zaprojektowano aplikację w języku C, spełniającą przedstawione wymagania.
+Program odpowiedzialny jest za konfigurację elementów logiki reprogramowalnej na podstawie wartości przekazanych przy użyciu argumentów wiersza poleceń. Aplikacja jest odpowiedzialna za monitorowanie działania algorytmu i zapis informacji logu do pliku. Ponadto, umożliwia cykliczny zapis obrazów będących wynikiem działania algorytmu do plików graficznych. 
+
+Proces obsługi aplikacji opiera się na wykorzystaniu protokołu SSH, program udostępnia również interfejs HTTP, umożliwiający uzyskanie aktualnych wyników działania algorytmu.
+
+Zbadano możliwość wykorzystania aplikacji w roli elementu obliczeniowego, odpowiedzialnego za przeprowadzenie części obliczeń algorytmicznych. Zaproponowano moduł indeksacji obiektów na bazie generowanego modelu tła. W tym celu wykorzystano procedurę \texttt{cv::connectedComponents} dostępną w bibliotece OpenCV. 
+
+Ze względu na ograniczenia sprzętowe, moduł indeksacji nie był w stanie spełnić wymagań pracy w czasie rzeczywistym dla sygnału wizyjnego o częstotliwości $60Hz$ i rozdzielczości $1280 \times 720 $ pikseli, a jego wydajność nie przekraczała piętnastu ramek na sekundę.
+
+\section*{Podsumowanie}
+Zaproponowane rozwiązania projektowe pozwalają na wykorzystanie części funkcji systemu operacyjnego, które badane były w ramach pracy. Szczególnie istotnym zagadnieniem jest komunikacja pomiędzy elementami zaprojektowanymi w dwóch architekturach. Dzięki możliwości transmisji danych, możliwe jest zaprojektowanie algorytmów podzielonych na moduły wykonywane naprzemiennie przez obie części układu, wykorzystując atuty obu architektur do możliwie maksymalnego zwiększenia wydajności pełnego algorytmu.
+
+Ponadto, wykorzystanie systemu operacyjnego pozwala na realizację zadań zwykle niemożliwych w przypadku projektu aplikacji realizowanych wyłącznie przy użyciu elementów logiki reprogramowalnej lub sterowanych przez aplikację bare-metal. Program działający pod kontrolą systemu operacyjnego umożliwia prowadzenie zadań konfiguracji, kontroli i monitorowania działania aplikacji z wykorzystaniem komunikacji sieciowej.
+
+Wykorzystanie systemu operacyjnego pozwala również na implementację aplikacji w dowolnym języku programowania. Dzięki temu, stosując dedykowane rozwiązania programistyczne, projektowanie aplikacji o rozbudowanych możliwościach zajmuje mniej czasu.
+
+W trakcie realizacji projektu napotkano szereg ograniczeń architektonicznych.
+\begin{itemize}
+	\item Liczba elementów obliczeniowych układu ZYBO nie pozwala na realizację rozbudowanych rozwiązań algorytmicznych przy użyciu zaproponowanych technik. Ze względu na duże zapotrzebowanie na elementy logiki przez moduły AXI VDMA, buforowanie pełnych ramek obrazu jest kosztowe. W przypadku bardziej rozbudowanych algorytmów, konieczne może być wykorzystanie układu o większych możliwościach lub zastosowanie technik optymalizacji zużycia zasobów.
+	
+	\item Procesor ARM dostępny w układzie Zynq nie pozwala na realizację algorytmów wizyjnych o dużej złożoności obliczeniowej w  czasie rzeczywistym. Próba wykorzystania rozwiązań biblioteki OpenCV do indeksacji obiektów pierwszoplanowych nie spełniała ograniczeń czasowych dla sygnału o częstotliwości $60Hz$.
+	
+	W przypadku bardziej złożonych algorytmów, konieczne może być wykorzystanie układu o większej wydajności. Innym rozwiązaniem może być użycie protokołów sieciowych do transmisji danych do elementu obliczeniowego oferującego wydajność wystarczającą do realizacji zadań obliczeniowych. Dla zbioru algorytmów, których realizacja strumieniowa jest znana, możliwe jest również przeniesienie zadań obliczeniowych do elementów logiki reprogramowalnej. W przypadku, gdy żadne z zaproponowanych rozwiązań nie jest możliwe, konieczne jest ograniczenie częstotliwości działania algorytmu do poziomu, dla którego układ obliczeniowy będzie spełniać ograniczenia czasowe.
+	
+	\item Proces budowy systemu operacyjnego na bazie projektu sprzętowego jest złożony i wymaga dużych nakładów czasowych. Z tego powodu, na etapie projektowania połączeń logiki reprogramowalnej, wykorzystanie aplikacji typu bare-metal pozwala skrócić okres prototypowania.
+	
+	W konsekwencji, konieczne może być zaprojektowanie dwóch aplikacji związanych z projektem: aplikacji bare-metal, wykorzystywanej na etapie prototypu, oraz programu działającego pod obsługą systemu operacyjnego, projektowanego po ukończeniu implementacji sprzętowej.
+	
+	Z tego powodu, aplikacje systemu operacyjnego nie pozwalają w pełni zastąpić programów bare-metal i powinny być traktowane jako metoda rozbudowy możliwości projektu.
+\end{itemize}

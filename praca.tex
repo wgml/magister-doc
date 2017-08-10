@@ -64,6 +64,10 @@ backend=bibtex
 
 \usepackage[hidelinks]{hyperref}
 
+\newenvironment{conditions}
+{\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}-{}$} l}}
+	{\end{tabular}\par\vspace{\belowdisplayskip}}
+
 \lstloadlanguages{TeX}
 
 \lstset{
