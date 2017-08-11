@@ -3,28 +3,28 @@
 
 Przetwarzanie obrazów i ich sekwencji stanowi pole rozległych badań. W ich ramach, projektowane są algorytmy umożliwiające akwizycję, modyfikowanie, analizę i prezentację obrazów. Często motywacją badań jest próba naśladowania zjawisk związanych z narządem wzroku człowieka i dążenie do uzyskania takiego opisu zjawisk, aby umożliwić wykonanie zbliżonego do nich algorytmu przy użyciu układów elektronicznych. Odmiennym zagadnieniem jest poszukiwanie możliwości przetwarzania obrazów w taki sposób, aby uzyskać informacje niewidoczne dla ludzkiego oka.
 
-Techniki przetwarzania obrazów opierają się zwykle na analizie i redukcji informacji związanej z sekwencją pikseli w taki sposób, aby uzyskać obraz wynikowy na którym uwypuklone będą kluczowe z punktu widzenia algorytmu własności. Wynikiem działania procedury może być również zbiór cech, opisujących badane zjawiska.
+Techniki przetwarzania obrazów opierają się zwykle na analizie i redukcji informacji związanej z sekwencją pikseli w taki sposób, aby uzyskać obraz wynikowy, na którym uwypuklone będą kluczowe z punktu widzenia algorytmu własności. Wynikiem działania procedury może być również zbiór cech opisujących badane zjawiska.
 
 Techniki przetwarzania obrazów, a zwłaszcza ich sekwencji znajdują zastosowanie w coraz większej liczbie przypadków.
 
 Jedną z dziedzin wykorzystujących techniki wizyjne, która ulega prężnemu rozwojowi w ostatnich latach jest budowa systemów ADAS (\emph{ang.} Advanced driver-assistance systems). Celem projektowania zaawansowanych systemów wsparcia kierowcy jest stopniowe zwiększanie autonomii pojazdów i ograniczenie zaangażowania kierowcy. Wśród wielu czujników wymaganych do poprawnego działania takich systemów znaleźć można czujniki wizyjne, których sygnały są następnie przetwarzane w celu uzyskania informacji na temat jezdni, innych uczestników ruchu, oznakowania czy potencjalnych zagrożeń. Opracowanie współcześnie stosowanych technik znaleźć można w pracach \cite{Bengler2014,Velez2017}.
 
-Inny zbiór technik wykorzystywany jest w celu rozpoznawania twarzy oraz emocji. Zagadnienie to wykorzystywane jest w ramach projektowania nie tylko systemów przemysłowych, ale jest również powszechnie stosowane w oprogramowaniu współcześnie dostępnych aparatów cyfrowych czy w ramach serwisów społecznościowych. Analizę wykorzystywanych w tym celu algorytmów znaleźć można w pracy \cite{Anil2016}.
+Inny zbiór technik wykorzystywany jest w celu rozpoznawania twarzy oraz emocji. Zagadnienie to znajduje zastosowanie w ramach projektowania nie tylko systemów przemysłowych, ale jest również powszechnie stosowane w oprogramowaniu współcześnie dostępnych aparatów cyfrowych czy w ramach serwisów społecznościowych. Analizę wykorzystywanych w tym celu algorytmów znaleźć można w pracy \cite{Anil2016}.
 
-Współcześnie, coraz większe znaczenie mają również systemy śledzenia przechodniów i analizy ich działań w celu wykrycia zachowań niepożądanych. W celu poprawy bezpieczeństwa, badane są takie zagadnienia jak detekcja porzuconych bagaży, obecność osób nieuprawnionych w ustalonych strefach czy śledzenie ruchu przy użyciu wielu kamer. Systemy te mogą działać niezależnie lub stanowić jeden z elementów zintegrowanego oprogramowania, wykorzystującego dane z wielu źródeł. \cite{Sriram2016,Hussain2016,Gouo2015}
+Współcześnie, coraz większe znaczenie mają również systemy śledzenia przechodniów i analizy ich działań w celu wykrycia zachowań niepożądanych. Motywując to zwiększeniem bezpieczeństwa, badane są takie zagadnienia jak detekcja porzuconych bagaży, obecność osób nieuprawnionych w ustalonych strefach czy śledzenie ruchu przy użyciu wielu kamer. Systemy te mogą działać niezależnie lub stanowić jeden z elementów zintegrowanego oprogramowania, wykorzystującego dane z wielu źródeł. \cite{Sriram2016,Hussain2016,Gouo2015}
 
 Równolegle do rozwoju algorytmów wizyjnych, badane są możliwości wykorzystania ich w rzeczywistych systemach, uruchamianych na układach elektronicznych różnego typu. Algorytmy wizyjne projektowane są z myślą o uruchamianiu na powszechnie stosowanych układach procesorowych w architekturach x86 lub ARM, mikrokontrolerach, układach ASIC i FPGA.
 
-Pośród wymienionych platform wyróżnić można układy rodziny Zynq \cite{zybo-reference-manual}, integrujące możliwości układów FPGA oraz procesorów ARM. Dzięki zastosowaniu układu programowalnego, możliwe jest projektowanie algorytmów wizyjnych wykonywanych w sposób strumieniowy, zapewniając wysoką wydajność przy stosunkowo niskim zapotrzebowaniu na energię. Uzupełnieniem takiego układu jest procesor ARM, umożliwiający wykorzystanie algorytmów, które wymagają swobodnego dostępu do kontekstu obliczeniowego.
+Pośród wymienionych platform wyróżnić można rodzinę Zynq \cite{zybo-reference-manual}, integrującą możliwości układów FPGA oraz procesorów ARM. Dzięki zastosowaniu układu programowalnego, możliwe jest projektowanie algorytmów wizyjnych wykonywanych w sposób strumieniowy, zapewniając wysoką wydajność przy stosunkowo niskim zapotrzebowaniu na energię. Uzupełnieniem takiego układu jest procesor ARM, umożliwiający wykorzystanie algorytmów, które wymagają swobodnego dostępu do kontekstu obliczeniowego.
 
 Układy Zynq pozwalają wykorzystać zalety algorytmów projektowanych z myślą o implementacji przy użyciu języków HDL (\emph{ang.} Hardware Description Language) oraz powszechnie stosowanych języków proceduralnych. Układ ten pozwala na uruchomienie systemu operacyjnego, ze szczególnym uwzględnieniem systemu PetaLinux \cite{petalinux-tools}, dzięki czemu możliwy jest dostęp do szerokiego zbioru narzędzi związanych z powszechnie stosowanymi systemami operacyjnymi.
 
 \section{Cel pracy}
 Celem pracy jest uruchomienie oraz konfiguracja systemu PetaLinux na platformie Zynq, ze szczególnym uwzględnieniem funkcjonalności, które mogą zostać wykorzystane we wbudowanych systemach wizyjnych. 
 
-Przeprowadzić należy analizę architektury układu oraz dostępnych systemów operacyjnych i systemów czasu rzeczywistego. Następnie, opracować należy zagadnienia teoretyczne i praktyczne, związane z funkcjonalnościami systemu, które mogą znaleźć zastosowanie we wbudowanych systemach wizyjnych.
+Przeprowadzić należy analizę architektury układu oraz dostępnych systemów operacyjnych i systemów czasu rzeczywistego. Następnie, opracować należy zagadnienia teoretyczne i praktyczne związane z funkcjonalnościami systemu, które mogą znaleźć zastosowanie we wbudowanych systemach wizyjnych.
 
-Działanie komponentów powinno zostać zaprezentowane na przykładzie kompletnego systemu wizyjnego.
+Działanie komponentów powinno zostać zaprezentowane na przykładzie wybranego systemu wizyjnego.
 
 \section{Zawartość pracy}
 

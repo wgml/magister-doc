@@ -7,19 +7,19 @@ W ramach pracy przeprowadzono analizę funkcjonalności układów rodziny Zynq d
 \label{sec:ssh}
 Po połączeniu układu z komputerem przez interfejs USB, możliwe jest otworzenie konsoli komunikacji przy użyciu protokołu transmisji szeregowej. Komunikacja odbywa się z prędkością 115200 bodów, ośmioma bitami danych, jednym bitem stopu i bez bitu parzystości.
 
-Komunikacja przy użyciu transmisji szeregowej jest jednak ograniczona do sytuacji, w których możliwy jest bezpośredni dostęp do układu. Ponadto, nie zapewnia wysokiej przepustowości transmisji czy możliwości przesyłu plików. Z tych powodów, korzystne staje się wykorzystanie protokołu \emph{SSH} do nawiązania komunikacji sieciowej.
+Komunikacja przy użyciu transmisji szeregowej jest jednak ograniczona do sytuacji, w których możliwy jest bezpośredni dostęp do układu. Ponadto, nie zapewnia wysokiej przepustowości transmisji czy możliwości przesyłu plików. Z tych powodów, korzystne staje się wykorzystanie protokołu SSH do nawiązania komunikacji sieciowej.
 Omawiany protokół wspierany jest przez zdecydowaną większość dystrybucji systemu Linux i nie wymaga dodatkowej konfiguracji na etapie budowania systemu. Połączenie odbywa się przy użyciu poniższego polecenia.
 
 \begin{lstlisting}[breaklines=true]
 ssh root@(*@\textit{}adres-ip-urządzenia}@*)
 \end{lstlisting}
 
-Domyślne hasło administratora w przypadku dystrybucji \emph{PetaLinux} to \texttt{root}. Może być ono zmienione na etapie konfiguracji systemu.
+Domyślne hasło administratora w przypadku dystrybucji PetaLinux to \texttt{root}. Może być ono zmienione na etapie konfiguracji systemu.
 
 
 \begin{lstlisting}[breaklines=true]
 petalinux-config -c rootfs
-Petalinux RootFS Settings ---> Root password
+Petalinux RootFS Settings -> Root password
 \end{lstlisting}
 
 Aby uprościć proces logowania, wykorzystać można mechanizm wymiany kluczy, zapewniany przez protokół.
@@ -31,18 +31,18 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub root@(*@\textit{adres-ip-urządzenia}@*)
 Umożliwia to logowanie bez konieczności podania hasła użytkownika. Skonfigurowany w opisany sposób, protokół daje dostęp do pełnego zbioru narzędzi, w tym zdalnej obsługi konsoli użytkownika, przesyłania plików, tunelowania portów czy zdalnego montowania systemów plików.
 \section{FPU i technologia NEON}
 \label{sec:arm-neon}
-Układ \emph{ZYBO} wyposażony jest w koprocesor arytmetyczny oraz wspiera polecenia wykorzystujące technologię NEON. \cite{neon-home} Elementy te pozwalają na zwiększenie wydajności projektowanych aplikacji w przypadku, gdy wykonywane operacje wymagają przeprowadzania obliczeń na liczbach zmiennoprzecinkowych lub działań wektorowych.
+Układ ZYBO wyposażony jest w koprocesor arytmetyczny oraz wspiera polecenia wykorzystujące technologię NEON. \cite{neon-home} Elementy te pozwalają na zwiększenie wydajności projektowanych aplikacji w przypadku, gdy wykonywane operacje wymagają przeprowadzania obliczeń na liczbach zmiennoprzecinkowych lub działań wektorowych.
 
-Koprocesor arytmetyczny, FPU (ang. \emph{floating-point unit}), to układ działający we współpracy z jednostką procesora, dedykowany do wykonywania obliczeń na liczbach zmiennoprzecinkowych. Wykorzystanie dedykowanego układu pozwala na zwiększenie szybkości wykonywania operacji arytmetycznych, pierwiastkowania i przesunięć bitowych. W przypadku braku dedykowanego układu FPU, konieczne jest symulowanie jego działania przez wykonywanie większej liczby operacji na liczbach całkowitych, co wiąże się ze spadkiem wydajności.
+Koprocesor arytmetyczny, FPU (\emph{ang.} Floating-point unit), to układ działający we współpracy z jednostką procesora, dedykowany do wykonywania obliczeń na liczbach zmiennoprzecinkowych. Wykorzystanie dedykowanego układu pozwala na zwiększenie szybkości wykonywania operacji arytmetycznych, pierwiastkowania i przesunięć bitowych. W przypadku braku dedykowanego układu FPU, konieczne jest symulowanie jego działania przez wykonywanie większej liczby operacji na liczbach całkowitych, co wiąże się ze spadkiem wydajności.
 
 Technologia NEON pozwala na rozszerzenie puli rozkazów procesora ARM o polecenia wykorzystujące architekturę SIMD zdefiniowaną przez taksonomię Flynna.\cite{Flynn1972}
 
-SIMD (ang. \emph{Single Instruction streams, Multiple Data streams}) to klasa systemów, które pozwalają na przetwarzanie wielu strumieni danych na podstawie jednego strumienia instrukcji. Zastosowania tej architektury obejmują zagadnienia, w których dla wielu wartości wejściowych konieczne jest wykonanie tej samej operacji. Cechę tę posiada wiele operacji związanych z przetwarzaniem sygnałów i obrazów, w tym  wyznaczanie wartości szybkiej transformaty Fouriera, implementacje filtrów FIR i IIR czy operacje skalowania, rotacji i filtracji uśredniającej obrazu.
+SIMD (\emph{ang.} Single Instruction stream, Multiple Data streams) to klasa systemów, które pozwalają na przetwarzanie wielu strumieni danych na podstawie jednego strumienia instrukcji. Zastosowania tej architektury obejmują zagadnienia, w których dla wielu wartości wejściowych konieczne jest wykonanie tej samej operacji. Cechę tę posiada wiele operacji związanych z przetwarzaniem sygnałów i obrazów, w tym  wyznaczanie wartości szybkiej transformaty Fouriera, implementacje filtrów FIR i IIR czy operacje skalowania, rotacji i filtracji uśredniającej obrazu.
 
 Rozpatrzono możliwość wykorzystania architektury NEON w zagadnieniach przetwarzania sygnałów. Działanie testowano na podstawie programu wyznaczającego wartość iloczynu skalarnego dwóch wektorów zadanej długości. Porównano trzy implementacje algorytmu, którego kod źródłowy zawarto w dodatku \ref{cha:neon-source}.
 Wykorzystano implementację bazową oraz z wykorzystaniem poleceń dostępnych w architekturze NEON i porównano wyniki z implementacją zaprojektowaną w asemblerze.
 
-Implementacja w architekturze NEON wykorzystuje dedykowane funkcje, udostępnione w bibliotece \texttt{arm\_neon.h}, które mają na celu maksymalne zwiększenie wydajności aplikacji. W przypadku pozostałych implementacji, wykorzystywane są polecenia wykonywane na koprocesorze VFP (ang. \emph{Vector Floating-Point}). VFP pozwala na wykonanie tej jednej instrukcji dla wektora danych wejściowych. Układ ten nie należy do rodziny SIMD i wykonuje instrukcje sekwencyjnie, w przeciwieństwie do architektury NEON.
+Implementacja w architekturze NEON wykorzystuje dedykowane funkcje, udostępnione w bibliotece \texttt{arm\_neon.h}, które mają na celu maksymalne zwiększenie wydajności aplikacji. W przypadku pozostałych implementacji, wykorzystywane są polecenia wykonywane na koprocesorze VFP (\emph{ang.} Vector Floating-Point). VFP pozwala na wykonanie jednej instrukcji dla wektora danych wejściowych. Układ ten nie należy do rodziny SIMD i wykonuje instrukcje sekwencyjnie, w przeciwieństwie do architektury NEON.
 
 
 Wyniki testów wydajności zebrano w tabeli \ref{tab:neon-time-results}.
@@ -79,13 +79,13 @@ Wyniki pozwalają wnioskować o słuszności wykorzystania instrukcji udostępni
 
 \section{Protokół AXI}
 \label{sec:axi-std}
-Protokół AXI (ang. \emph{Advanced eXtensible Interface}) zdefiniowany został w specyfikacji AMBA (ang. \emph{Advanced Microcontroller Bus Architecture}) 3. W kolejnej wersji dokumentu sprecyzowano standard w najnowszej wersji - AXI4. \cite{axi-spec} Protokół wykorzystywany jest do komunikacji pomiędzy elementami układu lub modułami zbudowanymi wewnątrz logiki reprogramowalnej i jest dedykowany systemom o dużej wydajności i pracującym z wysoką częstotliwością.
+Protokół AXI (\emph{ang.} Advanced eXtensible Interface) zdefiniowany został w specyfikacji AMBA (\emph{ang.} Advanced Microcontroller Bus Architecture) 3. W kolejnej wersji dokumentu sprecyzowano standard w najnowszej wersji - AXI4. \cite{axi-spec} Protokół wykorzystywany jest do komunikacji pomiędzy elementami układu lub modułami zbudowanymi wewnątrz logiki reprogramowalnej i jest dedykowany systemom o dużej wydajności i pracującym z wysoką częstotliwością.
 
 Specyfikacja definiuje trzy typy interfejsu:
 \begin{itemize}
-	\item AXI4 - wykorzystujące technikę MMIO (ang. \emph{Memory-Mapped Input/Output}) do odwzorowania rejestrów w przestrzeni adresowej pamięci RAM i dedykowanej aplikacjom wymagającym dużej wydajności komunikacji.
-	\item AXI4-Lite - uproszczona wersja protokołu, wykorzystująca MMIO i dedykowana aplikacjom o mniej rozbudowanych wymaganiach komunikacyjnych.
-	\item AXI4-Stream - wersja przepływowa protokołu, nie wykorzystująca technik MMIO.
+	\item AXI4 -- wykorzystujące technikę MMIO (\emph{ang.} Memory-Mapped Input/Output) do odwzorowania rejestrów w przestrzeni adresowej pamięci RAM i dedykowanej aplikacjom wymagającym dużej wydajności komunikacji.
+	\item AXI4-Lite -- uproszczona wersja protokołu, wykorzystująca MMIO i dedykowana aplikacjom o mniej rozbudowanych wymaganiach komunikacyjnych.
+	\item AXI4-Stream -- wersja przepływowa protokołu, nie wykorzystująca technik MMIO.
 \end{itemize}
 
 Interfejsy wykorzystujące technikę MMIO stosowane są powszechnie w zadaniach konfiguracji modułów aplikacji czy przesyłania informacji, takich jak ramka sygnału wizyjnego do pamięci procesora. Dzięki reprezentacji elementów logiki reprogramowalnej w pamięci, możliwa jest jednolita analiza działania całego systemu.
@@ -96,7 +96,7 @@ Możliwe jest również połączenie obu typów interfejsu wewnątrz jednego ele
 
 \subsection{Przebieg transakcji}
 
-Transakcja komunikacyjna odbywa się pomiędzy dwoma urządzeniami - \emph{master} i \emph{slave}, jednak dzięki zastosowaniu elementów \emph{AXI-Interconnect} możliwe jest połączenie wielu urządzeń, co przedstawiono na schemacie \ref{fig:axi-interconnect}.
+Transakcja komunikacyjna odbywa się pomiędzy dwoma urządzeniami -- \emph{master} i \emph{slave}, jednak dzięki zastosowaniu elementów AXI-Interconnect możliwe jest połączenie wielu urządzeń, co przedstawiono na schemacie \ref{fig:axi-interconnect}.
 
 \begin{figure}[h]
 	\centering
@@ -138,9 +138,9 @@ Protokół pozwala ponadto na przesłanie do 256 wartości danych w trakcie jedn
 Przepływ danych w interfejsie AXI4-Stream odbywa się wyłącznie w jednym kierunku i nie jest możliwy odczyt danych przesłanych wcześniej przez urządzenie \emph{master} do \emph{slave}. Procedura ta jest podobna do transakcji zapisu, jest jednak rozszerzona o możliwość dzielenia operacji na kilka mniejszych i łączenia wielu transakcji w jedną.
 
 \subsection{AXI DMA}
-DMA (ang. \emph{Direct Memory Access}) to technika często stosowana w przypadku konieczności wykonywania operacji na pamięci RAM urządzenia z dużą częstotliwością. Wykorzystanie kontrolera DMA pozwala przeprowadzać operacje odczytu i zapisu do pamięci operacyjnej bez konieczności użycia głównej jednostki procesora. Dzięki temu, procesor odpowiada wyłącznie za skonfigurowanie kontrolera DMA i może wykonywać inne operacje w trakcie transmisji danych. Ponadto, stosowanie kontrolera DMA pozwala zwykle na uzyskanie wyższej przepustowości komunikacji z pamięcią i zmniejszenie zużycia energii. Kontroler DMA może również przeprowadzać podstawowe operacje konwersji sygnałów, na przykład, w przypadku sygnału wizyjnego, konwersję sygnałów synchronizacji obrazu. 
+DMA (\emph{ang.} Direct Memory Access) to technika często stosowana w przypadku konieczności wykonywania operacji na pamięci RAM urządzenia z dużą częstotliwością. Wykorzystanie kontrolera DMA pozwala przeprowadzać operacje odczytu i zapisu do pamięci operacyjnej bez konieczności użycia głównej jednostki procesora. Dzięki temu, procesor odpowiada wyłącznie za skonfigurowanie kontrolera DMA i może wykonywać inne operacje w trakcie transmisji danych. Ponadto, stosowanie kontrolera DMA pozwala zwykle na uzyskanie wyższej przepustowości komunikacji z pamięcią i zmniejszenie zużycia energii. Kontroler DMA może również przeprowadzać podstawowe operacje konwersji sygnałów, na przykład, w przypadku sygnału wizyjnego, konwersję sygnałów synchronizacji obrazu. 
 
-DMA pozwala na przesłanie wielu wartości danych w ramach jednej transakcji w trybie \emph{burst}. \emph{Master} przesyła wyłącznie adres pierwszego bajta danych, a kolejne adresy wyznaczane są w trakcie operacji przez urządzenie \emph{slave}. Wyznaczany adres może być inkrementowany, w przypadku, gdy operacja wykonywana jest w pamięci, bądź mieć stałą wartość, co ma miejsce w przypadku zapisu lub odczytu z kolejki FIFO (\emph{First In, First Out}). Interfejs pozwala również na ograniczenie dostępnej przestrzeni adresowej, w efekcie czego wartość adresu po przekroczeniu górnej granicy zakresu przyjmuje ponownie najniższą dopuszczalną wartość. Własność ta może być wykorzystana do projektowania linii buforujących.
+DMA pozwala na przesłanie wielu wartości danych w ramach jednej transakcji w trybie \emph{burst}. \emph{Master} przesyła wyłącznie adres pierwszego bajta danych, a kolejne adresy wyznaczane są w trakcie operacji przez urządzenie \emph{slave}. Wyznaczany adres może być zwiększany, w przypadku, gdy operacja wykonywana jest w pamięci, bądź mieć stałą wartość, co ma miejsce w przypadku zapisu lub odczytu z kolejki FIFO (\emph{ang.} First In, First Out). Interfejs pozwala również na ograniczenie dostępnej przestrzeni adresowej, w efekcie czego wartość adresu po przekroczeniu górnej granicy zakresu przyjmuje ponownie najniższą dopuszczalną wartość. Własność ta może być wykorzystana do projektowania linii buforujących.
 
 Protokół AXI DMA wykorzystuje kolejność bitów, w której najmniej znaczący bajt umieszczony jest jako pierwszy.
 
@@ -157,7 +157,7 @@ Mechanizm DMA zbadano na przykładzie projektu modułu umożliwiającego modyfik
 
 Proces projektowania oraz komunikacji z modułem przedstawiono w sekcji \ref{sec:vivado-axi-dma}.
 
-Moduł wyposażony jest w interfejs AXI, podpisany \texttt{ctl} oraz związane z nim sygnały, zegarowy - \texttt{ctl\_aclk} oraz reset - \texttt{ctl\_aresetn}. Sygnały wyjściowe pozwalają na odczyt zdefiniowanych parametrów z poziomu innych modułów logiki reprogramowalnej. Dzięki wydzieleniu modułu odpowiedzialnego za konfigurację algorytmu z części wykonującej obliczenia algorytmiczne, możliwe jest uproszczenie kodu języka opisu sprzętu związanego z każdym z modułów oraz zwiększenie czytelności schematu. Jeden moduł konfiguracyjny może być związany z kilkoma, działającymi niezależnie, modułami algorytmicznymi. Ponadto, zmiany w strukturze algorytmu są uproszczone.
+Moduł wyposażony jest w interfejs AXI, podpisany \texttt{ctl} oraz związane z nim sygnały, zegarowy -- \texttt{ctl\_aclk} oraz reset -- \texttt{ctl\_aresetn}. Sygnały wyjściowe pozwalają na odczyt zdefiniowanych parametrów z poziomu innych modułów logiki reprogramowalnej. Dzięki wydzieleniu modułu odpowiedzialnego za konfigurację algorytmu z części wykonującej obliczenia algorytmiczne, możliwe jest uproszczenie kodu języka opisu sprzętu związanego z każdym z modułów oraz zwiększenie czytelności schematu. Jeden moduł konfiguracyjny może być związany z kilkoma, działającymi niezależnie, modułami algorytmicznymi. Ponadto, zmiany w strukturze algorytmu są uproszczone.
 
 
 \subsection{AXI Video DMA}
@@ -182,41 +182,41 @@ Ze względu na wykorzystanie w układzie ZYBO procesora ARM o dwóch rdzeniach, 
 
 Stosując prawo Amdahla, wykazać można, że maksymalne przyspieszenie, jakie można uzyskać w systemie wieloprocesorowym jest proporcjonalne do liczby elementów obliczeniowych. Zależność ta zachodzi po warunkiem, że całe zadanie może być realizowane w sposób równoległy. W przypadku omawianego procesora, spodziewać się można korzyści nie przekraczających dwukrotnego zwiększenia szybkości wykonania algorytmu.
 
-Zagadnienia związane z obliczeniami równoległymi stanowią obszar aktualnych badań, których efekty pozwoliły na zaprojektowanie zbioru bibliotek ułatwiających wykorzystanie własności systemów wieloprocesorowych w praktyce. W ramach pracy rozważono możliwości wykorzystania wątków natywnych oraz bibliotek \emph{Intel Threading Building Blocks} i \emph{OpenMP} do budowy aplikacji wielowątkowych.
+Zagadnienia związane z obliczeniami równoległymi stanowią obszar aktualnych badań, których efekty pozwoliły na zaprojektowanie zbioru bibliotek ułatwiających wykorzystanie własności systemów wieloprocesorowych w praktyce. W ramach pracy rozważono możliwości wykorzystania wątków natywnych oraz bibliotek Intel TBB(\emph{ang.} Threading Building Blocks) i OpenMP do budowy aplikacji wielowątkowych.
 
 \subsection{Wątki natywne}
 
-Użycie wątków natywnych wymaga wykorzystania bibliotek systemowych - w przypadku aplikacji w języku C++ działającej w systemie PetaLinux zastosować można biblioteki \texttt{<thread>} lub \texttt{<pthread.h>} wchodzące w skład bibliotek standardowych. \cite{Williams2013}
+Użycie wątków natywnych wymaga wykorzystania bibliotek systemowych -- w przypadku aplikacji w języku C++ działającej w systemie PetaLinux zastosować można biblioteki \texttt{<thread>} lub \texttt{<pthread.h>} wchodzące w skład bibliotek standardowych. \cite{Williams2013}
  
 Wykorzystanie ich pozwala na możliwie najbardziej efektywne użycie zasobów maszyny obliczeniowej. Wymaga to jednak dużych umiejętności programisty oraz dobrej znajomości architektury docelowej oraz wykonywanego zadania. Ponadto, zastosowanie biblioteki \texttt{<pthread.h>} wymaga zgodności systemu docelowego ze standardem POSIX, natomiast w przypadku \texttt{<thread>}, konieczne jest przeprowadzenie procesu kompilacji kompilatorem zgodnym ze standardem C++11. Założenia te mogą okazać się problematyczne w przypadku konieczności migracji aplikacji na system nie spełniający opisanych wymagań.
 
-Stosowanie wątków natywnych pozwala na budowę wielowątkowych aplikacji działających heterogenicznie. Jest to najprostszy sposób na zbudowanie programu, w którym kilka wątków odpowiada za kilka różnych zadań. Na przykład, jeden wątek może być odpowiedzialny za przeprowadzenie obliczeń algorytmicznych, drugi za obsługę interfejsu użytkownika i przygotowanie danych wejściowych do właściwych obliczeń algorytmicznych, a kolejny - za niekrytyczne operacje po zakończeniu pracy algorytmu, takie jak przesłanie wyników do bazy danych.
+Stosowanie wątków natywnych pozwala na budowę wielowątkowych aplikacji działających heterogenicznie. Jest to najprostszy sposób na zbudowanie programu, w którym kilka wątków odpowiada za kilka różnych zadań. Na przykład, jeden wątek może być odpowiedzialny za przeprowadzenie obliczeń algorytmicznych, drugi za obsługę interfejsu użytkownika i przygotowanie danych wejściowych do właściwych obliczeń algorytmicznych, a kolejny -- za niekrytyczne operacje po zakończeniu pracy algorytmu, takie jak przesłanie wyników do bazy danych.
 
-\subsection{Biblioteka \emph{Intel Threading Building Blocks}}
+\subsection{Biblioteka Intel Threading Building Blocks}
 
-Biblioteka \emph{Intel Threading Building Blocks} stanowi zbiór narzędzi rozszerzających standard języka C++ o elementy związane z obliczeniami równoległymi. Składają się na to implementacje algorytmów równoległych, struktury danych przeznaczone do wykorzystania w systemach wielowątkowych oraz implementacje operacji atomowych i algorytmów wzajemnego wykluczania. \cite{Reinders2010}
+Biblioteka Intel Threading Building Blocks stanowi zbiór narzędzi rozszerzających standard języka C++ o elementy związane z obliczeniami równoległymi. Składają się na to implementacje algorytmów równoległych, struktury danych przeznaczone do wykorzystania w systemach wielowątkowych oraz implementacje operacji atomowych i algorytmów wzajemnego wykluczania. \cite{Reinders2010}
 
-Wykorzystanie biblioteki opiera się na zastosowaniu jej elementów na etapie powstawania aplikacji. Z tego względu, podobnie jak w przypadku wątków natywnych, konieczne jest zaprojektowanie aplikacji w sposób możliwie najlepiej wykorzystujący zalety biblioteki. Refaktoryzacja kodu istniejącego programu w taki sposób, by wykorzystać TBB może być utrudniona i ostatecznie nie pozwolić na uzyskanie zadowalających wyników.
+Wykorzystanie biblioteki opiera się na zastosowaniu jej elementów na etapie powstawania aplikacji. Z tego względu, podobnie jak w przypadku wątków natywnych, konieczne jest zaprojektowanie aplikacji w sposób możliwie najlepiej wykorzystujący zalety biblioteki. Refaktoryzacja kodu istniejącego programu w taki sposób, by wykorzystać \emph{TBB} może być utrudniona i ostatecznie nie pozwolić na uzyskanie zadowalających wyników.
 
-Główną zaletą stosowania TBB jest większa skalowalność wynikowych rozwiązań. W przypadku zastosowania wątków natywnych, konieczne jest zaprojektowanie aplikacji w sposób umożliwiający wykorzystanie innej liczby wątków, gdy będzie to konieczne. W przypadku zastosowania dodatkowej biblioteki, stanowi ona warstwę abstrakcji pomiędzy programistą a warstwą obliczeniową, dzięki czemu proces możliwie najlepszej integracji aplikacji z platformą docelową odbywać się może przy niewielkiej interakcji ze strony projektanta.
-Biblioteka TBB zgodna jest z ideą programowania generycznego, paradygmatu powszechnie stosowanego w aplikacjach projektowanych w języku C++. Stosowanie jej stanowi naturalne rozszerzenie możliwości tego języka i nie wymaga szerokiej wiedzy na temat architektury systemu docelowego.
+Główną zaletą stosowania \emph{TBB} jest większa skalowalność wynikowych rozwiązań. W przypadku zastosowania wątków natywnych, konieczne jest zaprojektowanie aplikacji w sposób umożliwiający wykorzystanie innej liczby wątków, gdy będzie to konieczne. W przypadku zastosowania dodatkowej biblioteki, stanowi ona warstwę abstrakcji pomiędzy programistą a warstwą obliczeniową, dzięki czemu proces możliwie najlepszej integracji aplikacji z platformą docelową odbywać się może przy niewielkiej interakcji ze strony projektanta.
+Biblioteka \emph{TBB} zgodna jest z ideą programowania generycznego, paradygmatu powszechnie stosowanego w aplikacjach projektowanych w języku C++. Stosowanie jej stanowi naturalne rozszerzenie możliwości tego języka i nie wymaga szerokiej wiedzy na temat architektury systemu docelowego.
 
-\subsection{Biblioteka \emph{OpenMP}}
-Biblioteka \emph{OpenMP} to interfejs programowania aplikacji pozwalający na tworzenie wieloplatformowych programów wykonywanych równolegle. Rozwiązanie to jest dedykowane aplikacjom powstającym w językach C i C++.\cite{openmp-guide}
+\subsection{Biblioteka OpenMP}
+Biblioteka OpenMP to interfejs programowania aplikacji pozwalający na budowanie wieloplatformowych programów wykonywanych równolegle. Rozwiązanie to jest dedykowane aplikacjom powstającym w językach C i C++. \cite{openmp-guide}
 
 OpenMP składa się z dyrektyw kompilatora i zbioru bibliotek, które pozwalają kształtować zachowanie programu na etapie wykonania.
 
 Ze względu na wykorzystanie dyrektyw kompilacji, możliwa jest integracja biblioteki z istniejącą aplikacją, nie wymagając przy tym modyfikowania właściwego kodu programu. Wymaga to wyłącznie znajomości aplikacji w stopniu umożliwiającym identyfikację obszarów, których równoległe wykonanie pozwoli na osiągnięcie największych zysków.
 
-Analogicznie jak w przypadku biblioteki TBB, zastosowanie OpenMP ma na celu zapewnienie skalowalności aplikacji i dodanie warstwy abstrakcji pomiędzy kod programu a operacje wykonywane na wątkach obliczeniowych. Obie biblioteki wyposażone są również w algorytmy równoważenia obciążenia.
+Analogicznie jak w przypadku biblioteki \emph{TBB}, zastosowanie OpenMP ma na celu zapewnienie skalowalności aplikacji i dodanie warstwy abstrakcji pomiędzy kod programu a operacje wykonywane na wątkach obliczeniowych. Obie biblioteki wyposażone są również w algorytmy równoważenia obciążenia.
 
-Wykorzystanie biblioteki OpenMP wymaga zastosowania kompilatora wspierającego dyrektywy wchodzące w jej skład. Ze względu na specyfikę stosowania części interfejsu biblioteki - w formie komentarzy do właściwego kodu aplikacji - możliwa jest kompilacja programu kompilatorem nie wspierającym jej. Wynikowa aplikacja nie będzie korzystać z zalet przetwarzania równoległego, jednak powinna pozwalać na uzyskanie poprawnych wyników algorytmu.
+Wykorzystanie biblioteki OpenMP wymaga zastosowania kompilatora wspierającego dyrektywy wchodzące w jej skład. Ze względu na specyfikę stosowania części interfejsu biblioteki -- w formie komentarzy do właściwego kodu aplikacji -- możliwa jest kompilacja programu kompilatorem nie wspierającym jej. Wynikowa aplikacja nie będzie korzystać z zalet przetwarzania równoległego, jednak powinna pozwalać na uzyskanie poprawnych wyników algorytmu.
 
 \subsection*{Podsumowanie}
-Trzy opisane rozwiązania zapewniają dostęp do różnych możliwości i obarczone są różnym kosztem stosowania. Z tego względu, nie jest możliwy jednoznaczny wybór najlepszego rozwiązania dla aplikacji wykonujących obliczenia równoległe. Często, słuszne może okazać się wykorzystanie więcej niż jednej biblioteki w aplikacji, wykorzystując je do nadzoru nad zadaniami różnego typu. 
+Trzy opisane rozwiązania zapewniają dostęp do różnych możliwości i obarczone są różnym kosztem stosowania. Z tego względu, nie jest możliwy jednoznaczny wybór najlepszego rozwiązania dla aplikacji wykonujących obliczenia równoległe. Często słuszne może okazać się wykorzystanie więcej niż jednej biblioteki w aplikacji, wykorzystując je do nadzoru nad zadaniami różnego typu. 
 Część rozwiązań wymaga wsparcia kompilatora, część ograniczona jest do pewnej grupy systemów lub architektur. Wybór podejścia do obliczeń równoległych powinien stanowić etap projektowania aplikacji, a decyzja powinna uwzględniać szereg zagadnień.
 
-W ramach pracy nie omówiono kilku innych popularnych rozwiązań związanych z obliczeniami wielowątkowymi, w tym \emph{OpenCL} oraz \emph{MPI}, ze względu na ograniczone możliwości ich wykorzystania w systemie PetaLinux działającego na platformie ZYBO.
+W ramach pracy nie omówiono kilku innych popularnych rozwiązań związanych z obliczeniami wielowątkowymi, w tym \emph{OpenCL} oraz \emph{MPI}, ze względu na ograniczone możliwości ich wykorzystania w systemie PetaLinux działającym na platformie ZYBO.
 
 Omawiane zagadnienie stanowi temat obszernych dyskusji, których wyniki odnaleźć można w publikowanych pracach. \cite{choosing-thread-framework,Kegel2009}
 
@@ -226,7 +226,7 @@ W sekcji \ref{sec:multithreading-config} opisano kroki wymagane do zastosowania 
 
 Algorytmy wizyjne znajdują zastosowanie w wielu aplikacjach realizowanych w ramach projektów związanych z szerokim spektrum dziedzin techniki. Ze względu na swoją popularność, część rozwiązań została zintegrowana w zbiorze bibliotek OpenCV. \cite{opencv-library} Zbiór ten zawiera wydajne implementacje najczęściej stosowanych algorytmów, dedykowanych uruchamianiu na układach CPU oraz GPU. Biblioteka jest szeroko stosowana ze względu na wysoką wydajność, stabilność działania i możliwość przenoszenia rozwiązań pomiędzy platformami o różnych architekturach.
 
-Zastosowanie zewnętrznej biblioteki pozwala, w porównaniu do autorskiej implementacji algorytmu, na ograniczenie czasu wymaganego do zbudowania działającego prototypu algorytmu. Ponadto, gotowe rozwiązania zapewniają większą stabilność i wystarczającą wydajność w większości przypadków. Kluczowym ograniczeniem względem autorskiej implementacji jest brak możliwości dostosowania implementacji algorytmu do rozpatrywanego przypadku. Może to wiązać się z koniecznością sprowadzenia danych algorytmu do struktury wspieranej przez bibliotekę, co może prowadzić do ograniczenia wydajności działania aplikacji.
+Zastosowanie zewnętrznej biblioteki pozwala, w porównaniu do autorskiej implementacji algorytmu, na ograniczenie czasu wymaganego do zbudowania działającego prototypu algorytmu. Ponadto, gotowe rozwiązania zapewniają zwykle większą stabilność i wystarczającą wydajność w większości przypadków. Kluczowym ograniczeniem względem autorskiej implementacji jest brak możliwości dostosowania implementacji algorytmu do rozpatrywanego przypadku. Może to wiązać się z koniecznością sprowadzenia danych wejściowych do struktury wspieranej przez bibliotekę, co może prowadzić do ograniczenia wydajności działania aplikacji.
 
 Wśród algorytmów dostępnych w bibliotece znajdują się procedury detekcji i rozpoznawania twarzy, klasyfikacji zachowań, śledzenia obiektów, czy identyfikacji obrazów podobnych.
 
@@ -251,7 +251,7 @@ W ramach pracy, zbadano możliwość wykorzystania modułu VDMA do transmisji da
 
 Zbadano również możliwość konwersji danych do struktur dostępnych w bibliotece OpenCV, co umożliwia wykorzystanie biblioteki do realizacji algorytmów wizyjnych. Procedury odczytu oraz zapisu danych przedstawiono w dodatku \ref{sec:vdma-to-opencv}.
 
-Sprawdzono szybkość działania procedur transmisji danych pomiędzy dwoma elementami obliczeniowymi dla sygnału wizyjnego o rozdzielczości HD, przyjmując rozmiar piksela równy trzydziestu dwóm bitom na bazie dziesięciu tysięcy iteracji odczytu i zapisu.
+Sprawdzono szybkość działania procedur transmisji danych pomiędzy dwoma elementami obliczeniowymi dla sygnału wizyjnego o rozdzielczości HD, przyjmując rozmiar piksela równy trzydziestu dwóm bitom w cyklu dziesięciu tysięcy iteracji odczytu i zapisu.
 
 Biblioteka OpenCV pozwala na użycie zewnętrznych źródeł danych do budowy struktur obrazu, pozwalając pominąć etap kopiowania pamięci udostępnianej przez sterownik VDMA. W takim przypadku, czas odczytu i zapisu pełnej ramki obrazu nie przekracza kilkunastu mikrosekund. Należy jednak pamiętać, że stosując tę technikę, zagwarantować trzeba, że przetwarzanie obrazu zakończy się do chwili rozpoczęcia odczytu danych z wykorzystywanego bufora przez moduł VDMA. W przypadku zastosowania układu trzech buforów i sygnału wejściowego o częstotliwości sześćdziesięciu klatek na sekundę, daje to okno przetwarzania o długości szesnastu milisekund. Przekroczenie tej wartości może wpłynąć na błędną pracę algorytmu ze względu na nadpisanie danych przez moduł VDMA.
 
@@ -262,22 +262,22 @@ Z tego względu, rozważyć należy skopiowane danych wejściowych do nowego buf
 \section{Przerwania systemowe}
 \label{sec:axi-interrupts}
 Przerwanie to sygnał wysyłany przez urządzenie lub program, które ma na celu przekazanie do procesora informacji o zdarzeniu, które wymaga natychmiastowej obsługi.
-Przerwania podzielić można na maskowalne i niemaskowalne. Klasa przerwań maskowalnych może być zdefiniowana jako ignorowana przez właściwe ustawienie rejestrów kontrolera przerwań. Druga klasa przerwań związana jest zwykle ze zdarzeniami o krytycznym znaczeniu, tak jak zdarzenia związane z działaniem zegarów czy układu watchdog, więc ich wystąpienie nie może zostać zignorowane przez układ procesora.
+Przerwania podzielić można na maskowalne i niemaskowalne. Klasa przerwań maskowalnych może być zdefiniowana jako ignorowana przez właściwe ustawienie rejestrów kontrolera przerwań. Druga klasa przerwań związana jest zwykle ze zdarzeniami o krytycznym znaczeniu, tak jak zdarzenia związane z działaniem zegarów czy układu \emph{watchdog}, więc ich wystąpienie nie może zostać zignorowane przez układ procesora.
 
 Wykorzystanie przerwań pozwala na zaprojektowanie interfejsu aplikacji współpracującej ze zbiorem urządzeń peryferyjnych, takich jak czujniki, przyciski, czy klawiatury. W przypadku układu \emph{ZYBO}, rolę urządzeń emitujących przerwania przyjąć mogą również elementy logiki reprogramowalnej, takie jak układy VDMA, zegary, czy moduły zaprojektowane przez użytkownika.
 
-Układ Zynq wyposażony jest w moduł \emph{Generic Interrupt Controller (GIC)}, który pełni rolę kontrolera przerwań, odpowiedzialnego za obsługę zdarzeń. \emph{GIC} obsługuje przerwania z kilku źródeł:
+Układ Zynq wyposażony jest w moduł GIC (\emph{ang.} Generic Interrupt Controller), który pełni rolę kontrolera przerwań, odpowiedzialnego za obsługę zdarzeń. \emph{GIC} obsługuje przerwania z kilku źródeł:
 \begin{itemize}
-	\item przerwania programowe - zbiór nie więcej niż szesnastu zdarzeń, które pozwalają na wywołanie procedury obsługi przerwania bezpośrednio z kodu aplikacji. Zachowanie to pozwala na komunikację z systemem operacyjnym i jest zwykle wykorzystywane do wywoływania operacji wejścia lub wyjścia. 
+	\item przerwania programowe -- zbiór nie więcej niż szesnastu zdarzeń, które pozwalają na wywołanie procedury obsługi przerwania bezpośrednio z kodu aplikacji. Zachowanie to pozwala na komunikację z systemem operacyjnym i jest zwykle wykorzystywane do wywoływania operacji wejścia lub wyjścia. 
 	
 	Innym zastosowaniem przerwań programowych jest wysłanie sygnału \emph{yield}, który pozwala na dobrowolne wywłaszczenie obecnie aktywnego procesu przez układ planisty systemowego.
 	
-	\item przerwania systemowe - współdzielone i prywatne - zdarzenia emitowane przez sprzęt, na przykład klawiatury, moduły DMA czy układy pamięci. Dla każdego urządzenia lub zbioru zdefiniowana jest unikalna linia przerwania, a do kategorii zdarzenia przypisany jest identyfikator. Obsługa przerwania przez system operacyjny polega na wywołaniu agenta obsługi zdarzeń związanego z wyemitowanym identyfikatorem.
+	\item przerwania systemowe -- współdzielone i prywatne -- zdarzenia emitowane przez sprzęt, na przykład klawiatury, moduły DMA czy układy pamięci. Dla każdego urządzenia lub zbioru zdefiniowana jest unikalna linia przerwania, a do kategorii zdarzenia przypisany jest identyfikator. Obsługa przerwania przez system operacyjny polega na wywołaniu agenta obsługi zdarzeń związanego z wyemitowanym identyfikatorem.
 	
 	Przerwania współdzielone pozwalają na komunikację pomiędzy procesorem a urządzeniami peryferyjnymi oraz układem FPGA, mogą być definiowane przez użytkownika i być obsługiwane przez dowolny rdzeń procesora. Zdarzenia prywatne to przerwania definiowane niezależnie dla każdego rdzenia i pozwalają na obsługę zdarzeń zegarowych czy watchdoga.
 \end{itemize}
 
-W trakcie obsługi przerwania z dowolnego źródła, wykonanie kodu aplikacji jest przerywane na czas wywołania kodu agenta obsługi zdarzenia. Stan rejestrów zapisywany jest na stosie i wykonywany jest kod odpowiedzialny za obsługę przerwania. Po zakończeniu wykonania, deklarowanego przez wywołanie instrukcji procesora \emph{RETI}, przywracany jest zapamiętany stan aplikacji i wznawiane jest jej wykonanie.
+W trakcie obsługi przerwania z dowolnego źródła, wykonanie kodu aplikacji jest wstrzymywane na czas wywołania kodu agenta obsługi zdarzenia. Stan rejestrów zapisywany jest na stosie i wykonywany jest kod odpowiedzialny za obsługę przerwania. Po zakończeniu wykonania, deklarowanego przez wywołanie instrukcji procesora \emph{RETI}, przywracany jest zapamiętany stan aplikacji i wznawiane jest jej wykonanie.
 
 Przerwania to zdarzenia wywoływane asynchronicznie, co może prowadzić do sytuacji, w której kilka linii przerwań sygnalizuje stan alarmu jednocześnie, co może powodować problemy z właściwą obsługą zdarzeń. Procesor ARM pozwala na priorytetyzowanie przerwań. Przyznanie pierwszeństwa pewnemu zbiorowi krytycznych zdarzeń umożliwia rozwiązanie problemu kolejności wykonania w przypadku, gdy dwa zdarzenia o różnym priorytecie zostaną zgłoszone w tym samym czasie, a także na przerwanie obsługi przerwania o niskim priorytecie na rzecz wywołania agenta krytycznego zdarzenia.
 
@@ -291,7 +291,7 @@ W przypadku systemu operacyjnego, konieczne jest wykorzystanie sterownika sprzę
 
 W ramach pracy, zbadano możliwość wykorzystania przerwania emitowanego przez moduł AXI Timer, pozwalającego na wykonywanie operacji odliczania czasu oraz przerwań modułu AXI VDMA, pozwalających na przesłanie notyfikacji związanych ze zdarzeniami odczytu lub zapisu kolejnych ramek obrazu na właściwy im kanał.
 
-Moduł AXI Timer wykorzystać można do odliczania czasu pomiędzy kolejnymi wykonaniami procedury, która powinna być wywoływania cyklicznie, w regularnych odstępach czasu. Podobne zachowanie uzyskać można korzystając z funkcji procesora i związanych z nim zegarów. Wykorzystanie modułu AXI Timer pozwala jednak na warunkowe związanie wykonania procedury z kontekstem dostępnym w części aplikacji zbudowanej wewnątrz logiki reprogramowalnej. Działanie modułu AXI Timer może być warunkowane przez sygnały innych modułów logiki. Pozwala to na zaprojektowanie aplikacji, w której pewne zadanie wykonywane jest cyklicznie, pod warunkiem wystąpienia zdefiniowanego zdarzenia na poziomie logiki, a kontekst tego zdarzenia nie musi być znany z poziomu aplikacji wykonywanej przez procesor - na przykład, wykonanie przez aplikację operacji analizy danych uzyskiwanych przez algorytm wizyjny cyklicznie, pod warunkiem, że moduł algorytmu wykonywany przez układ logiczny ustawił sygnał spójności wyników.
+Moduł AXI Timer wykorzystać można do odliczania czasu pomiędzy kolejnymi wykonaniami procedury, która powinna być wywoływania cyklicznie, w regularnych odstępach czasu. Podobne zachowanie uzyskać można korzystając z funkcji procesora i związanych z nim zegarów. Wykorzystanie modułu AXI Timer pozwala jednak na warunkowe związanie wykonania procedury z kontekstem dostępnym w części aplikacji zbudowanej wewnątrz logiki reprogramowalnej. Działanie modułu AXI Timer może być warunkowane przez sygnały innych modułów logiki. Pozwala to na zaprojektowanie aplikacji, w której pewne zadanie wykonywane jest cyklicznie, pod warunkiem wystąpienia zdefiniowanego zdarzenia na poziomie logiki, a kontekst tego zdarzenia nie musi być znany z poziomu aplikacji wykonywanej przez procesor -- na przykład, wykonanie przez aplikację operacji analizy danych uzyskiwanych przez algorytm wizyjny cyklicznie, pod warunkiem, że moduł algorytmu wykonywany przez układ logiczny ustawił sygnał spójności wyników.
 
 Przerwania definiowane przez moduł AXI VDMA pozwalają na emisję zdarzenia po wykonaniu procesu odczytu lub zapisu określonej liczby ramek obrazu lub po upływie określonego czasu od uzyskania sygnałów synchronizacji obrazu. Wykorzystanie tych mechanizmów pozwala na zaprojektowanie procedur aplikacji, które powinny być wykonane co określoną liczbę klatek sygnału wizyjnego. W szczególnym przypadku, mechanizm ten pozwala na wykonanie przez procesor operacji algorytmicznych dla każdej ramki obrazu, których implementacja sprzętowa byłaby trudna lub niemożliwa. Mechanizm ten pozwala również na przeprowadzenie operacji końcowej analizy wyników algorytmu wizyjnego, zaimplementowanego w układach logicznych.
 

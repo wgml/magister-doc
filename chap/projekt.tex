@@ -11,18 +11,18 @@ Analiza sygnału wizyjnego stanowi rozwinięcie zagadnienia analizy pojedynczego
 
 Wśród algorytmów wymagających kontekstu związanego z więcej niż jedną ramką obrazu wyróżnić można między innymi:
 \begin{itemize}
-	\item detekcję obiektów pierwszoplanowych - umożliwia podział obrazu na elementy tła oraz znajdujące się na pierwszym planie, pozwalając zwykle ograniczyć obszar analizy sygnału do fragmentów, z którymi związane są obiekty pierwszoplanowe,
+	\item detekcję obiektów pierwszoplanowych -- umożliwia podział obrazu na elementy tła oraz znajdujące się na pierwszym planie, pozwalając zwykle ograniczyć obszar analizy sygnału do fragmentów, z którymi związane są obiekty pierwszoplanowe,
 
-	\item indeksację i śledzenie obiektów - indeksacja pozwala na przypisanie etykiet do obiektów i wyznaczenie zbioru niezależnych elementów obrazu. Pozwala to śledzić ruch każdego z obiektów oraz analizę zachowań,
+	\item indeksację i śledzenie obiektów -- indeksacja pozwala na przypisanie etykiet do obiektów i wyznaczenie zbioru niezależnych elementów obrazu. Pozwala to śledzić ruch każdego z obiektów oraz analizę zachowań,
 	
-	\item wyliczanie przepływu optycznego - pozwala na analizę ruchu obiektów znajdujących się w kadrze, umożliwiając estymację kształtu, odległości czy parametrów ruchu.
+	\item wyliczanie przepływu optycznego -- pozwala na analizę ruchu obiektów znajdujących się w kadrze, umożliwiając estymację kształtu, odległości czy parametrów ruchu.
 \end{itemize}
 
-Implementacja wymienionych typów algorytmów w architekturze potokowej może być utrudniona lub niemożliwa bez użycia zewnętrznego elementu pamięciowego. Ponadto, końcowa analiza wyników algorytmu w architekturze FPGA jest odgórnie ograniczona do przewidywanych parametrów działania systemu - na przykład, zagadnienie śledzenia obiektów może być ograniczone do maksymalnej zadanej liczby niezależnych elementów.
+Implementacja wymienionych typów algorytmów w architekturze potokowej może być utrudniona lub niemożliwa bez użycia zewnętrznego elementu pamięciowego. Ponadto, końcowa analiza wyników algorytmu w architekturze FPGA jest odgórnie ograniczona do przewidywanych parametrów działania systemu -- na przykład, zagadnienie śledzenia obiektów może być ograniczone do maksymalnej zadanej liczby niezależnych elementów.
 
 Ze względu na te ograniczenia, korzystny może okazać się podział algorytmu na niezależne etapy, wykonywane przez elementy logiki reprogramowalnej lub procesor ARM. 
 
-Klasyczny sekwencyjny element obliczeniowy pozwala na adaptację algorytmu do zmieniających się w czasie parametrów obrazu - na przykład na analizę ruchu zmieniającej się liczby obiektów pierwszoplanowych.
+Klasyczny sekwencyjny element obliczeniowy pozwala na adaptację algorytmu do zmieniających się w czasie parametrów obrazu -- na przykład na analizę ruchu zmieniającej się liczby obiektów pierwszoplanowych.
 
 Ponadto, użycie systemu operacyjnego pozwala wykorzystać zaawansowane możliwości prezentacji i przechowywania wyników działania algorytmu wizyjnego, na przykład prezentację wyników przy użyciu interfejsu sieciowego lub zapis wyników do bazy danych.
 
@@ -97,11 +97,11 @@ Poza najprostszymi przypadkami analizy ruchu, wyznaczenie różnicy obrazów wew
 
 Generacja tła to zadanie ekstrakcji elementów \textit{tła} badanego obrazu, a więc takich, które stanowią stały, niezmienny element sceny. Dzięki wydzieleniu obiektów tła, pozostałe elementy obrazu klasyfikowane są jako obiekty pierwszoplanowe. Zwykle, uważa się za nie elementy będące w ruchu. Bardziej zaawansowane metody generacji tła uwzględniają ponadto dodatkowe warunki klasyfikacji obiektów do dwóch z omawianych grup:
 \begin{itemize}
-	\item cienie - choć mogą być związane zarówno z elementami tła jak i pierwszoplanowymi, oczekiwane jest zwykle, by nie były uwzględniane w grupie obiektów wymagających analizy,
-	\item ruchome elementy tła - występujące na przykład pod wpływem wiatru ruchy roślin czy deszcz nie powinny być traktowane jako obiekty pierwszoplanowe,
-	\item obiekty o niejednorodnym ruchu - algorytm powinien klasyfikować poprawie obiekty pierwszoplanowe, które pojawiają się na scenie a następnie zatrzymują, nie traktując ich jako elementy tła,
-	\item obiekty wzajemnie przesłaniające się - elementy pierwszego planu mogą, w wyniku ruchu, został zasłonięte z perspektywy kamery przez elementy tła. Nie powinno to wpłynąć na zmianę klasyfikacji obiektów z obu grup.
-	\item warunki oświetlenia - możliwość zmiany warunków oświetlenia może wymagać ciągłej korekty parametrów generowanego tła. Uwzględnić należy zarówno zmiany długookresowe, wynikające na przykład z cyklu dobowego, jak i krótkookresowe, wynikające z nagłych zmian, takich jak włączenie lub wyłączenie sztucznego oświetlenia sceny.
+	\item cienie -- choć mogą być związane zarówno z elementami tła jak i pierwszoplanowymi, oczekiwane jest zwykle, by nie były uwzględniane w grupie obiektów wymagających analizy,
+	\item ruchome elementy tła -- występujące na przykład pod wpływem wiatru ruchy roślin czy deszcz nie powinny być traktowane jako obiekty pierwszoplanowe,
+	\item obiekty o niejednorodnym ruchu -- algorytm powinien klasyfikować poprawie obiekty pierwszoplanowe, które pojawiają się na scenie a następnie zatrzymują, nie traktując ich jako elementy tła,
+	\item obiekty wzajemnie przesłaniające się -- elementy pierwszego planu mogą, w wyniku ruchu, zostać zasłonięte z perspektywy kamery przez elementy tła. Nie powinno to wpłynąć na zmianę klasyfikacji obiektów z obu grup.
+	\item warunki oświetlenia -- możliwość zmiany warunków oświetlenia może wymagać ciągłej korekty parametrów generowanego tła. Uwzględnić należy zarówno zmiany długookresowe, wynikające na przykład z cyklu dobowego, jak i krótkookresowe, wynikające z nagłych zmian, takich jak włączenie lub wyłączenie sztucznego oświetlenia sceny.
 \end{itemize}
 
 Zagadnienie realizacji tła nie jest trywialne i wymaga metod uwzględniających część lub wszystkie z wymienionych powyżej ograniczeń. Opracowanie dostępnej literatury poruszającej ten temat znaleźć można w pracy \cite{Kryjak2012}.
@@ -139,7 +139,7 @@ Przyjęto, że aktualizacja wartości modelu tła powinna mieć miejsce wyłącz
 	\end{equation}
 	gdzie:
 	\begin{conditions}
-		d^i_Y(x,y) & różnica sekwencji kanału $Y$ obrazu, opisana wzorem \ref{eq:frame-difference} \\
+		d^i_Y(x,y) & różnica sekwencji dla kanału $Y$ obrazu, opisana wzorem \ref{eq:frame-difference}, \\
 		T_{fd} & współczynnik bezwładności ruchu z zakresu $[0,255]$, zwykle nie przekraczający $30$. 
 	\end{conditions}
 
@@ -215,7 +215,7 @@ Proporcjonalnie duże zużycie zasobów wynika z konieczności wykorzystania wie
 
 Moduł przeznaczony jest do pracy z częstotliwością $200MHz$, co pozwala na analizę sygnału wideo o rozdzielczości $1920 \times 1080$ pikseli i częstotliwości obrazu $60Hz$.
 \section{Integracja z systemem PetaLinux}
-Na etapie prototypowania, elementy logiki reprogramowalnej kontrolowane były przez aplikację działającą w trybie bare-metal. bez wsparcia dla systemu operacyjnego.
+Na etapie prototypowania, elementy logiki reprogramowalnej kontrolowane były przez aplikację działającą w trybie bare-metal, bez wsparcia dla systemu operacyjnego.
 
 Po zakończeniu tego etapu, możliwe stało się zaprojektowanie aplikacji działającej pod kontrolą systemu PetaLinux, umożliwiającej wykorzystanie zaawansowanych funkcji systemu.
 
@@ -260,7 +260,7 @@ Zbadano możliwość wykorzystania aplikacji w roli elementu obliczeniowego, odp
 Ze względu na ograniczenia sprzętowe, moduł indeksacji nie był w stanie spełnić wymagań pracy w czasie rzeczywistym dla sygnału wizyjnego o częstotliwości $60Hz$ i rozdzielczości $1280 \times 720 $ pikseli, a jego wydajność nie przekraczała piętnastu ramek na sekundę.
 
 \section*{Podsumowanie}
-Zaproponowane rozwiązania projektowe pozwalają na wykorzystanie części funkcji systemu operacyjnego, które badane były w ramach pracy. Szczególnie istotnym zagadnieniem jest komunikacja pomiędzy elementami zaprojektowanymi w dwóch architekturach. Dzięki możliwości transmisji danych, możliwe jest zaprojektowanie algorytmów podzielonych na moduły wykonywane naprzemiennie przez obie części układu, wykorzystując atuty obu architektur do możliwie maksymalnego zwiększenia wydajności pełnego algorytmu.
+Zaproponowane rozwiązania projektowe pozwalają na wykorzystanie części funkcji systemu operacyjnego, które badane były w ramach pracy. Szczególnie istotnym zagadnieniem jest komunikacja pomiędzy elementami zaprojektowanymi w dwóch architekturach. Dzięki wykorzystaniu transmisji danych, możliwe jest zaprojektowanie algorytmów podzielonych na moduły wykonywane naprzemiennie przez obie części układu, wykorzystując atuty obu architektur do możliwie maksymalnego zwiększenia wydajności pełnego algorytmu.
 
 Ponadto, wykorzystanie systemu operacyjnego pozwala na realizację zadań zwykle niemożliwych w przypadku projektu aplikacji realizowanych wyłącznie przy użyciu elementów logiki reprogramowalnej lub sterowanych przez aplikację bare-metal. Program działający pod kontrolą systemu operacyjnego umożliwia prowadzenie zadań konfiguracji, kontroli i monitorowania działania aplikacji z wykorzystaniem komunikacji sieciowej.
 
