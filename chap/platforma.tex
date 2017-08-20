@@ -1,11 +1,16 @@
 \chapter{Platforma Zynq-7000}
 \label{cha:platform}
 
-Układ ZYBO jest przedstawicielem rodziny układów SoC (\emph{ang}. System-on-a-chip) Zynq-7000. SoC to układy scalone integrujące wszystkie elementy budowy układów elektronicznych, powszechnie wykorzystywane do projektowania systemów wbudowanych. Centralną część układu rodziny Zynq-7000 stanowi dwurdzeniowy procesor o architekturze ARM w wersji Cortex-A9. \cite{zynq-homepage} Układ ZYBO wyposażony jest ponadto w 512 MB pamięci RAM, złącza HDMI i VGA do transmisji obrazu, gniazda Jack do przesyłu dźwięku, gniazdo USB oraz slot pamięci MicroSD. Komunikacja sieciowa jest możliwa dzięki implementacji stosu TCP/IP i obecności gniazda RJ-45. \cite{zynq-datasheet}
+Układ ZYBO jest przedstawicielem rodziny układów SoC (\emph{ang}. System-on-a-chip) Zynq-7000. %TODO ZYBO to jest karta uruchomieniowa/ewaluacyjna, układ Zynq. Trzeba to rozróżnić.
+SoC to układy scalone integrujące wszystkie elementy budowy układów elektronicznych, powszechnie wykorzystywane do projektowania systemów wbudowanych. %TODO wszystkie elementy budowy ??? inaczej to trzeba napisać...
+Centralną część układu rodziny Zynq-7000 stanowi dwurdzeniowy procesor o architekturze ARM w wersji Cortex-A9. \cite{zynq-homepage} %TODO proszę zwrócić uwagę, że \cite powinno być przed kropką. Nie wspomniał Pan o logice programowalnej. 
+Układ ZYBO wyposażony jest ponadto w 512 MB pamięci RAM, złącza HDMI i VGA do transmisji obrazu, gniazda Jack do przesyłu dźwięku, gniazdo USB oraz slot pamięci MicroSD. %TODO Karta ZYBO, dzwięku -> sygnału dźwiękowego
+Komunikacja sieciowa jest możliwa dzięki implementacji stosu TCP/IP i obecności gniazda RJ-45. \cite{zynq-datasheet}
 
-Układy rodziny Zynq-7000 są stosowane w aplikacjach systemów wsparcia kierowców, systemach wizyjnych wysokich rozdzielczości, cyfrowego przetwarzania sygnałów czy kryptograficznych. \cite{GuanwenZhong,MaleenAbeydeera,PawelDabal2014}
+Układy rodziny Zynq-7000 są stosowane w aplikacjach systemów wsparcia kierowców, systemach wizyjnych wysokich rozdzielczości, cyfrowego przetwarzania sygnałów czy kryptograficznych. \cite{GuanwenZhong,MaleenAbeydeera,PawelDabal2014} %TODO (po kropce) poza tym moze o jedno zdadnie wiecej na temat kazdego artykuły i inny układ (nie na końcu, a po zdaniu cite)
 
-Układy rodziny Zynq-7000 są układami heterogenicznymi, łączącymi w sobie elementy klasycznego układu FPGA (\emph{PL}, \emph{ang.} Programmable Logic) oraz procesora ARM (\emph{PS}, \emph{ang.} Processing System). Na rysunku \ref{fig:zynq-overview} przedstawiono schemat omawianej architektury.
+Układy rodziny Zynq-7000 są układami heterogenicznymi, łączącymi w sobie elementy klasycznego układu FPGA (\emph{PL}, \emph{ang.} Programmable Logic) oraz procesora ARM (\emph{PS}, \emph{ang.} Processing System). %TODO to zdanie jest powt. wcześniejszego - jakoś trzeba to zintegrować.
+Na rysunku \ref{fig:zynq-overview} przedstawiono schemat omawianej architektury.
 
 \begin{figure}[h]
 	\centering
@@ -13,25 +18,56 @@ Układy rodziny Zynq-7000 są układami heterogenicznymi, łączącymi w sobie e
 	\caption{Schemat architektury Zynq-7000. (Źródło: \cite{zybo-reference-manual})}
 	\label{fig:zynq-overview}
 \end{figure}
+%TODO może nieco większy
 
 Schemat przedstawia podział układu na części \emph{PL} -- oznaczonej kolorem żółtym, oraz \emph{PS} -- na zielono.
-Architektura części programowalnej zbliżona jest do powszechnie stosowanych układów FPGA. Wyposażono ją jednak w zbiór portów umożliwiających wydajną komunikację z procesorem. Ponadto, konfiguracja tej części wykonywana jest na starcie przez procesor lub przy użyciu interfejsu JTAG i układ nie zawiera elementów pozwalających na wykorzystanie logiki programowalnej niezależnie.
+Architektura części programowalnej zbliżona jest do powszechnie stosowanych układów FPGA. %TODO konkretnie jaka seria Xilinx
+Wyposażono ją jednak w zbiór portów umożliwiających wydajną komunikację z procesorem. 
+Ponadto, konfiguracja tej części wykonywana jest na starcie przez procesor lub przy użyciu interfejsu JTAG i układ nie zawiera elementów pozwalających na wykorzystanie logiki programowalnej niezależnie.
 Część procesorowa wyposażona jest w szereg interfejsów, w tym kontroler pamięci DDR3, interfejs komunikacji AMBA oraz zbiór interfejsów peryferyjnych.
 
-Procesor wyposażony jest w koprocesor arytmetyczny, wspierający w obliczeniach na liczbach zmiennoprzecinkowych oraz wspiera obsługę architektury SIMD (\emph{ang.} Single Instruction, Multiple Data) -- pozwalającej na przetwarzanie wielu strumieni danych przy użyciu jednego strumienia instrukcji. Zagadnienia te szerzej opisane zostały w sekcji \ref{sec:arm-neon}.
+Procesor wyposażony jest w koprocesor arytmetyczny, wspierający w obliczeniach na liczbach zmiennoprzecinkowych oraz wspiera obsługę architektury SIMD (\emph{ang.} Single Instruction, Multiple Data) -- pozwalającej na przetwarzanie wielu strumieni danych przy użyciu jednego strumienia instrukcji. 
+Zagadnienia te szerzej opisane zostały w sekcji \ref{sec:arm-neon}.
+%TODO Tu dobrze by było się odwoływać do nazw bloków z rysunku (np. FPU).
 
-Układ wyposażony jest w kontroler pamięci DDR, obsługujący żądania dostępu ze strony zarówno procesora, jak i układu FPGA. Pamięć jest współdzielona między oboma modułami. Pozwala to na wymianę danych, do czego wykorzystywany jest standard AXI. Interfejs pozwala na transmisję pojedynczych słów danych, umożliwiając konfigurację parametrów pracy modułów algorytmicznych, jak i na transmisję o wysokiej przepustowości. Pozwala to, dzięki zastosowaniu modułu VDMA, na przesyłanie obrazu o rozdzielczości HD z częstotliwością osiągającą wartości 680 klatek na sekundę. \cite{axi-vdma-guide} Interfejs AXI opisano szerzej w sekcji \ref{sec:axi-std}.
+Układ wyposażony jest w kontroler pamięci DDR, obsługujący żądania dostępu ze strony zarówno procesora, jak i układu FPGA. %TODO logiki programowalnej (bez powt. układ)
+Pamięć jest współdzielona między oboma modułami. %TODO obiema częściami
+Pozwala to na wymianę danych, do czego wykorzystywany jest standard AXI. 
+Interfejs pozwala na transmisję pojedynczych słów danych, umożliwiając konfigurację parametrów pracy modułów algorytmicznych, jak i na transmisję o wysokiej przepustowości. 
+Pozwala to, dzięki zastosowaniu modułu VDMA, na przesyłanie obrazu o rozdzielczości HD z częstotliwością osiągającą wartości 680 klatek na sekundę  \cite{axi-vdma-guide}. 
+Interfejs AXI opisano szerzej w sekcji \ref{sec:axi-std}.
 
+%TODO Brakuje choćby podstawowego opisu zasobów PL - dodać.
+%TODO Proszę dodać opisy pozostałych elementów PS (choć 1-2 zdania na każdy bloczek)
+%TODO Proszę napisać, dlaczego AXI i FPU opisane są później... 
+
+
+
+%TODO TO bym jakoś bardziej w kierunku rozdziału o systemach operacyjnych przekształcił (bo de facto o tym jest). Tylko wtedy Peta i inne to subsection (przeorganizować hierarchię)
 \section{Konfiguracja procesora}
 \label{sec:arm-programming}
-Centralny element architektury stanowi dwurdzeniowy procesor ARM. Jest on odpowiedzialny za przeprowadzenie konfiguracji układów logiki reprogramowalnej. Ponadto, pozwala na wykonanie dowolnego programu użytkownika. Powszechnie stosowana jest konfiguracja bare-metal,w której procesor wykonuje program zaprojektowany w pełni przez użytkownika. Pozwala to na uzyskanie możliwie największej kontroli nad pracą układu, ogranicza jednak możliwości wykorzystania pełni zasobów procesora oraz utrudnia projektowanie rozbudowanych aplikacji.
 
-W niniejszej pracy badano możliwość wykorzystania systemu operacyjnego Linux na przykładzie aplikacji systemów wizyjnych. Dzięki zastosowaniu Linuxa, możliwe staje się budowanie programów składających się z wielu modułów działających niezależnie. System ten wspiera obsługę sieci, co pozwala na wykorzystanie narzędzi komunikacji sieciowej, jak SSH \cite{ssh-protocol}, do konfiguracji i nadzorowania działania aplikacji, co opisano w sekcji \ref{sec:ssh}. Ponadto, możliwe jest wykorzystanie powszechnie dostępnych bibliotek, ułatwiających rozwój aplikacji w krótkim czasie. Zagadnienie to badano na przykładzie biblioteki OpenCV \cite{opencv-library}, udostępniającej narzędzia przetwarzania obrazów, co opisano w sekcji \ref{sec:opencv-lib}.
+Centralny element architektury stanowi dwurdzeniowy procesor ARM. 
+Jest on odpowiedzialny za przeprowadzenie konfiguracji logiki reprogramowalnej. 
+Ponadto pozwala na wykonanie dowolnego programu użytkownika. 
+Powszechnie stosowana jest konfiguracja \textit{bare-metal}, w której procesor wykonuje program zaprojektowany w pełni przez użytkownika. 
+Pozwala to na uzyskanie możliwie największej kontroli nad pracą układu, ogranicza jednak możliwości wykorzystania pełni zasobów procesora oraz utrudnia projektowanie rozbudowanych aplikacji.
+%TODO może nieco więcej szczegółów i przede wszstykim, że brak OS.
 
-Zbadano możliwość wykorzystania systemu PetaLinux, rozwijanego przez organizację Xilinx, jak i podstawowej wersji systemu oraz dystrybucji bazującej na Ubuntu Core.
+W niniejszej pracy badano możliwość wykorzystania systemu operacyjnego Linux na przykładzie aplikacji systemów wizyjnych. 
+Dzięki zastosowaniu Linuxa, możliwe staje się budowanie programów składających się z wielu modułów działających niezależnie. 
+System ten wspiera obsługę sieci, co pozwala na wykorzystanie narzędzi komunikacji sieciowej, jak SSH \cite{ssh-protocol}, do konfiguracji i nadzorowania działania aplikacji, co opisano w rozdziale \ref{sec:ssh}. 
+Ponadto, możliwe jest wykorzystanie powszechnie dostępnych bibliotek, ułatwiających rozwój aplikacji w krótkim czasie. 
+Zagadnienie to badano na przykładzie biblioteki OpenCV \cite{opencv-library}, udostępniającej narzędzia przetwarzania obrazów, co opisano w rozdziale \ref{sec:opencv-lib}.
 
-\section{PetaLinux}
-Firma Xilinx zapewnia dostęp do zbioru narzędzi \emph{PetaLinux Tools} \cite{petalinux-tools}, umożliwiających przeprowadzenie procesu konfiguracji, budowania i uruchamiania systemu Linux na platformie Zynq. Dzięki zintegrowaniu koniecznych narzędzi w jednym pakiecie, proces ten jest w dużej części zautomatyzowany i ogranicza interakcję z programistą, zapewniając przy tym możliwość dowolnej konfiguracji systemu.
+Zbadano możliwość wykorzystania systemu PetaLinux, rozwijanego przez organizację Xilinx, jak i podstawowej wersji systemu oraz dystrybucji bazującej na Ubuntu Core. %TODO co jest rozumiane przed podstawową wersję systemu ?
+
+%TODO Wspomnieć o RTOS
+
+\section{PetaLinux} %TODO Sub
+
+Firma Xilinx zapewnia dostęp do zbioru narzędzi \emph{PetaLinux Tools} \cite{petalinux-tools} umożliwiających przeprowadzenie procesu konfiguracji, budowania i uruchamiania systemu Linux na platformie Zynq. 
+Dzięki zintegrowaniu koniecznych narzędzi w jednym pakiecie, proces ten jest w dużej części zautomatyzowany i ogranicza interakcję z programistą, zapewniając przy tym możliwość dowolnej konfiguracji systemu.
 
 Celem wykorzystania omawianego pakietu narzędzi jest zbudowanie systemu operacyjnego gotowego do uruchomienia i umożliwiającego szybką rekonfirugację zarówno elementów logiki reprogramowalnej jak i samego systemu operacyjnego.
 
@@ -53,63 +89,109 @@ apt-get install libgtk2.0-0:i386 libxtst6:i386 gtk2-engines-murrine:i386 lib32st
 
 Praca z pakietem wymaga ponadto wykorzystania oprogramowania \emph{Vivado Design Suite} \cite{vivado-home} do zaprojektowania układu połączeń logiki reprogramowalnej oraz \emph{Xilinx SDK} \cite{xsdk-home} do kompilacji programów uruchamianych w środowisku systemu operacyjnego układu.
 
-Pierwszym krokiem jest wykonanie projektu w pakiecie \emph{Vivado}. Szczegóły procesu opisano w sekcji \ref{sec:vivado-conf}. Wyeksportowany projekt jest konieczny do przeprowadzenia procesu budowania systemu.
+Pierwszym krokiem jest wykonanie projektu w pakiecie \emph{Vivado}. 
+Szczegóły procesu opisano w sekcji \ref{sec:vivado-conf}. %TODO sekcji -> rozdziale (wydaje mi się, ze w PL słowo sekcja nie powinno być uzywane w tym kontekście - kalka z ENG)
+Wyeksportowany projekt jest konieczny do przeprowadzenia procesu budowania systemu.
 
-Proces konfiguracji projektu PetaLinux opisano w sekcji \ref{sec:petalinux-config}.
+Proces konfiguracji projektu PetaLinux opisano w sekcji \ref{sec:petalinux-config}. %TODO akapity jednozdaniowe są zakazane...
 
-Pakiet udostępnia możliwość dodania do budowanego systemu zbioru programów i bibliotek. Dostępne jest kilkaset pakietów oprogramowania dostępnego na zasadach wolnych licencji, w tym biblioteki do przetwarzania obrazów. Ponadto, pakiet umożliwia dodanie własnoręcznie zbudowanych aplikacji. Pozwala to na integrację etapu projektowania aplikacji oraz budowy i uruchamiania systemu operacyjnego w jednym procesie.
+Pakiet udostępnia możliwość dodania do budowanego systemu zbioru programów i bibliotek. 
+Dostępne jest kilkaset pakietów oprogramowania dostępnego na zasadach wolnych licencji, w tym biblioteki do przetwarzania obrazów. %TODO Dostępne, dostępnego
+Ponadto, pakiet umożliwia dodanie własnoręcznie zbudowanych aplikacji. 
+Pozwala to na integrację etapu projektowania aplikacji oraz budowy i uruchamiania systemu operacyjnego w jednym procesie.
 
-Projekt PetaLinux jest niezależny od projektu Vivado i może powstawać równolegle. Zmiany w strukturze modułów logiki reprogramowalnej wymagają ponownego zbudowania plików wynikowych systemu, jednak proces ten został wydzielony z oprogramowania Vivado. Pozwala to na wykorzystanie jednego projektu opisującego logikę współpracującego z aplikacjami bare metal i systemowymi. 
+Projekt PetaLinux jest niezależny od projektu Vivado i może powstawać równolegle. 
+Zmiany w strukturze modułów logiki reprogramowalnej wymagają ponownego zbudowania plików wynikowych systemu, jednak proces ten został wydzielony z oprogramowania Vivado. %TODO co tu jest rozumiane przez system
+Pozwala to na wykorzystanie jednego projektu opisującego logikę współpracującego z aplikacjami bare metal i systemowymi. 
 
-Proces budowania systemu jest czasochłonny, na etapie prototypowania aplikacji praktyczne jest zastosowanie oprogramowania pracującego w trybie bare-metal. Pozwala to na przeprowadzanie procesu debugowania aplikacji bezpośrednio z poziomu oprogramowania Vivado/SDK. Po upewnieniu się, że sprzętowa część algorytmu działa poprawnie, zaprojektować można aplikację systemową, odpowiedzialną za komunikację, monitorowanie i wykorzystanie wyników działania algorytmu w kompletnym projekcie.
+Proces budowania systemu jest czasochłonny, na etapie prototypowania aplikacji praktyczne jest zastosowanie oprogramowania pracującego w trybie bare-metal. %TODO bare-metal - pisałbym w \textit{} 
+Pozwala to na przeprowadzanie procesu debugowania aplikacji bezpośrednio z poziomu oprogramowania Vivado/SDK. 
+Po upewnieniu się, że sprzętowa część algorytmu działa poprawnie, zaprojektować można aplikację systemową, odpowiedzialną za komunikację, monitorowanie i wykorzystanie wyników działania algorytmu w kompletnym projekcie.
 
 \section{Inne dystrybucje systemu}
-Po zapoznaniu się z możliwościami pakietu PetaLinux, zbadano również inne możliwości konfiguracji systemu operacyjnego do zastosowania na układzie ZYBO. Wśród dostępnych opcji, zdecydowano się na zapoznanie z dystrybucją Ubuntu Core oraz badano możliwość budowy systemu Linux ze źródeł.
+Po zapoznaniu się z możliwościami pakietu PetaLinux, zbadano również inne możliwości konfiguracji systemu operacyjnego do zastosowania na platformie ZYBO. 
+Wśród dostępnych opcji, zdecydowano się na zapoznanie z dystrybucją Ubuntu Core oraz badano możliwość budowy systemu Linux ze źródeł.
+%TODO ponieważ to jest część teoretyczna, to proszę nie wprowadzać takie narracji po zapozaniu...
 
 \subsection{Budowa ze źródeł}
 % http://jeremyherbert.net/get/digilent_zybo_zynq_getting_started
-Wykorzystanie pakietu PetaLinux związane jest z ograniczeniem dostępności projektu do środowisk, w których pakiet narzędzi jest dostępny. W przypadku konieczności uruchomienia projektu na systemie nie wspieranym przez twórców oprogramowania lub potrzeby wprowadzenia dużych zmian w kodzie źródłowym systemu i konfiguracji, konieczne może być przeprowadzenie pełnego procesu budowania samodzielnie. Takie podejście pozwala również na pełne zrozumienie znaczenia kolejnych kroków procesu konfiguracji.
+Wykorzystanie pakietu PetaLinux związane jest z ograniczeniem dostępności projektu do środowisk, dla których ten pakiet narzędzi jest dostępny. 
+W przypadku konieczności uruchomienia projektu na systemie nie wspieranym przez twórców oprogramowania lub potrzeby wprowadzenia dużych zmian w kodzie źródłowym systemu i konfiguracji, konieczne może być przeprowadzenie pełnego procesu budowania samodzielnie. 
+Takie podejście pozwala również na pełne zrozumienie znaczenia kolejnych kroków procesu konfiguracji.
 
-Proces budowy systemu składa się z kilku kroków. Wymagane jest zaprojektowanie połączeń logiki reprogramowalnej i wykorzystanie wynikowego pliku binarnego na etapie budowy.
+Proces budowy systemu składa się z kilku kroków. 
+Wymagane jest zaprojektowanie połączeń logiki reprogramowalnej i wykorzystanie wynikowego pliku binarnego na etapie budowy. %TODO co tu jest rozumiane przez zaprojektowanie połączeń logiki reprogramowalnej
 
-Konieczne jest zbudowanie dwóch programów rozruchowych. Pierwszy z nich -- FSBL (\emph{ang.} First Stage Boot Loader) -- odpowiada za przeprowadzenie procesu wstępnej konfiguracji procesora, kontrolera pamięci i uruchomienie drugiego programu rozruchowego. W tej roli wykorzystywany jest program U-Boot. Jego zadaniem jest przygotowanie środowiska do uruchomienia właściwego systemu operacyjnego.
+Konieczne jest zbudowanie dwóch programów rozruchowych. %TODO program rozruchowy to poprawne określenie PL ?
+Pierwszy z nich -- FSBL (\emph{ang.} First Stage Boot Loader) -- odpowiada za przeprowadzenie procesu wstępnej konfiguracji procesora, kontrolera pamięci i uruchomienie drugiego programu rozruchowego. 
+W tej roli wykorzystywany jest program U-Boot. 
+Jego zadaniem jest przygotowanie środowiska do uruchomienia właściwego systemu operacyjnego.
 
-Kolejny krok wymaga zbudowania struktury drzewa urządzeń (\emph{ang.} device tree). Struktura ta pozwala na zdefiniowanie i konfigurację urządzeń połączonych z procesorem, dzięki czemu mogą być one obsłużone przez system operacyjny. W przypadku układu ZYBO, wykorzystanie tej struktury pozwala na konfigurację i komunikację z elementami układu FPGA.
+Kolejny krok wymaga zbudowania struktury drzewa urządzeń (\emph{ang.} device tree). 
+Pozwala ona na zdefiniowanie i konfigurację urządzeń połączonych z procesorem, dzięki czemu mogą być one obsłużone przez system operacyjny. 
+W przypadku układu ZYBO, wykorzystanie tej struktury pozwala na konfigurację i komunikację z elementami układu FPGA. %TODO ZYBO czy Zynq...
 
 Po przeprowadzeniu wstępnej konfiguracji elementów systemu, możliwe jest wykonanie procesu konfiguracji, budowania i przygotowania wynikowych plików binarnych.
 
-Opisany proces jest skomplikowany i wymaga specjalistycznej wiedzy. Dostępne są obszerne opracowania dotyczące tematu, zawierające precyzyjny opis kolejnych wymaganych kroków. \cite{zybo-zynq-getting-started,zybo-stock-linux,xilinx-build-kernel}
+Opisany proces jest skomplikowany i wymaga specjalistycznej wiedzy. 
+Dostępne są obszerne opracowania dotyczące tematu, zawierające precyzyjny opis kolejnych wymaganych kroków \cite{zybo-zynq-getting-started,zybo-stock-linux,xilinx-build-kernel}
+
+%TODO A Pan to robił ? Jeśli tak to link to szczegółowego opisu.
 
 \subsection{Ubuntu Core}
-Ubuntu Core to dystrybucja systemu Linux dedykowana do zastosowań w urządzeniach koncepcji internetu rzeczy. Dystrybucja ta oparta jest na podstawowej wersji systemu Ubuntu, przystosowana do uruchomienia na urządzeniach o ograniczonej mocy obliczeniowej.
 
-Dzięki wykorzystaniu Ubuntu Core, możliwy jest dostęp do repozytorium oprogramowania udostępnianego przez dystrybucję. W przeciwieństwie do dystrybucji PetaLinux, instalowane oprogramowanie może być aktualizowane w trakcie pracy systemu. Cecha ta może być istotna w przypadku aplikacji działających przez długi czas, gdy aktualizacja oprogramowania jest korzystna ze względu na znalezione błędy lub poprawę działania w kolejnej wersji.
+Ubuntu Core to dystrybucja systemu Linux dedykowana do zastosowań w urządzeniach koncepcji internetu rzeczy. %TODO (IoT ang.....) nie wiem czy nie lepiej koncepcji -> tzw.
+Dystrybucja ta oparta jest na podstawowej wersji systemu Ubuntu, przystosowana do uruchomienia na urządzeniach o ograniczonej mocy obliczeniowej.
 
-\subsection*{}
-Zarówno wykorzystanie pakietu PetaLinux Tools, jak i obu pozostałych metod pozwala na zbudowanie w pełni funkcjonalnej dystrybucji systemu Linux i uruchomienie jej na układzie ZYBO. Każda z metod wiąże się z innymi ograniczeniami i udostępnia inne możliwości. W przypadku użycia narzędzi PetaLinux, użytkownik uzyskuje dostęp do ograniczonego zbioru dodatkowych aplikacji, niewielkiej w porównaniu do repozytoriów udostępnianych w dystrybucji Ubuntu Core. Ponadto, aktualizacja oprogramowania może wymagać ponownego zbudowania systemu lub nie być możliwa bez aktualizacji pakietu narzędzi. 
+Dzięki wykorzystaniu Ubuntu Core, możliwy jest dostęp do repozytorium oprogramowania udostępnianego przez dystrybucję. 
+W przeciwieństwie do dystrybucji PetaLinux, instalowane oprogramowanie może być aktualizowane w trakcie pracy systemu. 
+Cecha ta może być istotna w przypadku aplikacji działających przez długi czas, gdy aktualizacja oprogramowania jest korzystna ze względu na znalezione błędy lub poprawę działania w kolejnej wersji. %TODO bezpieczeństwo.
 
-Ponadto, dystrybucja Ubuntu Core zapewnia dostęp do aktualizacji samego systemu, pozwalając na zachowanie bezpieczeństwa działania i dostęp do poprawek kodu oprogramowania. Może to być kluczowe w przypadku wykorzystania układu ZYBO do działania przez długi czas z oczekiwaną niezawodnością.
+%TODO Uwaga tak jak wcześniej...
 
-W przypadku konieczności dostosowania kodu systemu operacyjnego do własnych potrzeb, praktyczne staje się natomiast wykorzystanie technik budowy systemu bezpośrednio ze źródeł. Ogranicza to jednak możliwości instalacji dodatkowego oprogramowania i wymaga dobrej znajomości zagadnień związanych z działaniem systemu Linux.
+\subsection*{} %TODO dlaczego to nie ma tytułu. Może to przenieć na koniec jako podsumowanie OS, tylko dodać coś o RTOS.
 
-Pakiet PetaLinux pozwala jednak na największą integrację z oprogramowaniem Vivado, co ułatwia prototypowanie aplikacji. Dzięki udostępnieniu repozytorium oprogramowania oraz braku konieczności ingerencji użytkownika w proces budowania systemu, wykorzystanie go jest najlepszym rozwiązaniem w większości projektów. Z tego powodu, w niniejszej pracy zdecydowano się na użycie tego rozwiązania na dalszym etapie projektu.
+Zarówno wykorzystanie pakietu PetaLinux Tools, jak i obu pozostałych metod pozwala na zbudowanie w pełni funkcjonalnej dystrybucji systemu Linux i uruchomienie jej na układzie ZYBO. %TODO karcie/Zynq
+Każda z metod wiąże się z innymi ograniczeniami i udostępnia inne możliwości. 
+W przypadku użycia narzędzi PetaLinux, użytkownik uzyskuje dostęp do ograniczonego zbioru dodatkowych aplikacji, niewielkiej w porównaniu do repozytoriów udostępnianych w dystrybucji Ubuntu Core. 
+Ponadto aktualizacja oprogramowania może wymagać ponownego zbudowania systemu lub nie być możliwa bez aktualizacji pakietu narzędzi. 
+
+Dystrybucja Ubuntu Core zapewnia dostęp do aktualizacji samego systemu, pozwalając na zachowanie bezpieczeństwa działania i dostęp do poprawek kodu oprogramowania. 
+Może to być kluczowe w przypadku wykorzystania układu ZYBO do działania przez długi czas z oczekiwaną niezawodnością. %TODO ZYBO/Zynq
+
+W przypadku konieczności dostosowania kodu systemu operacyjnego do własnych potrzeb, praktyczne staje się natomiast wykorzystanie technik budowy systemu bezpośrednio ze źródeł. 
+Ogranicza to jednak możliwości instalacji dodatkowego oprogramowania i wymaga dobrej znajomości zagadnień związanych z działaniem systemu Linux.
+
+Pakiet PetaLinux pozwala jednak na największą integrację z oprogramowaniem Vivado, co ułatwia prototypowanie aplikacji. 
+Dzięki udostępnieniu repozytorium oprogramowania oraz braku konieczności ingerencji użytkownika w proces budowania systemu, wykorzystanie go jest najlepszym rozwiązaniem w większości projektów. 
+Z tego powodu, w niniejszej pracy zdecydowano się na użycie tego rozwiązania na dalszym etapie projektu.
 
 \section{RTOS}
-System operacyjny czasu rzeczywistego (\emph{RTOS}, \emph{ang.} Real time operating system) to system operacyjny, którego zadaniem jest obsługa aplikacji przy zachowaniu założeń o nieprzekroczeniu maksymalnego dopuszczalnego czasu odpowiedzi programu. Pozwala to na projektowanie aplikacji, w których czas odpowiedzi ma kluczowe znaczenie, w tym systemów sterowania lub krytycznych aplikacji wizyjnych.
 
-Dzięki zastosowaniu dwurdzeniowego procesora w układzie ZYBO, rozważyć można zaprojektowanie rozwiązania, w których jeden z rdzeni odpowiada za wykonanie programu Linuxa, a drugi -- aplikacji lub systemu czasu rzeczywistego.
+System operacyjny czasu rzeczywistego (\emph{RTOS}, \emph{ang.} Real Time Operating System) to system operacyjny, którego zadaniem jest obsługa aplikacji przy zachowaniu założeń o nieprzekroczeniu maksymalnego dopuszczalnego czasu odpowiedzi programu. 
+Pozwala to na projektowanie aplikacji, w których czas odpowiedzi ma kluczowe znaczenie, w tym systemów sterowania lub krytycznych aplikacji wizyjnych.
 
-Rozpatrzono możliwość uruchomienia systemu operacyjnego PetaLinux i jego współpracę z aplikacjami czasu rzeczywistego na przykładzie OpenAMP. \cite{openamp-home} OpenAMP zapewnia interfejs umożliwiający komunikację pomiędzy programami działającymi w systemie Linux oraz aplikacjami czasu rzeczywistego, wykorzystując do tego narzędzia dostępne już w systemie.
+Dzięki zastosowaniu dwurdzeniowego procesora w układzie ZYBO, rozważyć można zaprojektowanie rozwiązania, w których jeden z rdzeni odpowiada za wykonanie programu Linuxa, a drugi -- aplikacji lub systemu czasu rzeczywistego. %TODO ZYBO/Zynq - aplikacji \textit{bare metal}
+
+Rozpatrzono możliwość uruchomienia systemu operacyjnego PetaLinux i jego współpracę z aplikacjami czasu rzeczywistego na przykładzie OpenAMP \cite{openamp-home}. 
+OpenAMP zapewnia interfejs umożliwiający komunikację pomiędzy programami działającymi w systemie Linux oraz aplikacjami czasu rzeczywistego, wykorzystując do tego narzędzia dostępne już w systemie.
 
 Z punktu widzenia klasycznego systemu operacyjnego, program działający na systemie czasu rzeczywistego jest zewnętrznym zasobem, który oczekuje na zlecenie wykonania konkretnego zadania i wysyła odpowiedź.
 
 Dzięki wykorzystaniu systemu czasu rzeczywistego FreeRTOS \cite{freeRTOS-home}, aplikacje mogą mieć dostęp do zasobów systemowych, w tym pamięci i interfejsów komunikacji.
 
-System czasu rzeczywistego może być wykorzystany do obliczeń o krytycznym znaczeniu. W przypadku wykorzystania klasycznego systemu operacyjnego, nie jest możliwe zagwarantowanie wykonania dowolnego zadania w określonym czasie. W trakcie działania aplikacji, system może zadecydować o jej czasowym zatrzymaniu i udostępnieniu zasobów innemu z oczekujących zadań. Aplikacja działająca w czasie rzeczywistym pozwala uniknąć tego zjawiska.
+%TODO Za krótkie akapity - proszę zobaczyć jak to wygląda w txt
 
-System PetaLinux oferuje dostęp do modułów \texttt{RPMsg}, \texttt{remoteproc}, \texttt{virtIO}, które są wymagane do zapewnienia komunikacji z systemem czasu rzeczywistego. Udostępnione zostały również aplikacje testowe, które pozwalają na sprawdzenie poprawności działania konfiguracji.
+System czasu rzeczywistego może być wykorzystany do obliczeń o krytycznym znaczeniu. 
+W przypadku wykorzystania klasycznego systemu operacyjnego, nie jest możliwe zagwarantowanie wykonania dowolnego zadania w określonym czasie. 
+W trakcie działania aplikacji, system może zadecydować o jej czasowym zatrzymaniu i udostępnieniu zasobów innemu z oczekujących zadań. 
+Aplikacja działająca w czasie rzeczywistym pozwala uniknąć tego zjawiska.
 
-Użycie systemu czasu rzeczywistego wymaga zmian projektowych, w tym konfiguracji dwóch instancji konsoli do komunikacji szeregowej i zdefiniowania struktury drzewa urządzeń określającej obszar pamięci dla obu systemów operacyjnych. Po zbudowaniu poprawnie skonfigurowanego systemu i jego uruchomieniu, przetestowanie działania aplikacji wymaga użycia poniższych poleceń.
+System PetaLinux oferuje dostęp do modułów \texttt{RPMsg}, \texttt{remoteproc}, \texttt{virtIO}, które są wymagane do zapewnienia komunikacji z systemem czasu rzeczywistego. 
+Udostępnione zostały również aplikacje testowe, które pozwalają na sprawdzenie poprawności działania konfiguracji.
+
+Użycie systemu czasu rzeczywistego wymaga zmian projektowych, w tym konfiguracji dwóch instancji konsoli do komunikacji szeregowej i zdefiniowania struktury drzewa urządzeń określającej obszar pamięci dla obu systemów operacyjnych. 
+Po zbudowaniu poprawnie skonfigurowanego systemu i jego uruchomieniu, przetestowanie działania aplikacji wymaga użycia poniższych poleceń.
 
 \begin{lstlisting}[breaklines=true]
 modprobe zynq_remoteproc firmware=image_echo_test
@@ -117,6 +199,8 @@ modprobe rpmsg_user_dev_driver
 echo_test
 \end{lstlisting}
 
-Uruchomione zostaną moduły odpowiedzialne za obsługę systemu czasu rzeczywistego i przeprowadzony zostanie test komunikacji.
+Uruchomione zostaną moduły odpowiedzialne za obsługę systemu czasu rzeczywistego i przeprowadzony zostanie test komunikacji. %TODO W rezultacie uruchomione...
 
-Konfiguracja i wykorzystanie systemów czasu rzeczywistego wykracza poza zakres niniejszej pracy, a zagadnienie jest obiektem obszernych opracowań. \cite{adam-taylor-openamp,zynq-openamp-gsg}
+Konfiguracja i wykorzystanie systemów czasu rzeczywistego wykracza poza zakres niniejszej pracy, a zagadnienie jest obiektem obszernych opracowań \cite{adam-taylor-openamp,zynq-openamp-gsg}.
+
+%TODO to źle kojarzę, że coś Pan z tym eksperymentował ?

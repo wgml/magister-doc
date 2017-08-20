@@ -1,18 +1,33 @@
 \chapter{Podsumowanie}
 \label{chap:summary}
 
-Celem niniejszej pracy była analiza możliwości systemu operacyjnego PetaLinux uruchomionego na układzie rodziny Zynq i próba wykorzystania go w zagadnieniach związanych z wbudowanymi systemami wizyjnymi. Użycie systemu operacyjnego oferuje większy, względem aplikacji typu bare-metal, zasób możliwości -- w tym komunikację sieciową, metody przechowywania danych, a także zaawansowane zadania algorytmiczne, dzięki zastosowaniu zewnętrznych bibliotek.
+%TODO No tutaj to trzeba się nieco bardziej postarać. 1. Ta formuła "autor" mi się nie podobna. 2. Nie robiłbym z tego kolejnego spisu zawartości, oczyiwście ref mogą zostać, ale struktura pownnina być inna. 3. Po pownej lekturze (przy poprawkach) na pewno będzie łatwiej wybrać najważniejsze osiągnięcia. 4. Nad tymi kierunkami rozwoju też bym poprawcował jeszcze...
+ 
+Celem niniejszej pracy była analiza możliwości systemu operacyjnego PetaLinux uruchomionego na układzie z~rodziny Zynq i próba wykorzystania go w zagadnieniach związanych z wbudowanymi systemami wizyjnymi. 
+Użycie systemu operacyjnego oferuje większy, względem aplikacji typu \textit{bare-metal}, zasób możliwości -- w tym komunikację sieciową, metody przechowywania danych, a także zaawansowane zadania algorytmiczne, dzięki zastosowaniu zewnętrznych bibliotek. %TODO realizację zaawans...
 
-W rozdziale \ref{cha:platform} autor przedstawił analizę układów rodziny Zynq. Zbadano możliwości wykorzystania istniejących systemów operacyjnych do działania na badanej platformie. Omówiono wady i zalety każdego ze znanych autorowi rozwiązań. Poruszono również zagadnienie realizacji obliczeń w czasie rzeczywistym na układzie Zynq.
+W rozdziale \ref{cha:platform} autor przedstawił analizę układów rodziny Zynq. Zbadano możliwości wykorzystania istniejących systemów operacyjnych do działania na badanej platformie. Omówiono wady i zalety każdego ze znanych autorowi rozwiązań. Poruszono również zagadnienie realizacji obliczeń w czasie rzeczywistym w układzie Zynq.
 
-W rozdziale \ref{cha:functionalities} zebrano opis szeregu funkcjonalności, które, z perspektywy autora, znaleźć mogą zastosowanie w projektach realizujących zadania przetwarzania obrazów i sekwencji wizyjnych. Omówiono protokół AXI i wyjaśniono jego rolę w projektowaniu współczesnych układów obliczeniowych, realizowanych na platformie FPGA. W ramach rozdziału zebrano wiadomości teoretyczne, a także informacje praktyczne związane z implementacją badanych funkcjonalności.
+W rozdziale \ref{cha:functionalities} zebrano opis szeregu funkcjonalności, które, z perspektywy autora, znaleźć mogą zastosowanie w projektach realizujących zadania przetwarzania obrazów i sekwencji wizyjnych. %TODO styl. zbyt zamotne zdanie
+Omówiono protokół AXI i wyjaśniono jego rolę w projektowaniu współczesnych układów obliczeniowych, realizowanych na platformie FPGA. %TODO FPGA/czy Zynq
+W ramach rozdziału zebrano wiadomości teoretyczne, a także informacje praktyczne związane z implementacją badanych funkcjonalności.
 
-Rozdział \ref{cha:project} zawiera wnioski z realizacji proponowanych projektów wizyjnych przy użyciu omawianych funkcjonalności. Autor zaproponował sposób realizacji podstawowego modułu wyznaczającego różnicę dwóch kolejnych obrazów należących do sekwencji wizyjnej. W dalszej części rozdziału, zaproponowano  metodę wykorzystania modułu w systemach wizyjnych wymagających buforowania pełnych klatek obrazu na przykładzie modułu generacji tła. Ze względu na ograniczenia przedstawione w omawianym rozdziale, nie zrealizowano kompletnej aplikacji wizyjnej wykorzystującej proponowane techniki.
+Rozdział \ref{cha:project} zawiera wnioski z realizacji proponowanych projektów wizyjnych przy użyciu omawianych funkcjonalności. 
+Autor zaproponował sposób realizacji podstawowego modułu wyznaczającego różnicę dwóch kolejnych obrazów należących do sekwencji wizyjnej. 
+W dalszej części rozdziału, zaproponowano  metodę wykorzystania modułu w systemach wizyjnych wymagających buforowania pełnych klatek obrazu na przykładzie modułu generacji tła. 
+Ze względu na ograniczenia przedstawione w omawianym rozdziale, nie zrealizowano kompletnej aplikacji wizyjnej wykorzystującej proponowane techniki.
+%TODO chodzi o te fps ? to proszę napisać, choć to arg. średni
 
-W rozdziale \ref{cha:vivado-conf} zebrano informacje związane z praktycznym wykorzystaniem omawianych funkcjonalności w projektach wizyjnych. Przedstawiono metody konfiguracji kolejnych modułów w ujęciu ogólnym, nie związanym z konkretnym układem obliczeniowym.
+W rozdziale \ref{cha:vivado-conf} zebrano informacje związane z praktycznym wykorzystaniem omawianych funkcjonalności w projektach wizyjnych. Przedstawiono metody konfiguracji kolejnych modułów w ujęciu ogólnym, nie związanym z konkretnym układem obliczeniowym. %TODO co to jest konkretny układ obliczeniowy ?
 
-Zdaniem autora, materiał zebrany i przedstawiony w ramach niniejszej pracy może posłużyć za podstawę do realizacji zaawansowanych algorytmów wizyjnych z wykorzystaniem platformy Zynq i systemu operacyjnego PetaLinux. Przedstawione techniki mogą zostać wykorzystane w sposób uniwersalny do rozwoju istniejących, jak i projektowania nowych aplikacji.
+Zdaniem autora, materiał zebrany i przedstawiony w ramach niniejszej pracy może posłużyć za podstawę do realizacji zaawansowanych algorytmów wizyjnych z wykorzystaniem platformy Zynq i systemu operacyjnego PetaLinux. 
+Przedstawione techniki mogą zostać wykorzystane do rozwoju istniejących, jak i projektowania nowych aplikacji.
 
-Zbiór przedstawionych przez autora w ramach pracy technik nie wyczerpuje możliwości badanego systemu operacyjnego. W ujęciu ogólnym, PetaLinux, lub inny system operacyjny działający na układzie rodziny Zynq, pozwala na projektowanie aplikacji, które różnią się w znacznym stopniu od programów wykorzystywanych w systemach wbudowanych o ograniczonych możliwościach. Zastosowanie zaawansowanych technik projektowania aplikacji pozwali na uzyskanie efektu zbliżonego do programów stosowanych w życiu codziennym, na przykład dzięki wykorzystaniu protokołów komunikacji sieciowej.
+Zbiór przedstawionych przez autora w ramach pracy technik nie wyczerpuje możliwości badanego systemu operacyjnego. 
+W ujęciu ogólnym, PetaLinux, lub inny system operacyjny działający na układzie z~rodziny Zynq, pozwala na projektowanie aplikacji, które różnią się w znacznym stopniu od programów wykorzystywanych w systemach wbudowanych o ograniczonych możliwościach. 
+Zastosowanie zaawansowanych technik projektowania aplikacji pozwali na uzyskanie efektu zbliżonego do programów stosowanych w życiu codziennym, na przykład dzięki wykorzystaniu protokołów komunikacji sieciowej.
 
 Innym kierunkiem rozwoju może być zastosowanie systemów czasu rzeczywistego we współpracy z klasycznym systemem operacyjnym do realizacji obliczeń algorytmicznych z uwzględnieniem rygoru czasowego.
+
+%TODO Przed tymi istniejącymy dodatkami jeszcze dodatek A - spis zawartości CD.
+%TODO Spis treści przed dodatki.
