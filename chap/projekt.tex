@@ -1,20 +1,15 @@
-\chapter{Analiza sygnału wizyjnego przy użyciu platformy Zynq i systemu PetaLinux}
+\chapter{System wizyjny zrealizowany na platformie Zynq z systemem operacyjnym PetaLinux}
 \label{cha:project}
 %TODO Taki średni ten tytuł. Przykładowy system wizyjne zrealizwany na platforie Zynq z systemem op. Pet.. czy jakoś tak.
-
-%kamera usb?
-
-% wejscie -> frame diff ->(bg model?) -> median -> | cpu | -> scale? -> index? (every n frames?) -> save to file -> webserver
+% OK
 
 %TODO To by jakoś inaczej trzeba było zacząć. Może po prostu od opisu systemu wizyjnego. 
+% poprawiłem
 
-Analiza sygnału wizyjnego to proces ekstrakcji informacji opisujących strumień danych przy użyciu algorytmu wizyjnego. 
-Celem analizy jest zwykle redukcja informacji do stanu, który pozwala opisać istotne z punktu widzenia przyjętego zadania przy użyciu możliwie najmniejszej liczby parametrów.  %TODO te dwa zdania raczej out
+W ramach pracy zbadano możliwość realizacji systemów wizyjnych wykorzystujących możliwości obliczeniowe logiki programowalnej oraz procesora ARM i integrujących obie architektury w jednym procesie algorytmicznym. Zaproponowano moduł odpowiedzialny za generację tła w celu segmentacji obiektów pierwszoplanowych. 
+Dane wejściowe pochodziły z kamery wideo połączonej z układem przy użyciu interfejsu HDMI. Sygnał wizyjny poddawany był przetwarzaniu i analizie przez elementy logiki programowalnej, a wyniki przesyłane były przy użyciu mechanizmu AXI VDMA do układu CPU. Proces rozpoznawania miał na celu indeksację obiektów pierwszoplanowych. Wykorzystano ponadto mechanizm AXI DMA do konfiguracji parametrów algorytmu logiki programowalnej oraz wykorzystano narzędzia systemu operacyjnego PetaLinux do obsługi procesu. Zaproponowano również mechanizm synchronizacji dwóch kolejnych ramek sygnału przy użyciu modułu AXI VDMA.
 
 
-Sygnał wejściowy ma zwykle postać obrazu kolorowego, a wynik opisany jest jako obraz binarny lub zbiór cech. %TODO to do przekształcenia
-
-Analiza sygnału wizyjnego stanowi rozwinięcie zagadnienia analizy pojedynczego obrazu. %TODO ty Przetwarzanie, analiza i roz... stanowi...
 W przypadku algorytmów przetwarzania sekwencji obrazów, na etapie analizy jednej klatki wykorzystać można informacje uzyskane w trakcie obliczeń dla poprzednich ramek. 
 Rozszerzenie kontekstu o parametry historyczne pozwala na projektowanie bardziej zaawansowanych systemów, zwykle wymaga jednak wykorzystania modułów zewnętrznej pamięci w celu przechowywania danych historycznych.
 
@@ -22,31 +17,42 @@ Wśród algorytmów wymagających kontekstu związanego z więcej niż jedną ra
 \begin{itemize}
 	\item segmentację obiektów pierwszoplanowych -- umożliwia podział obrazu na elementy tła oraz znajdujące się na pierwszym planie, pozwalając zwykle ograniczyć obszar analizy do fragmentów obrazu, z którymi związane są obiekty pierwszoplanowe,
 
-	\item indeksację i śledzenie obiektów -- indeksacja pozwala na przypisanie etykiet do obiektów i wyznaczenie zbioru niezależnych elementów obrazu. Pozwala to śledzić ruch każdego z obiektów oraz analizę zachowań,
+	\item śledzenie obiektów i analiza zachowań-- indeksacja to proces przypisanie etykiet do obiektów i wyznaczenie zbioru niezależnych elementów obrazu. Pozwala to śledzić ruch każdego z obiektów oraz analizę zachowań. Badanie zachowań, na przykładzie przechodniów, może umożliwić detekcję obecności osób w strefach nieuprawnionych czy wykrycie osób o nieokreślonych motywacjach działań i w ten sposób przyczynić się do zwiększenia bezpieczeństwa osób,
 	%TODO akurat do indeksacji pamięć potrzebna nie jest. Za to do śledzenie to różnie, ale kontekst na pewno. Zatem zostawić proszę tylko  śledzie - może nieco szerzej opisać.
+	% OK
 	
-	\item wyliczanie przepływu optycznego -- pozwala na analizę ruchu obiektów znajdujących się w kadrze, umożliwiając estymację kształtu, odległości czy parametrów ruchu. %TODO kształt to nie wiem...
+	\item wyliczanie przepływu optycznego -- pozwala na analizę ruchu obiektów znajdujących się w kadrze, umożliwiając estymację odległości czy parametrów ruchu. %TODO kształt to nie wiem...
+	% OK
 	
 	%TODO tu jeszcze można dodać np. rozpoznawanie/analizę zachowania.
+	% połączyłem analizę zachowań ze śledzeniem
 \end{itemize}
 
 Implementacja wymienionych typów algorytmów w architekturze potokowej może być utrudniona lub niemożliwa bez użycia zewnętrznego elementu pamięciowego. %TODO tu trzeba to poszerzyć. Bo tak. Problemem nie jest architektura a ograniczone zasoby FPGA - i to możne pokazać na konkrentym przykłądzie Zynq na Zybo ile ma RAM,  a ile jest potrzebne...
-Ponadto, końcowa analiza wyników algorytmu w architekturze FPGA jest odgórnie ograniczona do przewidywanych parametrów działania systemu -- na przykład, zagadnienie śledzenia obiektów może być ograniczone do maksymalnej zadanej liczby niezależnych elementów. %TODO zbyt to zamotane. Może FPGA - mniejsza elastyczność - tylko łądnie to opisać.
+Jedna ramka obrazu kolorowego o rozdzielczości $1280 \times 720$ pikseli ma rozmiar $2,8$MB. Karta ZYBO wyposażona jest w bloki pamięci BRAM o łącznej pojemności $2,1$ MB. Nawet w najprostszych systemach, wymagających buforowania wyłącznie jednej ramki obrazu nie jest więc możliwa realizacja tego zadania bez użycia pamięci zewnętrznej.
+
+Ponadto, końcowa analiza wyników algorytmu w architekturze FPGA jest odgórnie ograniczona do przewidywanych parametrów działania systemu, a w efekcie mniej elastyczna -- na przykład, zagadnienie śledzenia obiektów może być ograniczone do maksymalnej zadanej liczby niezależnych elementów. Proces analizy wymagać może budowania rozbudowanych maszyn stanu, których realizacja może być podatna na błędy, a dodanie nowych funkcjonalności utrudnione.
+%TODO zbyt to zamotane. Może FPGA - mniejsza elastyczność - tylko łądnie to opisać.
 %TODO Kolejna sprawa to nieefekjtywaność tworzenie rozbudowanych maszyn staniu do analizy danych.
+% OK?
+Ze względu na te ograniczenia, korzystny może okazać się podział algorytmu na niezależne etapy, wykonywane przez moduły sprzętowe zrealizowane w logice programowalnej lub procedury uruchamiane na ARM.  %TODO modułu sprzętowe zrealizowane w logice programowalnej lub procedury uruchramiane na ARM.
+% OK
 
-Ze względu na te ograniczenia, korzystny może okazać się podział algorytmu na niezależne etapy, wykonywane przez elementy logiki reprogramowalnej lub procesor ARM.  %TODO modułu sprzętowe zrealizowane w logice programowalnej lub procedury uruchramiane na ARM.
+Klasyczny sekwencyjny element obliczeniowy pozwala na adaptację algorytmu do zmieniających się w czasie parametrów obrazu -- na przykład śledzenie zmieniającej się liczby obiektów pierwszoplanowych. Umożliwiają to mechanizmy dynamicznej alokacji pamięci czy obsługi wyrażeń warunkowych i pętli, właściwie niedostępne w przypadku implementacji sprzętowych.%TODO może śledzenie ? może, że to jest dynamiczna alokacja ?
+% OK
 
-Klasyczny sekwencyjny element obliczeniowy pozwala na adaptację algorytmu do zmieniających się w czasie parametrów obrazu -- na przykład na analizę ruchu zmieniającej się liczby obiektów pierwszoplanowych. %TODO może śledzenie ? może, że to jest dynamiczna alokacja ?
-
-Ponadto, użycie systemu operacyjnego pozwala wykorzystać zaawansowane możliwości prezentacji i przechowywania wyników działania algorytmu wizyjnego, na przykład prezentację wyników przy użyciu interfejsu sieciowego lub zapis wyników do bazy danych. %TODO za dużo razy wyników.
-
+Ponadto, użycie systemu operacyjnego pozwala wykorzystać zaawansowane możliwości prezentacji i przechowywania wyników działania algorytmu wizyjnego, na przykład prezentację danych wyjściowych przy użyciu interfejsu sieciowego lub zapis do bazy danych. %TODO za dużo razy wyników.
+% OK
 W poniższym rozdziale zaproponowano metody wykorzystania platformy Zynq na przykładzie wybranych elementów systemów wizyjnych.
 
 %TODO ponowanie za krótkie te akapity
+% popracuję nad tym
 
-\section{Moduł wyznaczania różnicy sekwencji obrazów} %TODO sąsiednich/kolejncyh ramek
+\section{Moduł wyznaczania różnicy kolejnych ramek w sekwencji obrazów} %TODO sąsiednich/kolejncyh ramek
+% OK
 
-Wyznaczenie różnicy pomiędzy dwoma kolejnymi ramkami strumienia wizyjnego wymaga wyznaczenia dla każdego piksela wartości różnicy, opisanej formułą \eqref{eq:frame-difference}. %TODO Do równań stososować eqref, powt. wyznacz..
+Wyznaczenie różnicy pomiędzy dwoma kolejnymi ramkami strumienia wizyjnego wymaga obliczenia dla każdego piksela wartości różnicy, opisanej formułą \eqref{eq:frame-difference}. %TODO Do równań stososować eqref, powt. wyznacz..
+% OK
 
 \begin{equation}
 \label{eq:frame-difference}
@@ -60,9 +66,20 @@ gdzie:
 	d^i(x,y) & wyznaczana wartość różnicy. \\
 \end{conditions}
 
-Sygnał źródłowy i wynikowy  mają zwykle charakter obrazu przedstawionego w odcieniach szarości. %TODO no właśnie nie zawsze... to trzeba szerzej skomentować. Druga sprawa, że może być jeszcze odlełość Euklidesowa.
-Zagadnienie wyznaczania różnicy dwóch kolejnych obrazów w sekwencji może stanowić przykład algorytmu, którego realizacja w systemach potokowych, pomimo niskiej złożoności obliczeniowej, może być utrudniona. %TODO uwaga jak wcześniej, nie potokowość to problem. W sumie sam algorytm b. dobrze nadaje się do pracy w potoku. 
-W praktycznych realizacjach, konieczne jest wykorzystanie modułów pamięci operacyjnej w celu zapamiętania ramki obrazu. %TODO poprzedniej.
+W omawianym przypadku, sygnał źródłowy i wynikowy mają postać obrazu przedstawionego w odcieniach szarości. %TODO no właśnie nie zawsze... to trzeba szerzej skomentować. Druga sprawa, że może być jeszcze odlełość Euklidesowa.
+% OK
+% Euklides tzn tak, jak zawarłem poniżej?
+Zastosować można również inne metryki odległości pomiędzy pikselami, na przykład metrykę euklidesową, opisaną formułą \eqref{eq:frame-difference-euc}, która w przypadku sygnałów o jednym kanale jest równoznaczna formule \eqref{eq:frame-difference} ale może być również zastosowana dla obrazów kolorowych.
+\begin{equation}
+\label{eq:frame-difference-euc}
+d_e^i(x,y) = \sqrt{(p^i(x,y) - p^{i-1}(x,y))^2}
+\end{equation}
+
+Wyznaczanie różnicy obrazów składających się z więcej niż jednego kanału jest możliwe, jednak interpretacja graficzna wyników może być nieczytelna. Obraz kolorowy poddać można redukcji do jednego kanału przed wykonaniem kroku wyznaczania różnicy.
+Zagadnienie obliczania różnicy dwóch kolejnych obrazów w sekwencji może stanowić przykład algorytmu, którego realizacja w systemach potokowych, pomimo niskiej złożoności obliczeniowej, może być utrudniona, ze względu na konieczność wykorzystania zewnętrznego modułu pamięci.%TODO uwaga jak wcześniej, nie potokowość to problem. W sumie sam algorytm b. dobrze nadaje się do pracy w potoku. 
+% to prawda
+W praktycznych realizacjach, konieczne jest wykorzystanie modułów pamięci operacyjnej w celu zapamiętania poprzedniej ramki obrazu. %TODO poprzedniej.
+% OK
 
 Architekturę strumieniową realizującą omawiane zadanie przedstawiono na schemacie \ref{fig:frame-difference}.
 
@@ -74,29 +91,34 @@ Architekturę strumieniową realizującą omawiane zadanie przedstawiono na sche
 	\label{fig:frame-difference}
 \end{figure}
 %TODO rozwinąć ten bufor VDMA tzn. dodać RAM i read i write.
+% dodałem poniżej, by zachować czytelność
 
-Wykorzystano moduł AXI VDMA w roli bufora sygnału, opóźniającego dane o pełen cykl strumieniowania ramki obrazu.
+Wykorzystano moduł AXI VDMA w roli bufora sygnału, opóźniającego dane o pełen cykl strumieniowania ramki obrazu. Schemat elementu buforującego przedstawiono na schemacie \ref{fig:vdma-buffer}.
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{\textwidth}
+	\input{img/vdma-buffer.pdf_tex}
+	\caption{Schemat elementu buforującego ramkę obrazu.}
+	\label{fig:vdma-buffer}
+\end{figure}
 
 Realizacja techniczna bufora wymagała zaprojektowania mechanizmu synchronizacji dwóch niezależnych klatek sygnału wizyjnego. 
 W tym celu wykorzystano moduł kolejki FIFO dla protokołu AXI4-Stream oraz dedykowany element synchronizujący kanał odczytu z bufora VDMA z sygnałem rozpoczęcia nowej ramki obrazu strumienia wejściowego. %TODO nie ma na schemacie, nazwa tego modułu.
+%rozbudowałem opis
 
 Założono, że algorytm będzie wykorzystywany w systemach wizyjnych czasu rzeczywistego, działających w architekturze potokowej. 
-
 Aplikację przystosowano do działania z sygnałem wizyjnym o dowolnej rozdzielczości i próbkowaniu, składającym się z jednego lub wielu kanałów obrazu.
-
 Zastosowano kolejkę FIFO o długości 128 elementów oraz linie buforujące związane z modułem VDMA o tej samej długości.
 
 W celu weryfikacji działania elementu wyznaczającego różnicę sekwencji obrazów zaprojektowano strukturę rozszerzoną o elementy umożliwiające komunikację przy użyciu protokołu AXI oraz przepływ sygnału wizyjnego. 
 Zaprojektowano aplikację umożliwiającą konfigurację modułu w trybie \textit{bare-metal} oraz przy współpracy systemu PetaLinux.
 
 Sprawdzono działanie aplikacji dla sygnału wizyjnego o rozdzielczości $1280 \times 720$ pikseli i częstotliwości sześćdziesięciu ramek na sekundę.
-
 Szacowane zapotrzebowanie wynikowego systemu na energię elektryczną nie powinno przekroczyć $1,86W$. Właściwa energia wymagana do przeprowadzania operacji obliczeniowych nie przekracza wartości $1,723W$, w tym $1,559W$ ( $90\%$) to energia wymagana do obsługi układu ARM.
 
-W tabeli \ref{tab;frame-difference-utilization} przedstawiono zapotrzebowanie na zasoby FPGA układu Zynq.
-
 \begin{table}[h]
-	\caption{Wykorzystanie zasobów przez aplikację.} %TODO jaką
+	\caption{Wykorzystanie zasobów przez aplikację wyznaczającą różnicę kolejnych ramek obrazu.} %TODO jaką
+	% OK
 	\centering
 	\label{tab;frame-difference-utilization}
 	\begin{tabular}{|l|c|c|c|}
@@ -110,32 +132,47 @@ W tabeli \ref{tab;frame-difference-utilization} przedstawiono zapotrzebowanie na
 	\end{tabular}
 \end{table}
 
+W tabeli \ref{tab;frame-difference-utilization} przedstawiono zapotrzebowanie na zasoby FPGA układu Zynq.
 Moduł przeznaczony jest do pracy z częstotliwością $200MHz$, co pozwala na analizę sygnału wideo o rozdzielczości $1920 \times 1080$ pikseli i częstotliwości obrazu $60Hz$.
-
 %TODO może jakieś zdjęcie pokazuję, że działa. No i jeszcze te wszyskie szczegóły konfiguracji tego modułu. I coś o tym źródle - że ma to być film HD. Kolejna kwestia to przygotowanie takiego projektu - działającego/wzorcowego i do repo na płytce, a tu napisać, że takie coś jest.
-
-
+% źródło opisałem ponad tabelą
+% zdjęcie? tzn. ramka A | ramka B | różnica ramek? 
+Proces konfiguracji modułu VDMA wykorzystywanego do buforowania ramki obrazu przedstawiono w sekcji \ref{sec:vivado-axi-vdma}.
+Wynik działania aplikacji przedstawiono na rysunku \ref{fig:frame-difference-result}. Projekty Vivado i PetaLinux związane z omawianą aplikacją dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}.
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=12cm]{img/placeholder.jpg}
+	\caption{Wynik działania aplikacji wyznaczającej różnicę dwóch kolejnych ramek obrazu.}
+	\label{fig:frame-difference-result}
+\end{figure}
 \section{Moduł generacji tła}
 
-Poza najprostszymi przypadkami analizy ruchu, wyznaczenie różnicy obrazów wewnątrz sekwencji wizyjnej nie stanowi informacji wystarczającej do analizy strumienia obrazów. %TODO zdanie do przeredagowania informacja uzyskana w wyniku odejmowanie ramek
-Zagadnienie to może być jednak elementem składowym bardziej rozbudowanych algorytmów, na przykład modułów realizujących algorytm generacji/modelowania tła. %TODO i segmentacji obiektów pierwszoplanowych, gdzie pozwala określić, które obiekty są ruchome.
+Poza najprostszymi przypadkami analizy ruchu, informacja uzyskana w wyniku odejmowania ramek sekwencji wizyjnej nie jest wystarczająca do analizy strumienia obrazów.
+%TODO zdanie do przeredagowania informacja uzyskana w wyniku odejmowanie ramek
+% OK
+Zagadnienie to może być jednak elementem składowym bardziej rozbudowanych algorytmów, na przykład modułów realizujących algorytm generacji i modelowania tła, czy segmentacji obiektów pierwszoplanowych, gdzie pozwala określić zbiór obiektów będących w ruchu. %TODO i segmentacji obiektów pierwszoplanowych, gdzie pozwala określić, które obiekty są ruchome.
+% OK
 
 Generacja tła to zadanie ekstrakcji elementów \textit{tła} badanego obrazu, a więc takich, które stanowią stały, niezmienny element sceny. 
 Dzięki wydzieleniu obiektów tła, pozostałe elementy obrazu klasyfikowane są jako obiekty pierwszoplanowe. 
-Zwykle, uważa się za nie elementy będące w ruchu. %TODO no właśnie nie, bo jeszcze są zatrzymne samochodu, piesi itp...
+Zwykle, uważa się za nie elementy będące w ruchu. Uwzględnić jednak należy również obiekty, których ruch jest niejednostajny, na przykład zatrzymujący się piesi lub pojazdy na skrzyżowaniu. %TODO no właśnie nie, bo jeszcze są zatrzymne samochodu, piesi itp...
+% OK
+
 Bardziej zaawansowane metody generacji tła uwzględniają ponadto dodatkowe warunki klasyfikacji obiektów do dwóch z omawianych grup:
 \begin{itemize}
 	\item cienie -- choć mogą być związane zarówno z elementami tła jak i pierwszoplanowymi, oczekiwane jest zwykle, by nie były uwzględniane w grupie obiektów wymagających analizy,
 	\item ruchome elementy tła -- występujące na przykład pod wpływem wiatru ruchy roślin czy deszcz nie powinny być traktowane jako obiekty pierwszoplanowe,
-	\item obiekty o niejednorodnym ruchu -- algorytm powinien klasyfikować poprawnie obiekty pierwszoplanowe, które pojawiają się na scenie a następnie zatrzymują, nie traktując ich jako elementy tła, %TODO nie wiem czy nazwa niejednorodny ruch to jest to o co chodzi...
+	\item obiekty o niejednostajnym ruchu -- algorytm powinien klasyfikować poprawnie obiekty pierwszoplanowe, które pojawiają się na scenie a następnie zatrzymują, nie traktując ich jako elementy tła, %TODO nie wiem czy nazwa niejednorodny ruch to jest to o co chodzi...
+	% niejednostajny brzmi lepiej
 	\item obiekty wzajemnie przesłaniające się -- elementy pierwszego planu mogą, w wyniku ruchu, zostać zasłonięte z perspektywy kamery przez elementy tła. Nie powinno to wpłynąć na zmianę klasyfikacji obiektów z obu grup.
 	\item warunki oświetleniowe -- możliwość zmiany warunków oświetleniowych może wymagać ciągłej korekty parametrów generowanego modelu tła. Uwzględnić należy zarówno zmiany długookresowe, wynikające na przykład z cyklu dobowego, jak i krótkookresowe, wynikające z nagłych zmian, takich jak włączenie lub wyłączenie sztucznego oświetlenia sceny.
 \end{itemize}
 
 Zagadnienie modelowania tła nie jest trywialne i wymaga metod uwzględniających część lub wszystkie z wymienionych powyżej ograniczeń. 
 Opracowanie dostępnej literatury poruszającej ten temat znaleźć można w pracy \cite{Kryjak2012}.
-W ramach niniejszej pracy zdecydowano się na realizację modułu generacji tła przy pomocy metody modelu tła z bezwładnością, opisanej zależnością \eqref{eq:background-model}. %TODO raczej metody tzw. średniej bieżącej. i bez modułu
-
+W ramach niniejszego opracowania zdecydowano się na realizację generacji tła przy pomocy metody średniej bieżącej, opisanej zależnością \eqref{eq:background-model}. %TODO raczej metody tzw. średniej bieżącej. i bez modułu
+% OK
+Wartość modelu tła wyznaczana jest niezależnie dla każdej składowej obrazu.
 \begin{equation}
 \label{eq:background-model}
 b^i(x,y) = \alpha p^i(x,y) + (1-\alpha)b^{i-1}(x,y)
@@ -150,12 +187,15 @@ gdzie:
 \end{conditions}
 
 %TODO a coś o przestrzeni barw ?
+%dodałem informację powyżej, YCbCr pojawia się nieco dalej
 
-Wadą przedstawionej metody jest jej wrażliwość na krótkookresowe zmiany oświetlenia. 
-Jedną z metod eliminacji zakłóceń występujących cyklicznie jest wprowadzenie możliwości zmiany modelu tła. 
-Stosując kilka niezależnych modeli, budować można warianty obejmujące zbiór najczęściej występujących historycznie danych, uporządkowanych według prawdopodobieństwa wystąpienia. 
-W takim przypadku obliczenia prowadzone są dla każdego modelu tła niezależnie, wartość nie jest jednak aktualizowana w przypadku, gdy stan piksela nie jest zbliżony do oczekiwanego.
+Wadą przedstawionej metody jest jej wrażliwość na krótkookresowe zmiany oświetlenia.
+Jednym ze sposobów eliminacji zakłóceń pojawiających się cyklicznie -- na przykład drgań liści pod wpływem wiatru -- jest wykorzystanie wielu niezależnie wyznaczanych modeli tła.
+Stosując kilka modeli, budować można warianty dopasowane do najczęściej występujących przypadków, uporządkowanych według prawdopodobieństwa wystąpienia. 
+Przy takim podejściu, obliczenia prowadzone są dla każdego modelu tła niezależnie, wartość nie jest jednak aktualizowana w sytuacji, gdy stan piksela nie jest zbliżony do oczekiwanego, związanego z wybranym modelem.
+Jednym z dostępnych rozwiązań jest algorytm GMM (\emph{ang.} Gaussian Mixture Model), wykorzystujący kilka rozkładów prawdopodobieństwa Gaussa. 
 %TODO 1. Opis przeredagować jeszcze, bo jest cout niejasny. 2. Napisać, że przykłądem jest GMM.
+% OK
 W niniejszej pracy nie zdecydowano się na realizację opisanej powyżej metody eliminacji zakłóceń, uzasadniając to zachowaniem czytelności i prostoty implementacji.
 
 Algorytm dostosowano do pracy z sygnałem opisanym w przestrzeni barw \textit{YCbCr}. 
@@ -165,8 +205,10 @@ W tym celu wprowadzono dwa warunki wykonania obliczeń:
 \begin{enumerate}
 	\item Warunek ruchu.
 	
-	Aktualizacja powinna mieć miejsce wyłącznie w przypadku, jeśli spełniony jest wartość piksela nie uległa zmianie większej niż dopuszczalna względem poprzedniej ramki obrazu. %TODO styl. coś nie tak ze zdaniem 
-	W przeciwnym razie przyjąć można, że nastąpił ruch elementu i nie należy on do tła. %TODO raczej, że piksel 
+	Aktualizacja powinna mieć miejsce wyłącznie w przypadku, jeśli wartość piksela nie uległa zmianie większej niż dopuszczalna względem poprzedniej ramki obrazu. %TODO styl. coś nie tak ze zdaniem 
+	% poprawiłem
+	W przeciwnym razie przyjąć można, że nastąpił ruch elementu i piksel nie należy do tła. %TODO raczej, że piksel 
+	% OK
 	Zależność opisano wzorem \eqref{eq:background-model-movement-mask}.
 	
 	\begin{equation}
@@ -175,25 +217,30 @@ W tym celu wprowadzono dwa warunki wykonania obliczeń:
 	\end{equation}
 	gdzie:
 	\begin{conditions}
-		d^i_Y(x,y) & różnica sekwencji dla kanału $Y$ obrazu, opisana wzorem \eqref{eq:frame-difference}, \\ %TODO ramek, sekwencji brzmi dziwnie
-		T_{fd} & współczynnik bezwładności ruchu z zakresu $[0,255]$, zwykle nie przekraczający $30$. %TODO może po prostu próg ?
+		d^i_Y(x,y) & różnica ramek dla kanału $Y$ obrazu, opisana wzorem \eqref{eq:frame-difference}, \\ %TODO ramek, sekwencji brzmi dziwnie
+		% OK
+		T_{fd} & próg ruchu z zakresu $[0,255]$, zwykle nie przekraczający $30$. %TODO może po prostu próg ?
+		% OK, próg ruchu?
 	\end{conditions}
 
 	Większe wartości współczynnika $T_{fd}$ pozwalają dokonać aktualizacji modelu tła dla elementów o coraz większej różnicy względem poprzedniej ramki obrazu.
 	
 	\item Warunek tła.
 	
-	Aktualizacja powinna mieć miejsce wyłącznie w przypadku, jeśli piksel może zostać sklasyfikowany jako element tła na bazie aktualnego modelu.
+	Aktualizacja powinna mieć miejsce wyłącznie w przypadku, jeśli piksel został sklasyfikowany jako element tła na bazie aktualnego modelu.
 	%TODO nie może zostać tylko został
+	% OK
 	Zależność opisano równaniem \eqref{eq:background-model-background-mask-1}.
 	\begin{equation}
 	\label{eq:background-model-background-mask-1}
-	m^i_Y(x,y) + 2m^i_{Cb}(x,y) + 2m^i_{Cr}(x,y) > T_{bg}
+	w_Ym^i_Y(x,y) + w_{Cb}m^i_{Cb}(x,y) + w_{Cr}m^i_{Cr}(x,y) > T_{bg}
 	\end{equation}
 	%TODO jednak wprowadziłbym tu wagi i potem napisał, że było 1,2,2 w eksperymentach...
+	% OK
 	gdzie:
 	\begin{conditions}
 		m^i(x,y) & zmiana wartości piksela względem tła, opisana zależnością \ref{eq:background-model-background-mask-2}, \\
+		w_k & współczynnik wagi związany z $k$-tym kanałem \\
 		T_{bg} & współczynnik bezwładności przynależności do tła z zakresu $[0,255]$. \\
 	\end{conditions}
 	
@@ -203,13 +250,15 @@ W tym celu wprowadzono dwa warunki wykonania obliczeń:
 	\end{equation}
 	gdzie:
 	\begin{conditions}
-		k & identyfikator kanału sygnału wizyjnego. \\ %TODO indeks składowej barwnej
+		k & indeks składowej barwnej sygnału. \\ %TODO indeks składowej barwnej
+		% OK
 	\end{conditions}
 	
 	Większe wartości parametru $T_{bg}$ pozwalają na aktualizację modelu tła w sytuacji, gdy różnica piksela względem aktualnego modelu tła jest znaczna. 
 	Jego wartość nie przekracza jednak zwykle $30$.
 \end{enumerate}
 
+W trakcie eksperymentów przyjęto wartości współczynników wag przynależności do tła odpowiednio: $w_Y=1, w_{Cb} = 2, w_{Cr} = 2$.
 Aktualizacja modelu tła powinna mieć miejsce wyłącznie w sytuacji, gdy spełnione są oba warunki przedstawione powyżej.
 Schemat blokowy algorytmu przestawiono na rysunku \ref{fig:background-model}.
 
@@ -224,9 +273,11 @@ Schemat blokowy algorytmu przestawiono na rysunku \ref{fig:background-model}.
 
 Algorytm wymaga wykorzystania dwóch buforów AXI VDMA. 
 Jeden z nich przeznaczony jest do buforowania ramki obrazu wejściowego, natomiast drugi przechowuje aktualny model tła. 
-Alternatywą jest zastosowanie wspólnego bufora i przechowywanie w nim dwóch scalonych sygnałów. %TODO a to drugie jest lepsze/gorsze ?
+Alternatywą jest zastosowanie wspólnego bufora i przechowywanie w nim dwóch scalonych sygnałów. Rozwiązanie to pozwala ograniczyć zapotrzebowanie na zasoby logiczne, może jednak wiązać się z trudnościami w synchronizacji wielu strumieni wizyjnych.%TODO a to drugie jest lepsze/gorsze ?
+% rozwinąłem nieco
 
-Algorytm zintegrowano z układem umożliwiającym komunikację z procesorem ARM, aby umożliwić transmisję uzyskanego modelu tła i jego dalszą analizę. %TODO umoż, umoż..
+Algorytm zintegrowano z układem umożliwiającym komunikację z procesorem ARM, co pozwala na transmisję uzyskanego modelu tła i jego dalszą analizę. %TODO umoż, umoż..
+%OK
 Wykorzystano w tym celu trzeci moduł AXI VDMA. %TODO nie ma go na schemacie...
 W praktycznych zastosowaniach moduł ten może okazać się zbędny, ze względu na to, że w jednym z pozostałych modułów VDMA przechowywany jest model tła dla poprzedniej klatki obrazu. 
 Opóźnienie jednego cyklu nie powinno wpłynąć negatywnie na jakość działania aplikacji. 
@@ -234,13 +285,9 @@ Niezależny moduł VDMA pozwala jednak na przesyłanie wyników również w przy
 
 
 Ze względu na duże zapotrzebowanie algorytmu na elementy obliczeniowe logiki reprogramowalnej, zdecydowano się ograniczyć rozmiar kolejek FIFO do $64$ elementów.
-
 Sprawdzono działanie aplikacji dla sygnału wizyjnego o rozdzielczości $1280 \times 720$ pikseli i częstotliwości sześćdziesięciu ramek na sekundę.
-
 Szacowane zapotrzebowanie wynikowego systemu na energię elektryczną nie powinno przekroczyć $1,936W$. Właściwa energia wymagana do przeprowadzania operacji obliczeniowych nie przekracza wartości $1,797W$, w tym $1,565W$ ( $87\%$) to energia wymagana do obsługi układu ARM.
 
-
-W tabeli \ref{tab;background-model-utilization} przedstawiono zapotrzebowanie na zasoby FPGA układu Zynq.
 
 \begin{table}[h]
 	\caption{Wykorzystanie zasobów przez aplikację.}
@@ -257,19 +304,32 @@ W tabeli \ref{tab;background-model-utilization} przedstawiono zapotrzebowanie na
 	\end{tabular}
 \end{table}
 %TODO na pewno 100 % Slice ?
+% tak sądzę. Tzn tak było napisane w raporcie vivado. Moduły VDMA i pokrewne połykają zasoby...
+% miałem spore problemy z "upchaniem" trzech VDMA na ZYBO, sądzę że stąd to 100 %
 
+W tabeli \ref{tab;background-model-utilization} przedstawiono zapotrzebowanie na zasoby FPGA układu Zynq.
 Proporcjonalnie duże zużycie zasobów wynika z konieczności wykorzystania wielu modułów AXI VDMA oraz innych elementów wykorzystujących interfejs AXI. 
 Może ono być ograniczone przez wykorzystanie jednego modułu do obsługi buforowania zarówno ramki obrazu, jak i modelu tła. 
-W przypadku złożonych aplikacji, konieczne może okazać się użycie układu o większym zbiorze dostępnych zasobów obliczeniowych. %TODO z większą liczbą dostępnych...
-
+W przypadku złożonych aplikacji, konieczne może okazać się użycie układu z większą liczbą dostępnych zasobów obliczeniowych. %TODO z większą liczbą dostępnych...
+% OK
 Moduł przeznaczony jest do pracy z częstotliwością $200MHz$, co pozwala na analizę sygnału wideo o rozdzielczości $1920 \times 1080$ pikseli i częstotliwości obrazu $60Hz$.
 
+Wynik działania aplikacji przedstawiono na rysunku \ref{fig:background-model-result}. Projekty Vivado i PetaLinux związane z omawianą aplikacją dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}. Proces konfiguracji aplikacji przedstawiono w sekcji \ref{sec:background-buffer-conf}.
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=12cm]{img/placeholder.jpg}
+	\caption{Wynik działania aplikacji generacji tła obrazu.}
+	\label{fig:background-model-result}
+\end{figure}
 %TODO 1. Te akapity krótkie - to dotyczy całej pracy, ale przypominam.
+% OK
 %TODO 2. Uwagi podobnie jak wczęsniej tj.
 %TODO może jakieś zdjęcie pokazuję, że działa. No i jeszcze te wszyskie szczegóły konfiguracji tego modułu. I coś o tym źródle - że ma to być film HD. Kolejna kwestia to przygotowanie takiego projektu - działającego/wzorcowego i do repo na płytce, a tu napisać, że takie coś jest.
 
 %TODO Wydaje mi się, że jeszcze umawialiśmy się na przesył maski (kwestię indeksacji pozostawię) i coś po stronie PetaLiunx.
-
+% co do indeksacji, nie sądzę, by moduł "zmieścił" się obok vdma na ZYBO. Musiałbym mocno zoptymalizować te struktury vdma, a wydaje mi się, że cenniejsza jest jednak czytelność tego, co mam teraz. Dlatego nie zająłem się indeksacją po stronie fpga. W CPU to w zasadzie wywołanie jednej metody w CV, ale nie ma szans na real-time.
+% rzeczy po stronie peta opisałem w kolejnej sekcji.
+% wszystkie moduły vdma dostępne są z poziomu linuxa, więc nie ma problemu z odczytem masek.
 \section{Integracja z systemem PetaLinux}
 
 Na etapie prototypowania, elementy logiki reprogramowalnej kontrolowane były przez aplikację działającą w trybie \textit{bare-metal}, bez wsparcia dla systemu operacyjnego.
@@ -310,16 +370,25 @@ Założono, że projektowana aplikacja powinna spełniać szereg wymagań:
 
 Zaprojektowano aplikację w języku C, spełniającą przedstawione wymagania.
 Program odpowiedzialny jest za konfigurację elementów logiki reprogramowalnej na podstawie wartości przekazanych przy użyciu argumentów wiersza poleceń. 
-Aplikacja jest odpowiedzialna za monitorowanie działania algorytmu i zapis informacji logu do pliku. %TODO powt. odpow
+Aplikacja wykonuje operacje monitorowania działania algorytmu i zapisu informacji logu do pliku. %TODO powt. odpow
+% OK
 Ponadto, umożliwia cykliczny zapis obrazów będących wynikiem działania algorytmu do plików graficznych. 
 
 Proces obsługi aplikacji opiera się na wykorzystaniu protokołu SSH, program udostępnia również interfejs HTTP, umożliwiający uzyskanie aktualnych wyników działania algorytmu.
-Zbadano możliwość wykorzystania aplikacji w roli elementu obliczeniowego, odpowiedzialnego za przeprowadzenie części obliczeń algorytmicznych. %TODO powt. obliczeń
+Zbadano możliwość wykorzystania aplikacji w roli elementu obliczeniowego, odpowiedzialnego za przeprowadzenie części operacji algorytmicznych. %TODO powt. obliczeń
+% OK
 Zaproponowano moduł indeksacji obiektów na bazie generowanego modelu tła. 
 W tym celu wykorzystano procedurę \texttt{cv::connectedComponents} dostępną w bibliotece OpenCV. %TODO No właśnie - to może trzeba to gdzieś zasygnalizować. Najlepiej na poczatu rozdziału, gdzie powienien Pan opisać całosć tego interesu... tzn. cały algorytm, scheamt, podział HW/SW itp.
 
 Ze względu na ograniczenia sprzętowe, moduł indeksacji nie był w stanie spełnić wymagań pracy w czasie rzeczywistym dla sygnału wizyjnego o częstotliwości $60Hz$ i rozdzielczości $1280 \times 720 $ pikseli -- jego wydajność nie przekraczała piętnastu ramek na sekundę.
-
+Na rysunku \ref{fig:background-buffer-www} przedstawiono widok interfejsu www udostępnianego przez aplikację, przedstawiający aktualny stan i wyniki działania algorytmu.
+Związane z omawianą aplikacją dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}.
+\begin{figure}[!htb]
+	\centering
+	\includegraphics[width=12cm]{img/placeholder.jpg}
+	\caption{Interfejs www aplikacji}
+	\label{fig:background-buffer-www}
+\end{figure}
 \section*{Podsumowanie}
 
 Zaproponowane rozwiązania projektowe pozwalają na wykorzystanie części funkcji systemu operacyjnego, które badane były w ramach pracy. 
@@ -332,7 +401,8 @@ Program działający pod kontrolą systemu operacyjnego umożliwia prowadzenie z
 Wykorzystanie systemu operacyjnego pozwala również na implementację aplikacji w dowolnym języku programowania. 
 Dzięki temu, stosując dedykowane rozwiązania programistyczne, projektowanie aplikacji o rozbudowanych możliwościach zajmuje mniej czasu.
 
-W trakcie realizacji projektu napotkano szereg ograniczeń architektonicznych. %TODO trochę - styl archite...
+W trakcie realizacji projektu napotkano szereg ograniczeń. %TODO trochę - styl archite...
+% OK
 \begin{itemize}
 	\item Liczba elementów obliczeniowych wykorzystywanego układu Zynq nie pozwala na realizację rozbudowanych rozwiązań algorytmicznych przy użyciu zaproponowanych technik. 
 	Ze względu na duże zapotrzebowanie na elementy logiki przez moduły AXI VDMA, buforowanie pełnych ramek obrazu jest kosztowne. 
@@ -357,3 +427,5 @@ W trakcie realizacji projektu napotkano szereg ograniczeń architektonicznych. %
 %TODO Tak samo jakieś screeny.
 %TODO No i co z tego, że indeksacja 15 fps - a da się to jakoś pokazać ? Że to działa ? Wizualnie.
 %TODO Co z HTTP ? 
+% http -działa. Dołączę screen interfejsu, choć to będzie coś bardzo prostego. Tzn np aktualny wynik generacji tła czy indeksacji + gdzieś obok wartości parametrów algorytmu. Do tej pory zadowalałem się tym, że gdy uderzałem pod IP ZYBO dostawałem w odpowiedzi png z aktualnym stanem vdma, dlatego nie dodawałem tego do pracy.
+% Myślałem o tym, by umożliwić modyfikację parametrów z poziomu http, ale serwer, który napisałem siedzi w C i podejrzewam, że dodanie obsługi parametrów zapytania będzie uciążliwa.
