@@ -2,8 +2,19 @@
 \label{cha:neon-source}
 
 %TODO by się przydał "lekki" komentarz
+% OK
 
-\begin{lstlisting}[breaklines=true, language=C, caption=Implementacja bazowa]
+Na listingach poniżej zaprezentowano implementacje procedury wyznaczającej wartość iloczynu skalarnego dwóch wektorów o zadanej długości. Listing \ref{lis:dot-product-base} zawiera implementację bazową, wykorzystującą podstawowe operacje dostępne w języku C.
+
+Listing \ref{lis:dot-product-neon} wykorzystuje funkcjonalności modułu NEON w celu potencjalnego zmaksymalizowania wydajności operacji. Obie implementacje porównano z procedurą napisaną w asemblerze, wykorzystującą instrukcje koprocesora VFP, przedstawioną na listingu \ref{lis:dot-product-asm}.
+
+Sposób wykorzystania procedur w programie przedstawiono na listingu \ref{lis:dot-product-main}. Kompilacja programu wymaga aktywacji przełączników odpowiedzialnych za obsługę instrukcji NEON. Wykorzystano również techniki optymalizacji udostępniane w kompilatorze \textit{gcc}. Polecenie kompilacji przedstawiono poniżej:
+
+\begin{lstlisting}[breaklines=true]
+arm-linux-gnueabihf-gcc -Wall -O3 -mcpu=cortex-a9 -mfpu=neon -ftree-vectorize -mvectorize-with-neon-quad -mfloat-abi=hard -ffast-math -funsafe-math-optimizations -g -c -o "main.o" "main.c"
+\end{lstlisting}
+
+\begin{lstlisting}[breaklines=true, language=C, caption=Implementacja bazowa., label=lis:dot-product-base]
 float dot_product(float *first, float *second, unsigned int len) {
 	float sum = 0.0;
 	for (unsigned int i = 0; i < len; i++)
@@ -12,8 +23,8 @@ float dot_product(float *first, float *second, unsigned int len) {
 }
 \end{lstlisting}
 
-\begin{lstlisting}[breaklines=true, language=C, caption=Implementacja w architekturze NEON. (Źródło: \cite{xilinx-neon})]
-float dot_product_asm(float * restrict first, float * restrict second, unsigned int len) {
+\begin{lstlisting}[breaklines=true, language=C, caption=Implementacja w architekturze NEON. (Źródło: \cite{xilinx-neon}), label=lis:dot-product-neon]
+float dot_product_neon(float * restrict first, float * restrict second, unsigned int len) {
 	float32x4_t vec1_q, vec2_q;
 	float32x4_t sum_q = {0.0, 0.0, 0.0, 0.0};
 	float32x2_t tmp[2];
@@ -33,8 +44,8 @@ return result;
 }
 \end{lstlisting}
 
-\begin{lstlisting}[breaklines=true, language=C, caption=Implementacja w asemblerze. (Źródło: \cite{dot-product-asm})]
-float dot_product_neon(float * restrict first, float * restrict second, unsigned int len) {
+\begin{lstlisting}[breaklines=true, language=C, caption=Implementacja w asemblerze. (Źródło: \cite{dot-product-asm}), label=lis:dot-product-asm]
+float dot_product_asm(float * restrict first, float * restrict second, unsigned int len) {
 	float net1D=0.0f;
 	asm volatile (
 		"vmov.f32 q8, #0.0"
@@ -50,5 +61,18 @@ float dot_product_neon(float * restrict first, float * restrict second, unsigned
 		: "r"(first), "r"(second), "r"(len)
 		: "q0", "q2", "q8");
 	return net1D;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[breaklines=true, language=C, caption=Główna procedura programu., label=lis:dot-product-main]
+int main() {
+	float first[] = {1.1, 2.2, 3.3};
+	float second[] = {-1.1, -2.2, -3.3};
+	
+	float result_base = dot_product(first, second, 3);
+	float result_neon = dot_product_neon(first, second, 3);
+	float result_asm = dot_product_asm(first, second, 3);
+	
+	return 0;
 }
 \end{lstlisting}
