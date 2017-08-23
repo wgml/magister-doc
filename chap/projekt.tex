@@ -7,8 +7,16 @@
 % poprawiłem
 
 W ramach pracy zbadano możliwość realizacji systemów wizyjnych wykorzystujących możliwości obliczeniowe logiki programowalnej oraz procesora ARM i integrujących obie architektury w jednym procesie algorytmicznym. Zaproponowano moduł odpowiedzialny za generację tła w celu segmentacji obiektów pierwszoplanowych. 
-Dane wejściowe pochodziły z kamery wideo połączonej z układem przy użyciu interfejsu HDMI. Sygnał wizyjny poddawany był przetwarzaniu i analizie przez elementy logiki programowalnej, a wyniki przesyłane były przy użyciu mechanizmu AXI VDMA do układu CPU. Proces rozpoznawania miał na celu indeksację obiektów pierwszoplanowych. Wykorzystano ponadto mechanizm AXI DMA do konfiguracji parametrów algorytmu logiki programowalnej oraz wykorzystano narzędzia systemu operacyjnego PetaLinux do obsługi procesu. Zaproponowano również mechanizm synchronizacji dwóch kolejnych ramek sygnału przy użyciu modułu AXI VDMA.
+Dane wejściowe pochodziły z kamery wideo połączonej z układem przy użyciu interfejsu HDMI. Sygnał wizyjny poddawany był przetwarzaniu i analizie przez elementy logiki programowalnej, a wyniki przesyłane były przy użyciu mechanizmu AXI VDMA do układu CPU. Proces rozpoznawania miał na celu indeksację obiektów pierwszoplanowych, z wykorzystaniem biblioteki OpenCV i procedury \texttt{cv::connectedComponents}. Wykorzystano ponadto mechanizm AXI DMA do konfiguracji parametrów algorytmu logiki programowalnej oraz wykorzystano narzędzia systemu operacyjnego PetaLinux do obsługi procesu. Zaproponowano również mechanizm synchronizacji dwóch kolejnych ramek sygnału przy użyciu modułu AXI VDMA.
+Algorytm i jego podział na część sprzętową i programową przedstawiono na schemacie \ref{fig:full-algo}.
 
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{\textwidth}
+	\input{img/full-algo.pdf_tex}
+	\caption{Schemat algorytmu i podział na część sprzętową i programową.}
+	\label{fig:full-algo}
+\end{figure}
 
 W przypadku algorytmów przetwarzania sekwencji obrazów, na etapie analizy jednej klatki wykorzystać można informacje uzyskane w trakcie obliczeń dla poprzednich ramek. 
 Rozszerzenie kontekstu o parametry historyczne pozwala na projektowanie bardziej zaawansowanych systemów, zwykle wymaga jednak wykorzystania modułów zewnętrznej pamięci w celu przechowywania danych historycznych.
@@ -136,13 +144,19 @@ W tabeli \ref{tab;frame-difference-utilization} przedstawiono zapotrzebowanie na
 Moduł przeznaczony jest do pracy z częstotliwością $200MHz$, co pozwala na analizę sygnału wideo o rozdzielczości $1920 \times 1080$ pikseli i częstotliwości obrazu $60Hz$.
 %TODO może jakieś zdjęcie pokazuję, że działa. No i jeszcze te wszyskie szczegóły konfiguracji tego modułu. I coś o tym źródle - że ma to być film HD. Kolejna kwestia to przygotowanie takiego projektu - działającego/wzorcowego i do repo na płytce, a tu napisać, że takie coś jest.
 % źródło opisałem ponad tabelą
-% zdjęcie? tzn. ramka A | ramka B | różnica ramek? 
+
 Proces konfiguracji modułu VDMA wykorzystywanego do buforowania ramki obrazu przedstawiono w sekcji \ref{sec:vivado-axi-vdma}.
 Wynik działania aplikacji przedstawiono na rysunku \ref{fig:frame-difference-result}. Projekty Vivado i PetaLinux związane z omawianą aplikacją dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}.
-\begin{figure}[!htb]
+\begin{figure}[H]
 	\centering
-	\includegraphics[width=12cm]{img/placeholder.jpg}
-	\caption{Wynik działania aplikacji wyznaczającej różnicę dwóch kolejnych ramek obrazu.}
+	\begin{minipage}[b]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{img/fd-frame.png}
+	\end{minipage}
+	\hfill
+	\begin{minipage}[b]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{img/fd-diff.png}
+	\end{minipage}
+	\caption{Ramka obrazu i wyznaczona różnica ramek.}
 	\label{fig:frame-difference-result}
 \end{figure}
 \section{Moduł generacji tła}
@@ -220,7 +234,7 @@ W tym celu wprowadzono dwa warunki wykonania obliczeń:
 		d^i_Y(x,y) & różnica ramek dla kanału $Y$ obrazu, opisana wzorem \eqref{eq:frame-difference}, \\ %TODO ramek, sekwencji brzmi dziwnie
 		% OK
 		T_{fd} & próg ruchu z zakresu $[0,255]$, zwykle nie przekraczający $30$. %TODO może po prostu próg ?
-		% OK, próg ruchu?
+		% OK?
 	\end{conditions}
 
 	Większe wartości współczynnika $T_{fd}$ pozwalają dokonać aktualizacji modelu tła dla elementów o coraz większej różnicy względem poprzedniej ramki obrazu.
@@ -239,7 +253,7 @@ W tym celu wprowadzono dwa warunki wykonania obliczeń:
 	% OK
 	gdzie:
 	\begin{conditions}
-		m^i(x,y) & zmiana wartości piksela względem tła, opisana zależnością \ref{eq:background-model-background-mask-2}, \\
+		m^i(x,y) & zmiana wartości piksela względem tła, opisana zależnością \eqref{eq:background-model-background-mask-2}, \\
 		w_k & współczynnik wagi związany z $k$-tym kanałem \\
 		T_{bg} & współczynnik bezwładności przynależności do tła z zakresu $[0,255]$. \\
 	\end{conditions}
@@ -270,6 +284,18 @@ Schemat blokowy algorytmu przestawiono na rysunku \ref{fig:background-model}.
 	\label{fig:background-model}
 \end{figure}
 %TODO ten schemat jest do modyfikacji, no chyba, że to rzeczywiście sa zupełnie osobne VDMA. Ale i tak moduł odejmowania ramek. Konwersja do YCbCr. wyjście w postai maski, a nie tylko modelu tła..
+% dodałem kolejny schemat, na którym czytelniej przedstawiłem szczegóły działania bloku "moduł wyznaczania..."
+% dodałem konwersję, ale pozostałe elementy przeniosłem na niezależny schemat
+
+Działanie modułu generacji tła przedstawiono na schemacie \ref{fig:background-model-impl}. Na wejściu, moduł otrzymuje aktualną wartość piksela w przestrzeni barw \textit{YCbCr} oraz poprzednią wartość piksela i modelu tła. Ponadto, przekazywane są parametry opisujące działanie algorytmu: $\alpha$, $T_{bg}$ oraz $T_{fd}$. Moduł odpowiedzialny jest za wyznaczenie maski obiektów tła oraz nowej wartości modelu, które stanowią wyjścia elementu obliczeniowego.
+
+\begin{figure}[h]
+	\centering
+	\def\svgwidth{\textwidth}
+	\input{img/background-model-impl.pdf_tex}
+	\caption{Algorytm wyznaczania modelu tła.}
+	\label{fig:background-model-impl}
+\end{figure}
 
 Algorytm wymaga wykorzystania dwóch buforów AXI VDMA. 
 Jeden z nich przeznaczony jest do buforowania ramki obrazu wejściowego, natomiast drugi przechowuje aktualny model tła. 
@@ -279,6 +305,7 @@ Alternatywą jest zastosowanie wspólnego bufora i przechowywanie w nim dwóch s
 Algorytm zintegrowano z układem umożliwiającym komunikację z procesorem ARM, co pozwala na transmisję uzyskanego modelu tła i jego dalszą analizę. %TODO umoż, umoż..
 %OK
 Wykorzystano w tym celu trzeci moduł AXI VDMA. %TODO nie ma go na schemacie...
+%wg mnie ten moduł nie należy do algorytmu, a jest po prostu narzędziem do transmisji danych, dlatego nie dodałem go do schematu, by nie zmniejszać czytelności
 W praktycznych zastosowaniach moduł ten może okazać się zbędny, ze względu na to, że w jednym z pozostałych modułów VDMA przechowywany jest model tła dla poprzedniej klatki obrazu. 
 Opóźnienie jednego cyklu nie powinno wpłynąć negatywnie na jakość działania aplikacji. 
 Niezależny moduł VDMA pozwala jednak na przesyłanie wyników również w przypadku, gdy algorytm generacji tła nie stanowi ostatniego etapu obliczeń.
@@ -315,12 +342,35 @@ W przypadku złożonych aplikacji, konieczne może okazać się użycie układu 
 Moduł przeznaczony jest do pracy z częstotliwością $200MHz$, co pozwala na analizę sygnału wideo o rozdzielczości $1920 \times 1080$ pikseli i częstotliwości obrazu $60Hz$.
 
 Wynik działania aplikacji przedstawiono na rysunku \ref{fig:background-model-result}. Projekty Vivado i PetaLinux związane z omawianą aplikacją dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}. Proces konfiguracji aplikacji przedstawiono w sekcji \ref{sec:background-buffer-conf}.
-\begin{figure}[!htb]
+\begin{figure}[H]
 	\centering
-	\includegraphics[width=12cm]{img/placeholder.jpg}
-	\caption{Wynik działania aplikacji generacji tła obrazu.}
+	\begin{subfigure}[b]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{img/bg-input.png}
+		\caption{Ramka obrazu.}
+		\vspace{1ex}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{img/bg-fg.png}
+		\caption{Maska obiektów pierwszoplanowych.}
+		\vspace{1ex}
+	\end{subfigure}
+
+	\begin{subfigure}[b]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{img/bg-mo.png}
+		\caption{Maska ruchu.}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.49\textwidth}
+		\includegraphics[width=\textwidth]{img/bg-model.png}
+		\caption{Model tła.}
+	\end{subfigure}
+	\caption{Ramka obrazu i wyznaczona różnica ramek.}
 	\label{fig:background-model-result}
 \end{figure}
+
+Dzięki zastosowaniu maski ruchu, obiekty poruszające się nie wpływają na stan modelu tła. Ponadto, dzięki badanu warunku przynależności do tła, osoba znajdująca się na pierwszym planie i nie będąca w ruchu również nie wpływa negatywnie na wynik działania algorytmu generacji tła.
+
 %TODO 1. Te akapity krótkie - to dotyczy całej pracy, ale przypominam.
 % OK
 %TODO 2. Uwagi podobnie jak wczęsniej tj.
@@ -329,7 +379,7 @@ Wynik działania aplikacji przedstawiono na rysunku \ref{fig:background-model-re
 %TODO Wydaje mi się, że jeszcze umawialiśmy się na przesył maski (kwestię indeksacji pozostawię) i coś po stronie PetaLiunx.
 % co do indeksacji, nie sądzę, by moduł "zmieścił" się obok vdma na ZYBO. Musiałbym mocno zoptymalizować te struktury vdma, a wydaje mi się, że cenniejsza jest jednak czytelność tego, co mam teraz. Dlatego nie zająłem się indeksacją po stronie fpga. W CPU to w zasadzie wywołanie jednej metody w CV, ale nie ma szans na real-time.
 % rzeczy po stronie peta opisałem w kolejnej sekcji.
-% wszystkie moduły vdma dostępne są z poziomu linuxa, więc nie ma problemu z odczytem masek.
+% na wyjściu modułu dostępne są wartości maski, zaktualizowałem schemat
 \section{Integracja z systemem PetaLinux}
 
 Na etapie prototypowania, elementy logiki reprogramowalnej kontrolowane były przez aplikację działającą w trybie \textit{bare-metal}, bez wsparcia dla systemu operacyjnego.
@@ -379,14 +429,15 @@ Zbadano możliwość wykorzystania aplikacji w roli elementu obliczeniowego, odp
 % OK
 Zaproponowano moduł indeksacji obiektów na bazie generowanego modelu tła. 
 W tym celu wykorzystano procedurę \texttt{cv::connectedComponents} dostępną w bibliotece OpenCV. %TODO No właśnie - to może trzeba to gdzieś zasygnalizować. Najlepiej na poczatu rozdziału, gdzie powienien Pan opisać całosć tego interesu... tzn. cały algorytm, scheamt, podział HW/SW itp.
+% rozwinąłem na początku rozdziału
 
 Ze względu na ograniczenia sprzętowe, moduł indeksacji nie był w stanie spełnić wymagań pracy w czasie rzeczywistym dla sygnału wizyjnego o częstotliwości $60Hz$ i rozdzielczości $1280 \times 720 $ pikseli -- jego wydajność nie przekraczała piętnastu ramek na sekundę.
-Na rysunku \ref{fig:background-buffer-www} przedstawiono widok interfejsu www udostępnianego przez aplikację, przedstawiający aktualny stan i wyniki działania algorytmu.
+Na rysunku \ref{fig:background-buffer-www} przedstawiono widok interfejsu \emph{www} udostępnianego przez aplikację, przedstawiający aktualny stan i wyniki działania programu. Interfejs wyświetla model tła oraz najnowszą ramkę obrazu, a także pokazuje wartości parametrów algorytmu.
 Związane z omawianą aplikacją dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}.
 \begin{figure}[!htb]
 	\centering
-	\includegraphics[width=12cm]{img/placeholder.jpg}
-	\caption{Interfejs www aplikacji}
+	\includegraphics[width=12cm]{img/www-iface.png}
+	\caption{Interfejs www aplikacji.}
 	\label{fig:background-buffer-www}
 \end{figure}
 \section*{Podsumowanie}

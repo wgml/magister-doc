@@ -1,15 +1,20 @@
-\chapter{Konfiguracja projektu}
+\chapter{Proces konfiguracji modułów logiki programowalnej i systemu operacyjnego PetaLinux}
 \label{cha:vivado-conf}
 
 %TODO Kiepski tytuł dla rodziąłu - mało mówi o jego treści.
 %TODO Dla całego rodziału - za krótkie akapity
+% OK
 
 Użycie funkcjonalności opisywanych w niniejszej pracy wymaga przeprowadzenia konfiguracji wykorzystywanych modułów logicznych oraz systemu operacyjnego. 
-W poniższych podrozdziałach zebrano informacje związane z poruszanymi zagadnieniami. %TODO bardziej konkretnnie
+W poniższych podrozdziałach zebrano informacje związane z poruszanymi zagadnieniami. Przedstawiono proces konfiguracji bazowego projektu Vivado i wykorzystania go na etapie budowy systemu PetaLinux, a także omówiono proces użycia modułów AXI i wybranych funkcjonalności systemu PetaLinux -- obliczeń równoległych, biblioteki OpenCV, mechanizmu przerwań systemowych. Przedstawiono również proces konfiguracji modułu generacji tła zaproponowanego w rozdziale \ref{cha:project}.%TODO bardziej konkretnnie
+% OK
+
+Omawiane zagadnienia wymagają użycia oprogramowania Vivado \cite{vivado-home} i zintegrowanego z nim środowiska programistycznego Xilinx SDK \cite{xsdk-home}. Ponadto, konfiguracja systemu operacyjnego odbywa się przy użyciu narzędzi pakietu PetaLinux Tools \cite{petalinux-tools}.
 
 \section{Podstawowa konfiguracja projektu}
 
-Wykorzystany w projekcie układ -- Digilent ZYBO -- nie jest bezpośrednio wspierany przez środowisko Vivado. %TODO karta
+Wykorzystana w projekcie karta -- Digilent ZYBO -- nie jest bezpośrednio wspierana przez środowisko Vivado. %TODO karta
+% OK
 Wynika z tego konieczność sprecyzowania parametrów układu na etapie tworzenia projektu. 
 W trakcie modyfikowania projektu, w przypadku dodania modułów wykorzystujących interfejs wejścia/wyjścia, konieczna jest również konfiguracja parametrów interfejsu. 
 Aby uprościć proces projektowania, zalecane jest skonfigurowanie obsługi układu przed utworzeniem projektu. 
@@ -18,16 +23,13 @@ Proces ten opisano w dokumentacji producenta \cite{zybo-in-vivado}.
 \subsection{Vivado}
 \label{sec:vivado-conf}
 Utworzyć należy projektu typu \emph{,,RTL Project''}, z odznaczoną opcją \emph{,,Do not specify sources at this time''}.
-
 W kroku \emph{,,Add Constraints''} dodać należy plik konfiguracyjny dla wybranego układu. 
 W przypadku ZYBO, plik ten jest dostępny na stronie producenta. 
 W kolejnym kroku możliwe jest skonfigurowanie parametrów układu. 
 Wykorzystać do tego należy zakładkę \emph{,,Boards''} i wybrać wykorzystywany model.
 
 Po utworzeniu projektu, skonfigurować należy właściwą przestrzeń roboczą dla projektu, wykorzystując do tego opcję \emph{,,IP Integrator --> Create Block Design''}.
-
 Do nowo utworzonej przestrzeni dodać należy moduł IP reprezentujący procesor ZYNQ -- \emph{,,ZYNQ7 Processing System''}.
-
 W kolejnych krokach należy dokonać konfiguracji modułu procesora, klikając dwukrotnie na moduł.
 
 \begin{itemize}
@@ -43,16 +45,21 @@ W kolejnych krokach należy dokonać konfiguracji modułu procesora, klikając d
 		\label{fig:vivado-mio-configuration}
 	\end{figure}
 	
-	\item Parametry sygnałów zegarowych dostępnych z poziomu układów logiki reprogramowalnej modyfikować można w zakładce \emph{,,Clock Configuration/PL Fabric Clocks''}.
+	\item Parametry sygnałów zegarowych dostępnych z poziomu układów logiki reprogramowalnej modyfikować można w zakładce \emph{,,Clock Configuration/PL Fabric Clocks''}. W projekcie projekcie wymagającym obsługi AXI VDMA wykorzystano trzy sygnały zegarowe:
+	\begin{itemize}[label=\textbullet]
+		\item bazowy, o częstotliwości $100$MHz,
+		\item wykorzystywany do komunikacji interfejsem AXI, o częstotliwości $140$MHz,
+		\item zegar obsługi sekwencji wizyjnej, o częstotliwości $200$MHz, umożliwiający współpracę ze strumieniem wideo o częstotliwości $60$Hz i rozdzielczości co $1920 \times 1080$ pikseli.
+	\end{itemize}
 	
-	\item Częstotliwość pracy procesora oraz pamięci zmienić można w zakładce \emph{,,Clock Configuration/Processor/Memory Clocks''}.
-	
+	\item Częstotliwość pracy procesora oraz pamięci zmienić można w zakładce \emph{,,Clock Configuration/Processor/Memory Clocks''}. Zdefiniować należy częstotliwość pracy CPU równą $650$MHz oraz DRR równą $525$MHz.
+
 	%TODO Jakie mają być te częstotliwości ?
+	% dodałem
 \end{itemize}
 
 Po ukończeniu etapu konfiguracji procesora i powrocie do głównego okna programu, należy użyć opcji \emph{,,Run Block Automation''}. 
 Utworzone zostaną połączenia interfejsów pamięci \texttt{DDR} oraz \texttt{FIXED\_IO}.
-
 W przypadku zdefiniowania interfejsów AXI, połączyć należy właściwe sygnały zegarowe. 
 Przykład wynikowej konfiguracji projektu przedstawiono na rysunku \ref{fig:vivado-config-result}.
 
@@ -64,21 +71,19 @@ Przykład wynikowej konfiguracji projektu przedstawiono na rysunku \ref{fig:viva
 	\end{figure}
 	
 Przedstawiona konfiguracja stanowi podstawę każdego projektu wykorzystującego moduł procesora Zynq.
-
 Po zakończeniu konfiguracji, wygenerować należy warstwę HDL, korzystając z opcji \emph{,,Create HDL Wrapper''} dostępnej po kliknięciu prawym przyciskiem myszy na utworzony wcześniej plik źródłowy.
-
 Skonfigurowany w ten sposób projekt może być budowany i uruchamiany na platformie Zybo.
 
 \subsection{SDK}
 
 W celu utworzenia projektu aplikacji w SDK, konieczne jest wyeksportowanie plików opisujących projekt z poziomu Vivado, wykorzystując do tego opcję \emph{,,File/Export/Export Hardware''} z zaznaczoną opcją \emph{,,Include bitstream''}.
-
-W efekcie, dostępna powinna być aplikacja \texttt{\textit{nazwa\_projektu}\_hw\_platform\_0}, zawierająca plik \texttt{nazwa\_projektu.hdf}. Aplikacja ta stanowi podstawę każdego budowanego programu \textit{bare-metal}. %TODO to jest aplikacja, czy konfiguracja sprzętowa ?
+W efekcie, dostępny powinien być projekt \texttt{\textit{nazwa\_projektu}\_hw\_platform\_0}, zawierająca plik \texttt{nazwa\_projektu.hdf}, zawierający konfigurację sprzętową, stanowiący podstawę każdego budowanego programu \textit{bare-metal}. %TODO to jest aplikacja, czy konfiguracja sprzętowa ?
+%OK, poprawiłem
 
 W przypadku budowania aplikacji na platformę PetaLinux, na etapie tworzenia projektu, zmodyfikować należy pole \emph{,,OS Platform''} na wartość \emph{,,linux''}, \emph{,,Processor Type''} na \emph{,,ps7\_cortexa9''} oraz wybrać właściwy język programowania.
-
-W kontekście tak utworzonej aplikacji nie znajdują się biblioteki dostarczane przez firmę \emph{Xilinx}, wykorzystywane w aplikacjach \textit{bare-metal}, dostępna jest jednak pełna biblioteka języka \emph{C} oraz \emph{C++}.
+Tak zdefiniowana aplikacja nie może korzystać z bibliotek udostępnianych przez firmę \emph{Xilinx} )(na przykład zawierających procedury obsługi modułów VDMA czy kontrolera przerwań), ale mogą korzystać z pełnej biblioteki standardowej jeżyka \emph{C} oraz rozszerzeń \emph{POSIX}, w tym operacji wejścia/wyjścia, komunikacji sieciowej czy bibliotek matematycznych.
 %TODO zdanie niejasne
+% przeredagowałem
 
 W celu uruchomienia aplikacji systemowej na platformie ZYBO, przeprowadzić należy proces budowania i skopiować wynikowy plik z katalogu \texttt{Debug} lub \texttt{Release} do systemu plików systemu PetaLinux. 
 Wykorzystać można do tego narzędzie SSH:
@@ -93,6 +98,7 @@ Aplikację uruchomić można przy użyciu konsoli użytkownika, również stosuj
 \label{sec:petalinux-config}
 
 %TODO - a tu nie trzeba zrobić czegoś wcześniej ? Pobrać zainstalowć itp ?
+% nie opisywałem procesu instalacji Vivado, uznałem więc, że nie ma też powodu by opisywać instalację petalinux. Dodam na początku rozdziału informację o wykorzystywanych narzędziach
 
 Utworzenie struktury katalogów projektu wykonywane jest przy użyciu poniższego polecenia.
 
@@ -101,9 +107,7 @@ petalinux-create -t project --template zynq --name (*@\textit{nazwa-projektu}@*)
 cd (*@\textit{nazwa-projektu}@*)
 \end{lstlisting}
 
-Powstała struktura zintegrowana jest z systemem kontroli wersji \emph{git}, co pozwala utrzymać uporządkowanie danych wewnątrz projektu oraz wersjonowanie. 
-Zarządzanie repozytorium wykorzystuje podstawowe komendy narzędzia. %TODO styl !
-
+Powstała struktura zintegrowana jest z systemem kontroli wersji \emph{git}, co pozwala zachować uporządkowanie danych wewnątrz projektu oraz wersjonowanie. 
 Kolejnym krokiem jest zaimportowanie projektu \emph{Vivado}.
 
 \begin{lstlisting}[breaklines=true]
@@ -111,7 +115,6 @@ petalinux-config --get-hw-description=(*@\textit{/sciezka/do/projektu/projekt.sd
 \end{lstlisting}
 
 Jeśli polecenie wywołane zostało po raz pierwszy dla danego projektu, uruchomione zostanie narzędzie konfiguracyjne, domyślne ustawienia są jednak poprawne.
-
 Konfiguracja projektu odbywa się przy użyciu polecenia \texttt{petalinux-config}.
 Skonfigurować należy metodę uruchamiania systemu -- w omawianym przypadku, uruchomienie następuje na bazie plików znajdujących się na karcie SD.
 \begin{lstlisting}[breaklines=true]
@@ -137,10 +140,18 @@ petalinux-package --image -c rootfs --format initramfs
 Uruchomienie systemu wymaga przygotowania karty SD -- musi ona posiadać dwie partycje, pierwszą, z etykietą \emph{boot} i systemem plików \emph{fat32}, drugą -- odpowiednio \emph{sys} i \emph{ext4}. 
 Pierwsza z nich, zawierająca pliki wymagane na etapie inicjalizacji systemu, musi być poprzedzona 4 MB niezaalokowanej przestrzeni i mieć rozmiar co najmniej 40 MB. 
 Druga partycja zawiera pliki systemowe, jej rozmiar powinien wynosić co najmniej kilkaset megabajtów. 
-Proces formatowania przeprowadzić można przy użyciu narzędzia \emph{gparted}.
+Proces formatowania przeprowadzić można przy użyciu narzędzia \emph{gparted}. Na rysunku \ref{fig:gparted-screen} przedstawiono efekt konfiguracji karty SD.
 %TODO może screen z gparted jak to wygląda.
+% OK
 
-Pliki wynikowe należy przenieść na kartę SD, korzystając z poleceń.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=12cm]{img/gparted-screen.png}
+	\caption{Partycjonowane karty SD przy użyciu programu gparted.}
+	\label{fig:gparted-screen}
+\end{figure}
+
+Pliki wynikowe należy przenieść na kartę SD, korzystając z poniższych poleceń.
 
 \begin{lstlisting}[breaklines=true]
 rm -rf /(*@\textit{punkt-montowania}@*)/sys/*
@@ -158,25 +169,26 @@ Ze względu na mechanizm buforowania przez kontroler operacji zapisu danych, pam
 Karta SD pozwala na uruchomienie systemu operacyjnego na układzie i przechowywanie danych użytkownika pomiędzy startami układu. 
 Dalsza praca z systemem odbywać się może przez protokoły komunikacji \emph{SSH} lub \emph{UART}.
 
-\section{Konfiguracja modułu AXI DMA}
+\section{Konfiguracja modułu wykorzystującego interfejs AXI}
 \label{sec:vivado-axi-dma}
 
 %TODO 1-2 zdania wstępu
+% OK
+Interfejs AXI stanowi podstawową metodę komunikacji pomiędzy modułami logiki programowalnej oraz elementami FPGA i CPU. Dzięki wykorzystaniu tego protokołu do obsługi projektowanych narzędzi, możliwe jest użycie zbioru elementów dostępnych w bibliotece Vivado i uproszczenie procesu projektowania procedur komunikacyjnych. Poniżej przedstawiono kroki konfiguracyjne wewnątrz narzędzi Vivado i PetaLinux.
 
 \subsection{Vivado}
 Oprogramowanie Vivado umożliwia zbudowanie modułu wykorzystującego protokół AXI przez użycie opcji \emph{,,Create and package new IP...''}, zawartej w menu \emph{Tools}.
-
 Na ekranie wyboru zadania wybrać należy opcję \emph{,,Create a new AXI4 peripheral''}.
-
 Po zdefiniowaniu podstawowych danych związanych z modułem, takich jak jego nazwa i nazwisko autora, w kolejnym kroku możliwe będzie zdefiniowanie interfejsu modułu. 
-Na tym etapie konfiguracji skonfigurować należy wszystkie połączenia wykorzystujące interfejs AXI. %TODO ????
-
+Na tym etapie konfiguracji dodać należy wszystkie połączenia wykorzystujące interfejs AXI. %TODO ????
+% OK?
 W przypadku modułu konfiguracyjnego o podstawowej strukturze, interfejs zawierać powinien jedno połączenie wykorzystujące protokół AXI w wersji \emph{Lite}, działający w trybie \emph{slave}, z oczekiwaną liczbą rejestrów. 
 Każdy rejestr powinien być związany z jedną wartością, której konfiguracja ma być możliwa. 
 Przykład konfiguracji przedstawiono na rysunku \ref{fig:axi-dma-interfaces-conf}.
 %TODO jest Pan pewnien, że taki moduł to DMA ?
+% xilinx nazywa takie moduły axi dma peripherial, to trochę mylące względem właściwego modułu AXI DMA. Sprecyzuję to jakoś...
 
-\begin{figure}[h]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=8cm]{img/vivado/axi-dma-interfaces-conf.png}
 	\caption{Konfiguracja interfejsów modułu AXI DMA.}
@@ -184,14 +196,12 @@ Przykład konfiguracji przedstawiono na rysunku \ref{fig:axi-dma-interfaces-conf
 \end{figure}
 
 W omawianym przykładzie zdefiniowano interfejs AXI o nazwie \emph{ctl}, związany z ośmioma rejestrami o długości trzydziestu dwóch bitów w pamięci.
-
 Zdefiniowanie interfejsów kończy proces podstawowej konfiguracji modułu. W kolejnym kroku należy wybrać opcję \emph{,,Edit IP''} w celu dostosowania kodu źródłowego modułu.
 
 Po wygenerowaniu, z modułem powinien być związany jeden plik źródłowy, zwierający instrukcje odpowiadające za obsługę komunikacji przy użyciu interfejsu AXI.
-
 Do pliku dodać należy elementy odpowiedzialne za zdefiniowanie wyjść modułu oraz przypisanie im właściwych wartości.
-
-W celu zdefiniowania wyjść modułu, odpowiadające im wpisy należy umieścić po komentarzu \emph{,,// Users to add ports here''}. Przykład przedstawiono na listingu \ref{listing:axi-dma-outputs}. %TODO powt. zdefinowane
+W celu zadeklarowania wyjść modułu, odpowiadające im wpisy należy umieścić po komentarzu \emph{,,// Users to add ports here''}. Przykład przedstawiono na listingu \ref{listing:axi-dma-outputs}. %TODO powt. zdefinowane
+% OK
 
 \begin{lstlisting}[breaklines, label=listing:axi-dma-outputs, caption=Definicja interfejsów wyjściowych modułu.]
 // Users to add ports here
@@ -203,10 +213,8 @@ output wire [31:0] parameter_d,
 \end{lstlisting}
 
 Zdefiniowano cztery sygnały wyjściowe, o różnej liczbie bitów.
-
 Następnie, należy dokonać modyfikacji kodu odpowiedzialnego za powiązanie wartości parametrów z rejestrami modułu. 
 Rejestry AXI zdefiniowane są poniżej linii \emph{,,//-- Number of Slave Registers N''}, gdzie \emph{N} to liczba dostępnych rejestrów. Rejestry te mają nazwy \texttt{slv\_reg\emph{n}}, gdzie \emph{n} to indeks rejestru -- nie jest zalecana modyfikacja tych nazw.
-
 Modyfikacji kodu należy dokonać poniżej linii \emph{,,// Add user logic here''}. 
 Przykład przedstawiono na listingu \ref{listing:axi-dma-associate}.
 
@@ -219,12 +227,12 @@ assign parameter_d = slv_reg3[31:0];
 // User logic ends
 \end{lstlisting}
 
-W przedstawionym przykładzie powiązano wartości parametrów bezpośrednio z danymi znajdującymi się w rejestrach. %TODO powt. przed
+Wartości parametrów powiązano bezpośrednio z danymi znajdującymi się w rejestrach. %TODO powt. przed
+% OK?
 W rozbudowanych aplikacjach może być konieczne dodanie instrukcji modyfikujących wartości rejestrów przed przesłaniem ich na wyjście modułu.
-
 Po ukończeniu modyfikacji modułu, konieczne jest zapisanie zmian i wygenerowanie plików wynikowych. 
 W tym celu należy wykorzystać okno \emph{,,Package IP''}, sekcję \emph{,,Review and Package''}. 
-Widok okna przedstawiono na rysunku \ref{fig:axi-dma-review-package}.
+Widok narzędzia przedstawiono na rysunku \ref{fig:axi-dma-review-package}.
 
 \begin{figure}[ht]
 	\centering
@@ -236,11 +244,12 @@ Widok okna przedstawiono na rysunku \ref{fig:axi-dma-review-package}.
 Należy wybrać opcję \emph{,,Merge changes''}, umożliwiającą zintegrowanie wprowadzonych zmian z projektem bazowym. 
 Następnie, można zakończyć edycję projektu przez wybór opcji \emph{,,Re-Package IP''}. 
 Moduł będzie dostępny z poziomu interfejsu wyszukiwania modułów IP.
-
+Dodanie modułu do projektu wymaga zdefiniowania adresu pamięci z nim związanego. Wykorzystać do tego należy okno \emph{,,Address Editor''}, dostępną w z poziomu głównego okna projektu. W omawianym przykładzie, z modułem powiązano przestrzeń rozpoczynającą się od adresu \texttt{0x43000000} i długości \texttt{64K}.
 \subsection{SDK}
 \label{sec:vivado-axi-dma-sdk}
 
-Konfiguracja wartości parametrów modułu opiera się na zapisie do właściwych sektorów pamięci. %TODO nie lepiej pod właściwy adres w pamięci ?
+Konfiguracja wartości parametrów modułu opiera się na zapisie pod właściwe adresy pamięci. %TODO nie lepiej pod właściwy adres w pamięci ?
+% OK
 W przypadku pracy w trybie \textit{bare-metal}, wykorzystać można instrukcję \emph{Xil\_Out32} z biblioteki \emph{xil\_io.h}. 
 W przypadku pracy z systemem PetaLinux, wykorzystać należy biblioteki systemowe. 
 Implementację\textit{ bare-metal} przedstawiono na listingu \ref{lis:axi-dma-bare-metal}, natomiast systemową na listingach \ref{lis:axi-dma-petalinux-main}, \ref{lis:axi-dma-petalinux-axi-h} i \ref{lis:axi-dma-petalinux-axi-c}.
@@ -312,13 +321,13 @@ int main() {
 	axi_write(parameters->virt_addr, PARAMETER_C_REGISTER, 1 << 10);
 	axi_write(parameters->virt_addr, PARAMETER_D_REGISTER, 1 << 30);
 	
+	unsigned int parameter_a = axi_read(parameters->virt_addr, PARAMETER_A_REGISTER);
+	
 	while(1);
 }
 \end{lstlisting}
 
 \begin{lstlisting}[breaklines, language=C, label=lis:axi-dma-petalinux-axi-h, caption=Obsługa modułu w trybie systemowym - \texttt{axi.h}.]
-#include <stdbool.h>
-
 typedef unsigned int* virt_address;
 
 struct axi_interface {
@@ -327,6 +336,7 @@ struct axi_interface {
 };
 
 void axi_write(virt_address virt_addr, int location, unsigned int value);
+unsigned int axi_read(virt_address virt_addr, int location);
 \end{lstlisting}
 
 \begin{lstlisting}[breaklines, language=C, label=lis:axi-dma-petalinux-axi-c, caption=Obsługa modułu w trybie systemowym - \texttt{axi.c}.]
@@ -335,9 +345,21 @@ void axi_write(virt_address virt_addr, int location, unsigned int value);
 void axi_write(virt_address virt_addr, int location, unsigned int value) {
 	virt_addr[location >> 2] = value;
 }
+
+unsigned int axi_read(virt_address virt_addr, int location) {
+	return virt_addr[location >> 2];
+}
 \end{lstlisting}
 
 %TODO proszę jednak zamieścić jakiś komentarz do tych kodów. Szczególnie Petalinux. Oraz opis testów.
+% OK
+System Linux udostępnia zbiór procedur związanych z obsługą pamięci operacyjnej, w tym pozwalające na wirtualizację fizycznych adresów, co jest konieczne do obsługi urządzeń peryferyjnych z poziomu systemu operacyjnego.
+Adres fizyczny urządzenia zdefiniowano przez nazwę \texttt{BASEADDR}. Określono również przesunięcia adresów kolejnych rejestrów modułu, na przykład \texttt{PARAMETER\_A\_REGISTER}.
+
+Procedura \texttt{setup\_virtual\_memory} przyjmuje jako argumenty wskaźnik do struktury interfejsu AXI, zawierającej informacje o adresach fizycznym i wirtualnym pamięci, rozmiarze przestrzeni adresowej w bajtach, a także uchwyt do kontrolera pamięci systemowej oraz adres fizyczny modułu. W wyniku konfiguracji, obszar pamięci fizycznej mapowany jest w przestrzeni adresowej systemu, co pozwala na odczyt i zapis wartości.
+Aby uprościć mechanizm odczytu i zapisu wartości do pamięci, udostępniono procedury \texttt{axi\_write} i \texttt{axi\_read}, których argumentami wywołań jest bazowy adres wirtualny modułu oraz przesunięcie wybranego rejestru.
+
+Poprawność działania komunikacji przetestowano na przykładzie modułu liczącego, kontrolowanego z poziomu systemu operacyjnego. Moduł udostępniał rejestr kontrolny, którego najmłodszy bit odpowiadał za aktywację pracy licznika, oraz rejestr przechowujący zliczaną wartość. Zapisując i odczytując wartości rejestrów zweryfikowano, że komunikacja z modułem ma prawidłowy przebieg.
 
 \subsection{PetaLinux}
 \label{sec:vivado-axi-dma-petalinux}
@@ -356,12 +378,15 @@ Device Drivers -> DMA Engine Support
 Device Drivers -> DMA Engine Support -> Xilinx AXI DMAS Engine
 \end{lstlisting}
 
-%TODO i to powoduje, że DMA działa ? I ten moduł z rejestrami AXI. Też to proszę jasno opisać.
+Włączenie sterowników DMA oraz zmodyfikowanie argumentów uruchomienia systemu operacyjnego, opisane w rozdziale \ref{sec:petalinux-config} pozwala na wykorzystanie interfejsu AXI i techniki DMA do komunikacji z modułami logiki programowalnej.
 
+%TODO i to powoduje, że DMA działa ? I ten moduł z rejestrami AXI. Też to proszę jasno opisać.
+% OK
 \section{Konfiguracja modułu AXI VDMA}
 \label{sec:vivado-axi-vdma}
 
-Proces konfiguracji modułu VDMA składa się z kroków podobnych do opisanych w sekcji poświęconej modułom AXI DMA. %TODO sekcji !
+Proces konfiguracji modułu VDMA składa się z kroków podobnych do opisanych w sekcji \ref{sec:vivado-axi-dma}, poświęconej modułom AXI DMA. Poniżej przedstawiono dodatkowe kroki, związane bezpośrednio z konfiguracją modułu VDMA. %TODO sekcji !
+% OK
 
 \subsection{Vivado}
 Do projektu dołączyć należy moduł \textit{AXI Video Direct Memory Access}. 
@@ -372,30 +397,135 @@ Okno konfiguracji związane z nim pozwala na wybór obsługiwanych kanałów:
 \end{itemize}
 
 Ustawienia pozwalają na wybór szerokości strumienia informacji dla jednego piksela, maksymalną liczbę buforów w pamięci oraz długość linii buforujących, związanych z oboma kanałami.
-
 Wartości wielkości strumienia danych oraz liczby buforów związane są ściśle z projektowanym algorytmem, natomiast długość linii buforujących może wpłynąć na stabilność działania systemu. 
 Zwiększenie tej wartości może poprawić działanie algorytmu w przypadku, gdy operacje związane z pamięcią operacyjną wykonywane są z opóźnieniem.
 
 Zakładka ustawień zaawansowanych pozwala na zdefiniowanie parametrów związanych ze sterowaniem kanałami transmisji.
-
-Wartość parametru \textit{,,Fsync Options''} w aplikacjach nie wymagających zewnętrznej sytuacji powinna być zdefiniowana jako \texttt{tuser} dla kanału zapisu oraz \texttt{none} dla kanału odczytu, dzięki czemu sygnał synchronizacji modułu będzie związany z wejściowym strumieniem AXI. %TODO zewnętrznej sytuacji ?
+Wartość parametru \textit{,,Fsync Options''} w aplikacjach nie wymagających zewnętrznej synchronizacji powinna być zdefiniowana jako \texttt{tuser} dla kanału zapisu oraz \texttt{none} dla kanału odczytu, dzięki czemu sygnał synchronizacji modułu będzie związany z wejściowym strumieniem AXI. %TODO zewnętrznej sytuacji ?
+% poprawiłem
 Część aplikacji może wymagać synchronizacji strumienia odczytu z drugim strumieniem danych, na przykład z inną ramką sygnału wizyjnego. 
 W takiej sytuacji wykorzystać należy opcję synchronizacji \texttt{fsync}, a wejście układu \texttt{mm2s\_fsync} połączyć z właściwym sygnałem synchronizacji.
 
 W ramach pracy wykorzystywano również synchronizację pomiędzy kanałami przy użyciu parametru \texttt{GenLock}, o wartości \texttt{master} dla kanału zapisu i \texttt{slave} dla odczytu. 
 Pozwalało to zachować przesunięcie o stałej, definiowanej z poziomu aplikacji, wartości pomiędzy buforami wykorzystywanymi przez oba kanały.
 
-Ze względu na dużą wartość przepływu danych przez oba kanały, do komunikacji z procesorem wykorzystać należy połączenia o wysokiej wydajności. Kanały te można aktywować korzystając z opcji konfiguracyjnych modułu ZYNQ: \emph{,,PL-PS Configuration/HP Slave AXI Interface''}, i aktywując jeden lub wiele kanałów. %TODO Zynq Processing System...
-
-Z modułem AXI VDMA powiązać należy sygnał zegarowy o częstotliwości nie mniejszej od wartości zegara strumienia wejściowego. %TODO (tzw. zegarem piksela)
+Ze względu na dużą wartość przepływu danych przez oba kanały, do komunikacji z procesorem wykorzystać należy połączenia o wysokiej wydajności. Kanały te można aktywować korzystając z opcji konfiguracyjnych modułu \emph{ZYNQ7 Processing System}: \emph{,,PL-PS Configuration/HP Slave AXI Interface''}, i aktywując jeden lub wiele kanałów. %TODO Zynq Processing System...
+% OK
+Z modułem AXI VDMA powiązać należy sygnał zegarowy o częstotliwości nie mniejszej od wartości tak zwanego zegara piksela, związanego ze strumieniem wizyjnym na wejściu. %TODO (tzw. zegarem piksela)
+% OK
 Sygnał ten powinien być generowany przez układ ZYNQ, a nie powiązany bezpośrednio z zegarem strumienia obrazu.
 
 \subsection{SDK}
 Konfiguracja modułu VDMA wymaga zastosowania technik opisanych w sekcji \ref{sec:vivado-axi-dma-sdk}. %TODO sekcji
 
-Proces uruchamiania transmisji dla modułu wymaga wykonania kroków zdefiniowanych przez producenta i opisanych w sekcji \textit{,,Programming Sequence''} dokumentacji \cite{axi-vdma-guide}.
+Proces uruchamiania transmisji dla modułu wymaga wykonania kroków zdefiniowanych przez producenta i opisanych w sekcji \textit{,,Programming Sequence''} dokumentacji \cite{axi-vdma-guide}. Kod programu odpowiedzialnego za konfigurację modułu AXI VDMA przedstawiono na listingu \ref{lis:axi-vdma-sdk}.
+\begin{lstlisting}[breaklines,language=C, label=lis:axi-vdma-sdk, caption=Obsługa modułu AXI VDMA w aplikacji \textit{bare-metal}.]
+#include "xparameters.h"
+#include "platform.h"
+#include "xil_printf.h"
+#include "xil_io.h"
+#include "sleep.h"
+#include "xaxivdma.h"
+
+#define S2MM_VDMACR 0x30
+#define S2MM_VDMASR 0x34
+#define S2MM_VSIZE 0xA0
+#define S2MM_HSIZE 0xA4
+#define S2MM_FRMDLY_STRIDE 0xA8
+#define S2MM_START_ADDRESS 0xAC
+#define PART_PTR_REG 0x28
+#define MM2S_VDMACR 0x00
+#define MM2S_VDMASR 0x04
+#define MM2S_VSIZE 0x50
+#define MM2S_HSIZE 0x54
+#define MM2S_FRMDLY_STRIDE 0x58
+#define MM2S_START_ADDRESS 0x5C
+#define HSIZE_FULL 1980
+#define VSIZE_FULL 750
+
+#define HSIZE_ACTIVE 1280
+#define VSIZE_ACTIVE 720
+
+#define PIXEL_SIZE 3
+static volatile u8 framebuffer1[VSIZE_ACTIVE*HSIZE_ACTIVE*PIXEL_SIZE] = {0};
+static volatile u8 framebuffer2[VSIZE_ACTIVE*HSIZE_ACTIVE*PIXEL_SIZE] = {0};
+static volatile u8 framebuffer3[VSIZE_ACTIVE*HSIZE_ACTIVE*PIXEL_SIZE] = {0};
+
+XAxiVdma AxiVdmaFrameBuffering;
+
+void debug_vdma(UINTPTR addr);
+
+void init_vdma_buffer(UINTPTR addr, u32 fb1, u32 fb2, u32 fb3)
+{
+	// 1
+	Xil_Out32(addr + MM2S_VDMACR,
+	(255 << 16) | 0x8 | 0x80 | 0x2 | 0x1);
+	Xil_Out32(addr + S2MM_VDMACR,
+	(255 << 16) | 0x8 | 0x80 | 0x2 | 0x1);
+	
+	// 2
+	Xil_Out32(addr + MM2S_START_ADDRESS, fb1);
+	Xil_Out32(addr + MM2S_START_ADDRESS + 4, fb2);
+	Xil_Out32(addr + MM2S_START_ADDRESS + 8, fb3);
+	
+	Xil_Out32(addr + S2MM_START_ADDRESS, fb1);
+	Xil_Out32(addr + S2MM_START_ADDRESS + 4, fb2);
+	Xil_Out32(addr + S2MM_START_ADDRESS + 8, fb3);
+	
+	// 3
+	Xil_Out32(addr + MM2S_FRMDLY_STRIDE,HSIZE_ACTIVE*PIXEL_SIZE);
+	Xil_Out32(addr + S2MM_FRMDLY_STRIDE,HSIZE_ACTIVE*PIXEL_SIZE | (2 << 24));
+	
+	// 4
+	Xil_Out32(addr + MM2S_HSIZE,HSIZE_ACTIVE*PIXEL_SIZE);
+	Xil_Out32(addr + S2MM_HSIZE,HSIZE_ACTIVE*PIXEL_SIZE);
+	
+	// 5
+	Xil_Out32(addr + S2MM_VSIZE,VSIZE_ACTIVE);
+	Xil_Out32(addr + MM2S_VSIZE,VSIZE_ACTIVE);
+}
+
+int main()
+{
+	init_platform();
+		
+	xil_printf("Config - vdma\r\n");
+	// vdma frame buffering
+	init_vdma_buffer(XPAR_FRAME_BUFFER_VDMA_PREVIOUS_FRAME_BASEADDR,
+	(u32)&framebuffer1, (u32)&framebuffer2, (u32)&framebuffer3);
+
+	xil_printf("Config - done\r\n");
+	while(1) {
+		xil_printf("XPAR_FRAME_BUFFER_VDMA_PREVIOUS_FRAME\r\n");
+		debug_vdma(XPAR_FRAME_BUFFER_VDMA_PREVIOUS_FRAME_BASEADDR);
+		sleep(1);
+	}
+	cleanup_platform();
+	return 0;
+}
+\end{lstlisting}
 
 %TODO może jednak przykładowy listing z komentarzem co i jak...
+% OK
+
+Funkcja \texttt{init\_vdma\_buffer} jest odpowiedzialna za przeprowadzenie konfiguracji modułu VDMA. Jej argumenty stanowią adres elementu VDMA oraz adresy trzech buforów obrazu. Zagwarantować należy, by przestrzeń zarezerwowana na każdy bufor była wystarczająca do przechowania pełnej ramki obrazu. W przypadku wykorzystania modułu VDMA do transmisji kontekstu związanego z każdym pikselem, zmodyfikować należy wartość \texttt{PIXEL\_SIZE} do liczby bajtów zajmowanej przez jeden piksel.
+
+Procedura \texttt{init\_vdma\_buffer} wykonuje szereg operacji związanych z uruchomieniem transmisji sygnału dla obu kanałów niezależnie. Przedstawione poniżej działania związane są z indeksami znajdującymi się wewnątrz komentarzy w listingu.
+\begin{enumerate}
+	\item Konfiguracja przerwań i uruchomienie kanału VDMA.
+	W prezentowanym przykładzie, oba kanały skonfigurowano do działania w trybie cyklicznym, korzystającym naprzemiennie ze wszystkich buforów obrazu, z aktywowanym trybem synchronizacji \emph{Genlock} o wewnętrznym źródle sygnału.
+	
+	\item Przypisanie adresów buforów obrazu. Mogą być one wspólne lub unikalne dla każdego kanału.
+	
+	\item Zdefiniowanie parametrów obrazu wejściowego z sygnałami wygaszania i wzajemnego opóźnienia kanałów.
+	W omawianym przykładzie, kanał odczytu zachowuje opóźnienie dwóch klatek obrazu względem kanału zapisu.
+	
+	\item Przypisanie rozmiaru jednej linii obrazu, z uwzględnieniem wielkości piksela w bajtach, nie uwzględniając cykli wygaszania.
+	
+	\item Zdefiniowanie liczby linii obrazu, nie uwzględniając cykli wygaszania.
+\end{enumerate}
+
+Wpisanie wartości do rejestrów \texttt{S2MM\_VSIZE} i \texttt{MM2S\_VSIZE} powoduje rozpoczęcie transmisji sygnału.
 
 \subsection{Petalinux}
 Konfiguracja projektu zgodna jest z opisem dla modułów DMA, przedstawionym w sekcji \ref{sec:vivado-axi-dma-petalinux}. %TODO sekcji.
@@ -414,12 +544,12 @@ Odpowiedzialną za to procedurę \texttt{setup\_virtual\_memory} przestawiono na
 \section{Obliczenia równoległe}
 \label{sec:multithreading-config}
 Użycie rozwiązań omawianych w rozdziale \ref{sec:openmp} wymaga aktywacji właściwych funkcji kompilacji.
-
-W przypadku zastosowania wątków natywnych lub biblioteki dostępnej w standardzie C++ wymagane jest zastosowanie przełączników: %TODO powt. zast
+W przypadku zastosowania wątków natywnych lub biblioteki dostępnej w standardzie C++ wymagane jest aktywowanie przełączników: %TODO powt. zast
+% OK
 
 \begin{lstlisting}[language=bash]
-g++ main.cpp -o main.out (*@\textbf{-pthread}@*)
-g++ main.cpp -o main.out (*@\textbf{-std=c++11}@*)
+gcc main.c -o main.out (*@\textbf{-pthread}@*)
+g++ main.cpp -o main.out (*@\textbf{-std=c++11}@*) (*@\textbf{-pthread}@*)
 \end{lstlisting}
 
 Dla biblioteki TBB wymagane jest przeprowadzenie linkowania względem jej kodu źródłowego:
@@ -434,17 +564,18 @@ Natomiast dla interfejsu OpenMP, konieczne jest użycie przełącznika:
 g++ main.cpp -o main.out (*@\textbf{-fopenmp}@*)
 \end{lstlisting}
 
+Wykorzystanie omawianych rozwiązań wiąże się z użyciem dedykowanych procedur lub dyrektyw kompilatora. 
+Etap projektowania aplikacji działającej pod kontrolą systemu operacyjnego PetaLinux nie różni się od budowania oprogramowania na inne platformy. Należy jednak pamiętać, że układ Zynq wyposażony jest w procesor ARM o dwóch rdzeniach, więc potencjalne korzyści zastosowania aplikacji wielowątkowej nie przekraczają dwukrotnego zwiększenia szybkości działania aplikacji.
+Sposób zastosowania bibliotek znaleźć można w dokumentacji każdego z narzędzi i literaturze cytowanej w związanym z tym zagadnieniem rozdziale.
 %TODO Testował to Pan. Jakiś komentarz ?
-
+% hm... testowałem na tyle, by sprawdzić czy działa. Realnie wykorzystałem wątki do obsługi www w aplikacji, choć trudno mi tutaj dodać jakieś wnioski.
 
 \section{Biblioteka OpenCV}
 \label{sec:opencv-config}
 \subsection{OpenCV 2}
 Biblioteka OpenCV w wersji 2.4 nie jest oficjalnie dostępna w pakiecie PetaLinux, może jednak zostać dołączona do systemu operacyjnego dzięki mechanizmowi aplikacji użytkownika.
-
-Twórcy biblioteki nie udostępniają prekompilowanych plików bibliotek na platformę ARM i konieczne jest procesu kompilacji kodu źródłowego wraz z zależnościami. %TODO styl. coś jest nie tak...
-
-Poniżej przedstawiono proces instalacji zależności.
+Przeprowadzić należy proces kompilacji kodu źródłowego biblioteki wraz z zależnościami, ponieważ prekompilowane pliki na platrofmę ARM nie są publicznie dostępne. Poniżej przedstawiono proces instalacji zależności.%TODO styl. coś jest nie tak...
+% prada, poprawiłem
 
 \begin{lstlisting}[breaklines=true, language=Bash, caption=Definicja zmiennych środowiskowych.]
 export ARMPREFIX=(*@\textit{ścieżka/instalacji}@*)
@@ -484,6 +615,7 @@ make
 make install
 \end{lstlisting}
 
+Kompilowane biblioteki zapewniają dostęp do procedur obsługi strumieni wideo oraz obrazów w najczęściej wykorzystywanych formatach.
 Po zainstalowaniu zależności, przystąpić można do pobrania i instalacji biblioteki OpenCV.
 
 \begin{lstlisting}[breaklines=true, caption=Pobieranie biblioteki OpenCV w wersji 2.4.10.]
@@ -514,7 +646,8 @@ W przypadku pakietu PetaLinux w wersji 2016.3, właściwa ścieżka względem pu
 
 Po zakończeniu procesu, pliki wynikowe znaleźć można w katalogu \texttt{\$ARMPREFIX/lib}.
 
-Pliki te mogą być dołączone do budowanego systemu operacyjnego jako dodatkowe pliki. %TODO powt. pliki.
+Pliki te mogą być dołączone do budowanego systemu operacyjnego jako dodatkowe zależności. %TODO powt. pliki.
+% OK
 W tym celu wykorzystać należy polecenie:
 
 \begin{lstlisting}[breaklines=true]
@@ -537,19 +670,49 @@ petalinux-config -c rootfs
 \end{lstlisting}
 
 %TODO ew. nieco lepszy komentarz dla poszczególnych etapów oraz napisać, że to się udało zrobić i działało.
+% OK
 
+Bibliotekę skompilowano i potwierdzono poprawność działania dla plików testowych dostępnych na stronie internetowej twórców. Porównano wyniki działania aplikacji modyfikującej obraz na wejściu i zapisującego wynik do pliki z programem uruchomionym na procesorze architektury \emph{x86} i nie stwierdzono różnic.
 
 \subsection{OpenCV 3}
 Biblioteka OpenCV w wersji 3.1 dołączona jest do pakietu PetaLinux. 
 W celu jej aktywacji, wykorzystać należy polecenie przedstawione na listingu \ref{lis:petalinux-activate-lib} i wybrać biblioteki w zakładce \emph{,,Filesystem Packages/libs/opencv''}.
 
+Działanie biblioteki przetestowano na przykładzie programu dokonującego segmentacji obiektów pierwszoplanowych i ich indeksacji, przedstawionego na listingu \ref{lis:opencv-con-com}.
+
+\begin{lstlisting}[language=C, breaklines=true, label=lis:opencv-con-com, caption=Aplikacja indeksująca obiekty pierwszoplanowe.]
+#include <opencv2/opencv.hpp>
+#include <iostream>
+
+int main(int argc, char* argv[])
+{
+	cv::Mat input_image = cv::imread(argv[1], cv::IMREAD_GRAYSCALE);
+	
+	cv::Mat binary;
+	cv::threshold(input_image, binary, 200, 255, 0);
+	cv::imwrite("binary.png", binary);
+	
+	cv::Mat labels, stats, centroids;
+	
+	int num_labels = cv::connectedComponentsWithStats(binary, labels, stats, centroids);
+	
+	cv::imwrite("components.png", labels);
+	
+	for (int l = 1; l < num_labels; l++)
+		std::cout << "#" << l << "(x,y) = (" << centroids.at<long double>(l, 0) << ", " << centroids.at<long double>(l, 1) << ")" << std::endl;
+	
+	return 0;
+}
+\end{lstlisting}
 \subsection{SDK}
 Wykorzystanie bibliotek w projekcie SDK wymaga wskazania katalogu ze źródłami oraz bibliotekami w ustawieniach projektu.
-
 W przypadku użycia biblioteki w wersji 3.1, wystarczające jest utworzenie aplikacji w języku C++ i typu \textit{OpenCV Example Application}.
-
 Dla wersji 2.4, konieczne jest ręczne zmodyfikowanie parametrów kompilacji projektu, w sposób analogiczny do konfiguracji aplikacji wykorzystującej OpenCV i działającej na platformie x86, wskazując jednak na skompilowane wcześniej pliki dla platformy ARM.
 %TODO jeśli Pan to robił to proszę opisać szczegóły tego procesu.
+% OK
+
+Dokonać należy modyfikacji opcji projektu w ścieżce \emph{,,Tool Settings -> ARM v7 Linux g++ compiler -> Directories''} i dodać katalog \texttt{include} znajdujący się w strukturze plików: \texttt{\textit{ścieżka/instalacji}/include}.
+Zmodyfikować należy również opcje konfiguracji programu linkującego \emph{,,Tool Settings -> ARM v7 Linux g++ linker -> Libraries''}. Zdefiniować należy ścieżkę poszukiwania bibliotek \texttt{\textit{ścieżka/instalacji}/lib}, a także dodać wszystkie wykorzystywane moduły do listy używanych bibliotek, na przykład \texttt{opencv\_core}, \texttt{opencv\_imgproc}, \texttt{opencv\_video}.
 
 \section{Wykorzystanie mechanizmu przerwań systemowych}
 \label{sec:interrupts-config}
@@ -578,7 +741,8 @@ W sytuacji, gdy interfejs nie zawiera więcej niż szesnastu przerwań, wystarcz
 \subsection{Aplikacja \textit{bare-metal}}
 
 Wykorzystanie przerwań wymaga napisania procedury odpowiedzialnej za obsługę zdarzeń oraz zarejestrowanie jej jako agenta danego przerwania.
-Ponadto zwykle wymagane jest przeprowadzenie konfiguracji modułu w taki sposób, aby aktywować emisję przerwań. %TODO emisja... (chyba lepiej generację)
+Ponadto zwykle wymagane jest przeprowadzenie konfiguracji modułu w taki sposób, aby aktywować funkcję zgłaszania przerwań. %TODO emisja... (chyba lepiej generację)
+%poprawiłem
 
 Wymagane funkcje znaleźć można w plikach nagłówkowych \texttt{xparameters.h}, \texttt{xscugic.h}, \texttt{xil\_exception.h}, oraz \texttt{xaxivdma.h} dla modułu AXI VDMA i \texttt{xtmrctr.h} dla AXI Timer.
 
@@ -645,6 +809,7 @@ int ScuGicInterrupt_Init(u16 DeviceId, XTmrCtr *TimerInstancePtr,
 	if (NULL == GicConfig)
 		return XST_FAILURE;
 	
+	// a
 	Status = XScuGic_CfgInitialize(&InterruptController, GicConfig,
 		GicConfig->CpuBaseAddress);
 	if (Status != XST_SUCCESS)
@@ -655,6 +820,7 @@ int ScuGicInterrupt_Init(u16 DeviceId, XTmrCtr *TimerInstancePtr,
 		&InterruptController);
 	Xil_ExceptionEnable();
 	
+	// b
 	Status = XScuGic_Connect(&InterruptController,
 		XPAR_FABRIC_AXI_TIMER_0_INTERRUPT_INTR,
 		(Xil_ExceptionHandler) XTmrCtr_InterruptHandler,
@@ -669,6 +835,7 @@ int ScuGicInterrupt_Init(u16 DeviceId, XTmrCtr *TimerInstancePtr,
 	if (Status != XST_SUCCESS)
 		return XST_FAILURE;
 	
+	// c
 	XScuGic_Enable(&InterruptController,
 		XPAR_FABRIC_AXI_TIMER_0_INTERRUPT_INTR);
 	
@@ -680,18 +847,29 @@ int ScuGicInterrupt_Init(u16 DeviceId, XTmrCtr *TimerInstancePtr,
 }
 \end{lstlisting}
 
-Kolejne operacje wykonywane wewnątrz procedury odpowiadają za uruchomienie kontrolera przerwań, rejestrację w nim obu omawianych modułów AXI oraz uruchomienie trzech kanałów obsługi przerwań.
+Wewnątrz procedury ma miejsce kilka etapów konfiguracji:
+\begin{enumerate}
+	\item Uruchomienie kontrolera przerwań i rejestracja agenta zdarzeń, odpowiedzialnego za wstępną obsługę wszystkich zgłaszanych wyjątków.
+	
+	\item Rejestracja wszystkich modułów logiki programowalnej, które połączone są z wejściem \texttt{IRQ\_F2P} i których przerwania powinny być obsługiwane przez aplikację. Definiowane są również procedury odpowiedzialne za obsługę każdego zdarzenia.
+	
+	\item Aktywacja kanałów obsługi przerwań. Wykonanie tego kroku rozpoczyna proces oczekiwania kontrolera na zdefiniowane przerwanie.
+\end{enumerate}
 \end{enumerate}
 
 %TODO nieco obszerniejszy komentarz do kodu.
+% OK
 
 \subsection{PetaLinux}
 
 Obsługa przerwań w systemie PetaLinux wymaga wykorzystania dedykowanych sterowników sprzętu i przeprowadzenia przy ich użyciu procesu konfiguracji.
 Pakiet PetaLinux udostępnia sterowniki do modułów AXI, które ich wymagają i w ramach niniejszej pracy ograniczono się do ich wykorzystania. 
-W przypadku konieczności obsługi przerwania z niestandardowego modułu, konieczne może być dostarczenie dedykowanego mu sterownika, co wymaga szerokiej wiedzy z dziedziny działania systemów operacyjnych i komunikacji z urządzeniami peryferyjnymi. %TODO możę nie tyle szerokiej co specjalistycznej
+W przypadku konieczności obsługi przerwania z niestandardowego modułu, konieczne może być dostarczenie dedykowanego mu sterownika, co wymaga specjalistycznej wiedzy z dziedziny działania systemów operacyjnych i komunikacji z urządzeniami peryferyjnymi. %TODO możę nie tyle szerokiej co specjalistycznej
+% OK
 
-Aby uzyskać dostęp do elementów logiki, konieczna jest aktywacja modułów systemowych. %TODO raczej do modułów zaimplementowanych w logice rekong...
+Aby uzyskać dostęp do modułów zaimplementowanych w logice programowalnej, konieczna jest aktywacja tak zwanych modułów systemowych. %TODO raczej do modułów zaimplementowanych w logice rekong...
+% OK
+Na etapie konfiguracji systemu operacyjnego aktywować należy poniższe opcje:
 
 \begin{lstlisting}[breaklines=true, caption=Konfiguracja modułów systemowych.]
 petalinux-config -c kernel
@@ -701,6 +879,7 @@ Device Drivers -> Userspace I/O drivers -> Userspace I/O platform driver with ge
 Device Drivers -> Userspace I/O drivers -> Userspace I/O platform driver with generic iqr and dynamic memory
 \end{lstlisting}
 %TODO ale na jakim etapie jest to robione ?
+%sprecyzowałem
 
 Konieczna jest również znajomość identyfikatorów linii przerwań. 
 Można je odczytać z poziomu SDK, po utworzeniu projektu \emph{Board Support Package} dla wykorzystywanej konfiguracji sprzętowej. 
@@ -714,7 +893,6 @@ Identyfikatory linii przerwań zdefiniowane są w pliku \texttt{xparameters.h}, 
 \end{lstlisting}
 
 Wartości te mogą być również znalezione w strukturze \textit{device tree}, generowanej przez pakiet PetaLinux na etapie parametryzacji, w której zdefiniowane są informacje o konfiguracji sprzętowej, wymagane do poprawnego działania systemu.
-
 Wymagane informacje znajdują się w pliku \path{subsystems/linux/configs/device-tree/pl.dtsi}. 
 Na listingu poniżej przedstawiono fragment konfiguracji związany z modułem AXI Timer.
 
@@ -730,10 +908,8 @@ axi_timer_0: timer@42800000 {
 \end{lstlisting}
 Kolejne wpisy w konfiguracji definiują informacje o sterowniku, który powinien być odpowiedzialny za obsługę modułu z poziomu procesora, module odpowiedzialnym za kontrolę przerwań oraz definicję zdarzeń. 
 Ostatni wpis zawiera informację o adresie urządzenia w pamięci oraz rozmiarze tego zasobu.
-
 Definicja przerwania zawiera trzy elementy, z których kluczowa jest wartość \texttt{31}. 
 Ze względu na specyfikę formatu danych, w celu uzyskania właściwego identyfikatora przerwania, konieczne jest zwiększenie jej o \texttt{32}. Uzyskany wynik -- \texttt{63} -- jest zgodny z definicją wewnątrz pliku \texttt{xparameters.h}.
-
 W razie konieczności zaprojektowania dedykowanego sterownika sprzętu, wymagana jest wiedza na temat struktury \textit{device tree} oraz zasad budowy oprogramowania tego typu. 
 Informacje na ten temat znaleźć można we właściwych źródłach \cite{Corbet2005,device-tree-tutorial}.
 
@@ -745,7 +921,6 @@ petalinux-create -t modules -n (*@\textit{nazwa\_modułu}@*) --enable
 \end{lstlisting}
 
 W wyniku działania polecenia utworzona zostanie struktura, którą następnie należy zmodyfikować dodając funkcjonalności sterownika.
-
 Skompilowany na etapie budowania projektu moduł znajduje się w ścieżce \path{/lib/modules/identyfikator-kernela/extra} i może być uruchomiony poleceniem
 
 \begin{lstlisting}
@@ -753,9 +928,7 @@ insmod (*@\textit{nazwa\_modułu}@*).ko
 \end{lstlisting}
 
 Logowane przez moduł wiadomości mogą być odczytane przy użyciu polecenia \texttt{dmesg}.
-
 W celu weryfikacji poprawności konfiguracji przerwań systemowych, wykorzystać można interfejs \texttt{/proc/interrupts}.
-
 Wszystkie przerwania mogą być wypisane przy użyciu polecenia
 
 \begin{lstlisting}
@@ -770,6 +943,16 @@ Potwierdza on obecność linii przerwania o identyfikatorze \texttt{63}, związa
 
 %TODO Tak samo opisać eksperymenty, jakiś screen. VDMA też działao ? 
 %TODO Mam też wrażenie, że nie ma wszystkich informacji jak to przerwanie uruchomić, chyba, że to inaczej działą niż w bare i nie trzeba powiązać funkcji. Ogólnie czy zrobił Pan to samo co w bare-metal ?
+% nie testowałem VDMA, nie doszedłem do etapu, w którym potrzebowałbym przerwania z vdma. Tzn na bare-metal działało, jest nawet na listingu aplikacji, więc "powinno" działać i w peta.
+% w ogóle, te przerwania działają bardzo dziwnie. Miałem z nimi duże problemy i właściwie nic, poza jednym przypadkiem, nie udało mi się osiągnąć. Stąd tak mocno teoretyczny opis...
+% Podejrzewam, że "coś" się zepsuło w jednej z ostatnich edycji peta, bo gdy miałem problemy z konfiguracją, to co prawda znajdowałem rozwiązania w dokumentacji xilinxa lub na forach, autorzy twierdzili, że działają, ale w moim przypadku już tak nie było... 
+% I raczej nie jestem z tym sam, bo łatwo znaleźć tematy w tym stylu: https://forums.xilinx.com/t5/Embedded-Linux/UIO-Interrupts-on-Zynq/td-p/765123
+% dość swieże i z problemami, które i ja miałem. Ten zalinkowany to jest etap, do którego doszedłem, tzn przerwanie teoretycznie działa, ale nigdy nie jest pobudzane.
+% Ogółem, znalazłem jeden program, na którym te przerwania rzeczywiście działały, ale zacząłem wątpić w ich przydatność. Bo w literaturze, którą znalazłem autorzy albo obsługiwali przerwania bezpośrednio z poziomu modułu systemu, drivera - co może być uciążliwe w naszych zastosowaniach, bądź też wykrywali je na zasadzie cyklicznego odpytywania właściwego rejestru modułu - nie było więc feedbacku od modułu do aplikacji, tak jak w bare-metal. A to samo mogę osiągnąć bez wykorzystywania modułów systemowych.
 
-\section{Konfiguracja projektu generacji tła}
+% podsumowując:
+% 1) "nie działa" - podchodziłem do tego tematu chyba trzykrotnie i nie udało mi się osiągnąć zbyt wiele
+% 2) nie rozumiem praktyczności wykorzystania przerwań w tej formie, którą widziałem. Być może brakuje mi jakiegoś kluczowego fragmentu wiedzy, ale na tyle, na ile wiem teraz, przerwania nie byłyby dla mnie pomocne.
+% Dlatego opisałem teorię, by zebrać to, co wiem na przyszłość, może komuś się przyda. Ale praktycznych rozwiązań nie udało mi się zaprojektować...
+\section{Konfiguracja algorytmu generacji tła}
 \label{sec:background-buffer-conf}

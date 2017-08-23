@@ -18,6 +18,8 @@
 \usepackage{amsthm}
 \usepackage{abstract}
 \usepackage[section]{placeins}
+\usepackage{subcaption}
+
 % --- < bibliografia > ---
 
 \usepackage[
@@ -64,6 +66,7 @@ backend=bibtex
 \usepackage[toc,page]{appendix}
 
 \usepackage[hidelinks]{hyperref}
+\usepackage{float}
 
 \newenvironment{conditions}
 {\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}-{}$} l}}
@@ -185,15 +188,18 @@ backend=bibtex
 
 \include{chap/podsumowanie}
 
+\printbibliography
 
 \appendix
 \chapter*{Dodatki}
 \addcontentsline{toc}{chapter}{Dodatki}
 \renewcommand{\thesection}{\Alph{section}}
 
-\input {chap/dodatek-neon}
+\input {chap/dodatek-cd}
+
+\include {chap/dodatek-neon}
 
 \include {chap/dodatek-vdma-to-cv}
-\printbibliography
+
 
 \end{document}
