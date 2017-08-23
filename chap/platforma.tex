@@ -38,7 +38,7 @@ Ponadto, konfiguracja tej części wykonywana jest na starcie przez procesor lub
 Część procesorowa wyposażona jest w szereg interfejsów, w tym kontroler pamięci DDR3, interfejs komunikacji AMBA oraz zbiór interfejsów peryferyjnych.
 
 Procesor wyposażony jest w koprocesor arytmetyczny (\emph{FPU}), wspierający w obliczeniach na liczbach zmiennoprzecinkowych oraz wspiera obsługę architektury SIMD (\emph{ang.} Single Instruction, Multiple Data) -- pozwalającej na przetwarzanie wielu strumieni danych przy użyciu jednego strumienia instrukcji. 
-Zagadnienia te szerzej opisane zostały w sekcji \ref{sec:arm-neon}.
+Zagadnienia te szerzej opisane zostały w rozdziale \ref{sec:arm-neon}.
 %TODO Tu dobrze by było się odwoływać do nazw bloków z rysunku (np. FPU).
 % OK
 
@@ -49,9 +49,9 @@ Pamięć jest współdzielona między obiema częściami. %TODO obiema częścia
 Pozwala to na wymianę danych, do czego wykorzystywany jest standard AXI. Zastosowanie znajduje również mechanizm DMA, pozwalający na przeprowadzanie operacji z użyciem pamięci bez udziału procesora. 
 Interfejs pozwala na transmisję pojedynczych słów danych, umożliwiając konfigurację parametrów pracy modułów algorytmicznych, jak i na transmisję o wysokiej przepustowości. 
 Pozwala to, dzięki zastosowaniu modułu VDMA, na przesyłanie obrazu o rozdzielczości HD z częstotliwością osiągającą wartości 680 klatek na sekundę \cite{axi-vdma-guide}. 
-Interfejs AXI opisano szerzej w sekcji \ref{sec:axi-std}.
+Interfejs AXI opisano szerzej w rozdziale \ref{sec:axi-std}.
 
-Dzięki zastosowaniu kontrolera przerwań (\emph{General Interrupt Controller}) możliwe jest wykorzystanie modułów logiki programowalnej komunikujących się z procesorem z wykorzystaniem techniki zgłaszania żądań. Zagadnienie to opisano w sekcji \ref{sec:axi-interrupts}.
+Dzięki zastosowaniu kontrolera przerwań (\emph{General Interrupt Controller}) możliwe jest wykorzystanie modułów logiki programowalnej komunikujących się z procesorem z wykorzystaniem techniki zgłaszania żądań. Zagadnienie to opisano w rozdziale \ref{sec:axi-interrupts}.
 
 Ponadto, dostępne są powszechnie spotykane układy zegarowe (\emph{Timers}) i \emph{Watchdog}, odpowiedzialny za przerwanie pracy procesora w przypadku wykrycia błędnego wykonania programu.
 
@@ -128,9 +128,9 @@ apt-get install libgtk2.0-0:i386 libxtst6:i386 gtk2-engines-murrine:i386 lib32st
 Praca z pakietem wymaga ponadto wykorzystania oprogramowania \emph{Vivado Design Suite} \cite{vivado-home} do zaprojektowania układu połączeń logiki reprogramowalnej oraz \emph{Xilinx SDK} \cite{xsdk-home} do kompilacji programów uruchamianych w środowisku systemu operacyjnego układu.
 
 Pierwszym krokiem jest wykonanie projektu w pakiecie \emph{Vivado}. 
-Szczegóły procesu opisano w sekcji \ref{sec:vivado-conf}. %TODO sekcji -> rozdziale (wydaje mi się, ze w PL słowo sekcja nie powinno być uzywane w tym kontekście - kalka z ENG)
+Szczegóły procesu opisano w rozdziale \ref{sec:vivado-conf}. %TODO sekcji -> rozdziale (wydaje mi się, ze w PL słowo sekcja nie powinno być uzywane w tym kontekście - kalka z ENG)
 % OK, poprawię masowo w całej pracy na końcu 1. korekty
-Wyeksportowany projekt Vivado jest konieczny do przeprowadzenia procesu budowania systemu, proces konfiguracji projektu PetaLinux opisano w sekcji \ref{sec:petalinux-config}. %TODO akapity jednozdaniowe są zakazane...
+Wyeksportowany projekt Vivado jest konieczny do przeprowadzenia procesu budowania systemu, proces konfiguracji projektu PetaLinux opisano w rozdziale \ref{sec:petalinux-config}. %TODO akapity jednozdaniowe są zakazane...
 % OK, spróbuję je wyłapać
 
 Pakiet udostępnia możliwość dodania do budowanego systemu zbioru programów i bibliotek. 

@@ -385,7 +385,7 @@ Włączenie sterowników DMA oraz zmodyfikowanie argumentów uruchomienia system
 \section{Konfiguracja modułu AXI VDMA}
 \label{sec:vivado-axi-vdma}
 
-Proces konfiguracji modułu VDMA składa się z kroków podobnych do opisanych w sekcji \ref{sec:vivado-axi-dma}, poświęconej modułom AXI DMA. Poniżej przedstawiono dodatkowe kroki, związane bezpośrednio z konfiguracją modułu VDMA. %TODO sekcji !
+Proces konfiguracji modułu VDMA składa się z kroków podobnych do opisanych w rozdziale \ref{sec:vivado-axi-dma}, poświęconej modułom AXI DMA. Poniżej przedstawiono dodatkowe kroki, związane bezpośrednio z konfiguracją modułu VDMA. %TODO rozdziale !
 % OK
 
 \subsection{Vivado}
@@ -416,9 +416,9 @@ Z modułem AXI VDMA powiązać należy sygnał zegarowy o częstotliwości nie m
 Sygnał ten powinien być generowany przez układ ZYNQ, a nie powiązany bezpośrednio z zegarem strumienia obrazu.
 
 \subsection{SDK}
-Konfiguracja modułu VDMA wymaga zastosowania technik opisanych w sekcji \ref{sec:vivado-axi-dma-sdk}. %TODO sekcji
+Konfiguracja modułu VDMA wymaga zastosowania technik opisanych w rozdziale \ref{sec:vivado-axi-dma-sdk}. %TODO rozdziale
 
-Proces uruchamiania transmisji dla modułu wymaga wykonania kroków zdefiniowanych przez producenta i opisanych w sekcji \textit{,,Programming Sequence''} dokumentacji \cite{axi-vdma-guide}. Kod programu odpowiedzialnego za konfigurację modułu AXI VDMA przedstawiono na listingu \ref{lis:axi-vdma-sdk}.
+Proces uruchamiania transmisji dla modułu wymaga wykonania kroków zdefiniowanych przez producenta i opisanych w rozdziale \textit{,,Programming Sequence''} dokumentacji \cite{axi-vdma-guide}. Kod programu odpowiedzialnego za konfigurację modułu AXI VDMA przedstawiono na listingu \ref{lis:axi-vdma-sdk}.
 \begin{lstlisting}[breaklines,language=C, label=lis:axi-vdma-sdk, caption=Obsługa modułu AXI VDMA w aplikacji \textit{bare-metal}.]
 #include "xparameters.h"
 #include "platform.h"
@@ -528,7 +528,7 @@ Procedura \texttt{init\_vdma\_buffer} wykonuje szereg operacji związanych z uru
 Wpisanie wartości do rejestrów \texttt{S2MM\_VSIZE} i \texttt{MM2S\_VSIZE} powoduje rozpoczęcie transmisji sygnału.
 
 \subsection{Petalinux}
-Konfiguracja projektu zgodna jest z opisem dla modułów DMA, przedstawionym w sekcji \ref{sec:vivado-axi-dma-petalinux}. %TODO sekcji.
+Konfiguracja projektu zgodna jest z opisem dla modułów DMA, przedstawionym w rozdziale \ref{sec:vivado-axi-dma-petalinux}. %TODO rozdziale.
 
 W przypadku projektu aplikacji działającej pod kontrolą systemu operacyjnego, pamiętać należy, że konfiguracja buforów obrazu wymaga użycia adresów fizycznych, które mogą różnić się od adresów wirtualnych komórek pamięci.
 
@@ -536,7 +536,7 @@ Zdefiniować należy adresy buforów, odległe od siebie co najmniej o rozmiar j
 Zagwarantować należy nienaruszalność pamięci z perspektywy systemu operacyjnego. 
 Efekt ten najprościej jest osiągnąć przez ograniczenie rozmiaru pamięci dostępnej dla systemu operacyjnego i zdefiniowanie adresów buforów poza tym zakresem. 
 Wykorzystać do tego można argument \textit{mem} przekazywany na etapie uruchamiania systemu, na przykład \texttt{mem=224M}. 
-Proces dodawania argumentów uruchamiania systemu opisano w sekcji \ref{sec:petalinux-config}. %TODO sekacji
+Proces dodawania argumentów uruchamiania systemu opisano w rozdziale \ref{sec:petalinux-config}. %TODO sekacji
 
 Adres fizyczny pamięci nie może być odczytany bezpośrednio, w tym celu musi zostać powiązany z adresem wirtualnym. 
 Odpowiedzialną za to procedurę \texttt{setup\_virtual\_memory} przestawiono na listingu \ref{lis:axi-dma-petalinux-main}, przy czym parametr \texttt{base\_addr} to adres fizyczny pierwszej komórki bufora. 

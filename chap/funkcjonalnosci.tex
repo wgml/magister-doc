@@ -220,7 +220,7 @@ Dzięki zastosowaniu techniki DMA możliwa jest konfiguracja parametrów pracy a
 W szerszej perspektywie, pozwala to na udostępnienie interfejsu użytkownika, umożliwiającego nadzór nad pracą algorytmu, na przykład z poziomu konsoli dostępnej przez \emph{ssh} lub w formie interfejsu strony internetowej. 
 Możliwe jest również przesyłanie powiadomień z elementów logiki programowalnej do procesora ARM w celu wymuszenia reakcji na osiągnięty stan programu, na przykład przesłanie informacji o ukończeniu iteracji algorytmu dla aktualnej ramki obrazu. %TODO możliwe-umożliwiające.
 % OK
-Można w tym celu wykorzystać mechanizm przerwań systemowych, co szerzej opisano w sekcji \ref{sec:axi-interrupts}.
+Można w tym celu wykorzystać mechanizm przerwań systemowych, co szerzej opisano w rozdziale \ref{sec:axi-interrupts}.
 %TODO nie za bardzo rozumiem ten akapit.... może Pan jakoś jaśniej opisać ?
 % OK?
 
@@ -267,7 +267,7 @@ Zapis i odczyt danych może odbywać się niezależnie z tego samego lub różny
 Dzięki zastosowaniu trzech buforów, zagwarantować można, że zapis i odczyt danych zawsze odbywa się z niezależnych obszarów pamięci, co pozwala uniknąć zjawiska nadpisania przechowywanych danych przed ich wyświetleniem.
 
 W niniejszej pracy rozpatrzono możliwość wykorzystania modułu VDMA w celu obsługi algorytmów wymagających kontekstu w postaci dwóch kolejnych ramek obrazu.
-Proces konfiguracji modułu przedstawiono w sekcji \ref{sec:vivado-axi-vdma}.
+Proces konfiguracji modułu przedstawiono w rozdziale \ref{sec:vivado-axi-vdma}.
 
 \section{Obliczenia równoległe}
 \label{sec:openmp}
