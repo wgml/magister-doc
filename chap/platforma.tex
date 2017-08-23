@@ -5,18 +5,18 @@ Karta uruchomieniowa ZYBO jest przedstawicielem rodziny układów SoC (\emph{ang
 % OK
 SoC to układy scalone integrujące zbiór układów elektronicznych, takich jak mikroprocesor, układy koprocesujące, interfejsy wejścia i wyjścia, czy pamięci. Są one powszechnie wykorzystywane do projektowania systemów wbudowanych. %TODO wszystkie elementy budowy ??? inaczej to trzeba napisać...
 % OK?
-Centralną część układu rodziny Zynq-7000 stanowi dwurdzeniowy procesor o architekturze ARM w wersji Cortex-A9, współpracujący z działającym równolegle układem FPGA, opartym na architekturze Artix-7 lub Kintex-7. \cite{zynq-homepage} %TODO proszę zwrócić uwagę, że \cite powinno być przed kropką. Nie wspomniał Pan o logice programowalnej. 
+Centralną część układu rodziny Zynq-7000 stanowi dwurdzeniowy procesor o architekturze ARM w wersji Cortex-A9, współpracujący z działającym równolegle układem FPGA, opartym na architekturze Artix-7 lub Kintex-7 \cite{zynq-homepage}. %TODO proszę zwrócić uwagę, że \cite powinno być przed kropką. Nie wspomniał Pan o logice programowalnej. 
 % OK, poprawię masowo po 1. korekcie
 Są to układy heterogeniczne, łączące w sobie elementy klasycznego układu FPGA (\emph{PL}, \emph{ang.} Programmable Logic) oraz procesora ARM (\emph{PS}, \emph{ang.} Processing System). %TODO to zdanie jest powt. wcześniejszego - jakoś trzeba to zintegrować.
 % OK
 
 Karta ZYBO wyposażona jest ponadto w 512 MB pamięci RAM, złącza HDMI i VGA do transmisji obrazu, gniazda Jack do przesyłu sygnału dźwiękowego, gniazdo USB oraz slot pamięci MicroSD. %TODO Karta ZYBO, dzwięku -> sygnału dźwiękowego
 % OK
-Komunikacja sieciowa jest możliwa dzięki implementacji stosu TCP/IP i obecności gniazda RJ-45. \cite{zynq-datasheet}
+Komunikacja sieciowa jest możliwa dzięki implementacji stosu TCP/IP i obecności gniazda RJ-45 \cite{zynq-datasheet}.
 
-Układy rodziny Zynq-7000 są stosowane w aplikacjach systemów wsparcia kierowców, systemach wizyjnych wysokich rozdzielczości, cyfrowego przetwarzania sygnałów czy kryptograficznych. Zaproponowano wykorzystanie zalet elementów FPGA i CPU do projektowania systemów wsparcia kierowców ADAS, co pozwoliło na redukcję czasu odpowiedzi systemu i zapotrzebowania na energię. \cite{GuanwenZhong}
-W innej pracy zbadano możliwość wykorzystania układu do transmisji sygnału o rozdzielczości 4K ($3840 \times 2160$ pikseli) przy możliwie niewielkim zużyciu zasobów i energii. \cite{MaleenAbeydeera}
-Wśród zagadnień kryptograficznych, realizowanych przy użyciu omawianej rodziny układu wymienić można algorytmy generowania liczb pseudolosowych o wysokiej rozdzielczości.	\cite{PawelDabal2014} %TODO (po kropce) poza tym moze o jedno zdadnie wiecej na temat kazdego artykuły i inny układ (nie na końcu, a po zdaniu cite)
+Układy rodziny Zynq-7000 są stosowane w aplikacjach systemów wsparcia kierowców, systemach wizyjnych wysokich rozdzielczości, cyfrowego przetwarzania sygnałów czy kryptograficznych. Zaproponowano wykorzystanie zalet elementów FPGA i CPU do projektowania systemów wsparcia kierowców ADAS, co pozwoliło na redukcję czasu odpowiedzi systemu i zapotrzebowania na energię \cite{GuanwenZhong}.
+W innej pracy zbadano możliwość wykorzystania układu do transmisji sygnału o rozdzielczości 4K ($3840 \times 2160$ pikseli) przy możliwie niewielkim zużyciu zasobów i energii \cite{MaleenAbeydeera}.
+Wśród zagadnień kryptograficznych, realizowanych przy użyciu omawianej rodziny układu wymienić można algorytmy generowania liczb pseudolosowych o wysokiej rozdzielczości	\cite{PawelDabal2014}. %TODO (po kropce) poza tym moze o jedno zdadnie wiecej na temat kazdego artykuły i inny układ (nie na końcu, a po zdaniu cite)
 % OK
 
 Na rysunku \ref{fig:zynq-overview} przedstawiono schemat omawianej architektury.
@@ -48,7 +48,7 @@ Pamięć jest współdzielona między obiema częściami. %TODO obiema częścia
 % OK
 Pozwala to na wymianę danych, do czego wykorzystywany jest standard AXI. Zastosowanie znajduje również mechanizm DMA, pozwalający na przeprowadzanie operacji z użyciem pamięci bez udziału procesora. 
 Interfejs pozwala na transmisję pojedynczych słów danych, umożliwiając konfigurację parametrów pracy modułów algorytmicznych, jak i na transmisję o wysokiej przepustowości. 
-Pozwala to, dzięki zastosowaniu modułu VDMA, na przesyłanie obrazu o rozdzielczości HD z częstotliwością osiągającą wartości 680 klatek na sekundę  \cite{axi-vdma-guide}. 
+Pozwala to, dzięki zastosowaniu modułu VDMA, na przesyłanie obrazu o rozdzielczości HD z częstotliwością osiągającą wartości 680 klatek na sekundę \cite{axi-vdma-guide}. 
 Interfejs AXI opisano szerzej w sekcji \ref{sec:axi-std}.
 
 Dzięki zastosowaniu kontrolera przerwań (\emph{General Interrupt Controller}) możliwe jest wykorzystanie modułów logiki programowalnej komunikujących się z procesorem z wykorzystaniem techniki zgłaszania żądań. Zagadnienie to opisano w sekcji \ref{sec:axi-interrupts}.
@@ -179,7 +179,7 @@ W przypadku układu Zynq, wykorzystanie tej struktury pozwala na konfigurację i
 \item Po przeprowadzeniu wstępnej konfiguracji elementów systemu, możliwe jest wykonanie procesu konfiguracji, budowania i przygotowania wynikowych plików binarnych.
 \end{enumerate}
 Opisany proces jest skomplikowany i wymaga specjalistycznej wiedzy. 
-Dostępne są obszerne opracowania dotyczące tematu, zawierające precyzyjny opis kolejnych wymaganych kroków \cite{zybo-zynq-getting-started,zybo-stock-linux,xilinx-build-kernel}
+Dostępne są obszerne opracowania dotyczące tematu, zawierające precyzyjny opis kolejnych wymaganych kroków \cite{zybo-zynq-getting-started,zybo-stock-linux,xilinx-build-kernel}.
 
 %TODO A Pan to robił ? Jeśli tak to link to szczegółowego opisu.
 % robiłem, ale na bazie źródeł, które cytuję powyżej. Proces jest dość skomplikowany i podatny na zmiany, ze względu na liczbę narzędzi, które się wykorzystuje, więc nie widziałem sensu budowania kolejnego tutoriala.
@@ -195,7 +195,7 @@ W przeciwieństwie do dystrybucji PetaLinux, instalowane oprogramowanie może by
 Cecha ta może być istotna w przypadku aplikacji działających przez długi czas, gdy aktualizacja oprogramowania jest korzystna ze względu na znalezione błędy lub poprawę bezpieczeństwa w kolejnej wersji. %TODO bezpieczeństwo.
 % ok?
 
-System Ubuntu Core może być zbudowany i uruchomiony na karcie ZYBO przy użyciu dedykowanego narzędzia. \cite{ubuntu-core-zybo}
+System Ubuntu Core może być zbudowany i uruchomiony na karcie ZYBO przy użyciu dedykowanego narzędzia \cite{ubuntu-core-zybo}.
 %TODO Uwaga tak jak wcześniej...
 % OK
 
