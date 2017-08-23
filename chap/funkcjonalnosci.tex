@@ -192,7 +192,6 @@ Natomiast procedura zapisu wymaga trzech etapów:
 \end{enumerate}
 
 Protokół pozwala ponadto na przesłanie do 256 wartości danych w trakcie jednej transmisji dzięki technice \emph{burst}, a transakcje odczytu i zapisu danych mogą odbywać się równolegle.
-
 Przepływ danych w interfejsie AXI4-Stream odbywa się wyłącznie w jednym kierunku i nie jest możliwy odczyt danych przesłanych wcześniej przez urządzenie \emph{master} do \emph{slave}. 
 Procedura ta jest podobna do transakcji zapisu, jest jednak rozszerzona o możliwość dzielenia operacji na kilka mniejszych i łączenia wielu transakcji w jedną.
 
@@ -265,7 +264,6 @@ Dane w buforze reprezentują kompletne ramki obrazu w ciągłym fragmencie pami�
 Powszechnie wykorzystywanym zastosowaniem modułu jest mechanizm potrójnego buforowania, umożliwiający zmianę częstotliwości taktowania zegara sygnału wizyjnego. 
 Zapis i odczyt danych może odbywać się niezależnie z tego samego lub różnych buforów. 
 Dzięki zastosowaniu trzech buforów, zagwarantować można, że zapis i odczyt danych zawsze odbywa się z niezależnych obszarów pamięci, co pozwala uniknąć zjawiska nadpisania przechowywanych danych przed ich wyświetleniem.
-
 W niniejszej pracy rozpatrzono możliwość wykorzystania modułu VDMA w celu obsługi algorytmów wymagających kontekstu w postaci dwóch kolejnych ramek obrazu.
 Proces konfiguracji modułu przedstawiono w rozdziale \ref{sec:vivado-axi-vdma}.
 
@@ -274,7 +272,6 @@ Proces konfiguracji modułu przedstawiono w rozdziale \ref{sec:vivado-axi-vdma}.
 
 Ze względu na wykorzystanie w układzie Zynq procesora ARM o dwóch rdzeniach, możliwe jest rozważenie zagadnienia zwiększania szybkości wykonania algorytmu przez zrówlnoleglenie obliczeń w dwóch wątkach. %TODO Zynq
 % OK
-
 Stosując prawo Amdahla, wykazać można, że maksymalne przyspieszenie, jakie można uzyskać w systemie wieloprocesorowym jest proporcjonalne do liczby elementów obliczeniowych. 
 Zależność ta zachodzi po warunkiem, że całe zadanie może być realizowane w sposób równoległy. 
 W przypadku omawianego procesora, spodziewać się można korzyści nie przekraczających dwukrotnego zwiększenia szybkości wykonania algorytmu.
@@ -285,7 +282,6 @@ W ramach pracy rozważono możliwości wykorzystania wątków natywnych oraz bib
 \subsection{Wątki natywne}
 
 Użycie wątków natywnych wymaga wykorzystania bibliotek systemowych -- w przypadku aplikacji w języku C++ działającej w systemie PetaLinux zastosować można biblioteki \texttt{<thread>} lub \texttt{<pthread.h>} wchodzące w skład bibliotek standardowych \cite{Williams2013}.
- 
 Ich wykorzystanie pozwala na możliwie najbardziej efektywne użycie zasobów maszyny obliczeniowej. 
 Wymaga to jednak dużych umiejętności programisty oraz dobrej znajomości architektury docelowej oraz wykonywanego zadania. 
 Ponadto zastosowanie biblioteki \texttt{<pthread.h>} wymaga zgodności systemu docelowego ze standardem POSIX, natomiast w przypadku \texttt{<thread>}, konieczne jest przeprowadzenie procesu kompilacji kompilatorem zgodnym ze standardem C++11. 
@@ -316,7 +312,6 @@ Jej stosowanie stanowi naturalne rozszerzenie możliwości tego języka i nie wy
 
 Biblioteka OpenMP to interfejs programowania aplikacji pozwalający na budowanie wieloplatformowych programów wykonywanych równolegle. 
 Rozwiązanie to jest dedykowane aplikacjom powstającym w językach C i C++ \cite{openmp-guide}.
-
 OpenMP składa się z dyrektyw kompilatora i zbioru bibliotek, które pozwalają kształtować zachowanie programu na etapie wykonania. %TODO zdanie - akapit !
 % OK
 Ze względu na wykorzystanie dyrektyw kompilacji, możliwa jest integracja biblioteki z istniejącą aplikacją, nie wymagając przy tym modyfikowania właściwego kodu programu. 

@@ -165,7 +165,6 @@ cd -
 \end{lstlisting}
 
 Ze względu na mechanizm buforowania przez kontroler operacji zapisu danych, pamiętać należy o wywołaniu polecenia \texttt{sync}, zapewniającego zachowanie integralności danych.
-
 Karta SD pozwala na uruchomienie systemu operacyjnego na układzie i przechowywanie danych użytkownika pomiędzy startami układu. 
 Dalsza praca z systemem odbywać się może przez protokoły komunikacji \emph{SSH} lub \emph{UART}.
 
@@ -529,7 +528,6 @@ Wpisanie wartości do rejestrów \texttt{S2MM\_VSIZE} i \texttt{MM2S\_VSIZE} pow
 
 \subsection{Petalinux}
 Konfiguracja projektu zgodna jest z opisem dla modułów DMA, przedstawionym w rozdziale \ref{sec:vivado-axi-dma-petalinux}. %TODO rozdziale.
-
 W przypadku projektu aplikacji działającej pod kontrolą systemu operacyjnego, pamiętać należy, że konfiguracja buforów obrazu wymaga użycia adresów fizycznych, które mogą różnić się od adresów wirtualnych komórek pamięci.
 
 Zdefiniować należy adresy buforów, odległe od siebie co najmniej o rozmiar jednej ramki sygnału wizyjnego. 
@@ -677,7 +675,6 @@ Bibliotekę skompilowano i potwierdzono poprawność działania dla plików test
 \subsection{OpenCV 3}
 Biblioteka OpenCV w wersji 3.1 dołączona jest do pakietu PetaLinux. 
 W celu jej aktywacji, wykorzystać należy polecenie przedstawione na listingu \ref{lis:petalinux-activate-lib} i wybrać biblioteki w zakładce \emph{,,Filesystem Packages/libs/opencv''}.
-
 Działanie biblioteki przetestowano na przykładzie programu dokonującego segmentacji obiektów pierwszoplanowych i ich indeksacji, przedstawionego na listingu \ref{lis:opencv-con-com}.
 
 \begin{lstlisting}[language=C, breaklines=true, label=lis:opencv-con-com, caption=Aplikacja indeksująca obiekty pierwszoplanowe.]
@@ -743,7 +740,6 @@ W sytuacji, gdy interfejs nie zawiera więcej niż szesnastu przerwań, wystarcz
 Wykorzystanie przerwań wymaga napisania procedury odpowiedzialnej za obsługę zdarzeń oraz zarejestrowanie jej jako agenta danego przerwania.
 Ponadto zwykle wymagane jest przeprowadzenie konfiguracji modułu w taki sposób, aby aktywować funkcję zgłaszania przerwań. %TODO emisja... (chyba lepiej generację)
 %poprawiłem
-
 Wymagane funkcje znaleźć można w plikach nagłówkowych \texttt{xparameters.h}, \texttt{xscugic.h}, \texttt{xil\_exception.h}, oraz \texttt{xaxivdma.h} dla modułu AXI VDMA i \texttt{xtmrctr.h} dla AXI Timer.
 
 Procedurę konfiguracji obsługi przerwań podzielić można na kilka etapów:
@@ -921,7 +917,7 @@ petalinux-create -t modules -n (*@\textit{nazwa\_modułu}@*) --enable
 \end{lstlisting}
 
 W wyniku działania polecenia utworzona zostanie struktura, którą następnie należy zmodyfikować dodając funkcjonalności sterownika.
-Skompilowany na etapie budowania projektu moduł znajduje się w ścieżce \path{/lib/modules/identyfikator-kernela/extra} i może być uruchomiony poleceniem
+Skompilowany na etapie budowania projektu moduł znajduje się w ścieżce \path{/lib/modules/identyfikator-kernela/extra} i może być uruchomiony poleceniem:
 
 \begin{lstlisting}
 insmod (*@\textit{nazwa\_modułu}@*).ko
@@ -929,7 +925,7 @@ insmod (*@\textit{nazwa\_modułu}@*).ko
 
 Logowane przez moduł wiadomości mogą być odczytane przy użyciu polecenia \texttt{dmesg}.
 W celu weryfikacji poprawności konfiguracji przerwań systemowych, wykorzystać można interfejs \texttt{/proc/interrupts}.
-Wszystkie przerwania mogą być wypisane przy użyciu polecenia
+Wszystkie przerwania mogą być wypisane przy użyciu polecenia:
 
 \begin{lstlisting}
 cat /proc/interrupts
@@ -956,3 +952,5 @@ Potwierdza on obecność linii przerwania o identyfikatorze \texttt{63}, związa
 % Dlatego opisałem teorię, by zebrać to, co wiem na przyszłość, może komuś się przyda. Ale praktycznych rozwiązań nie udało mi się zaprojektować...
 \section{Konfiguracja algorytmu generacji tła}
 \label{sec:background-buffer-conf}
+
+\lipsum[1-3]

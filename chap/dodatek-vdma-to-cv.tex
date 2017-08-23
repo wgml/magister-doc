@@ -3,7 +3,7 @@
 
 Transmisja sygnału wizyjnego pomiędzy elementami logiki programowalnej a procesorem CPU jest możliwa dzięki wykorzystaniu modułu AXI VDMA. W celu odczytu obrazu z bufora lub zapisu danych do niego wykorzystano bibliotekę OpenCV. W celu zwiększenia czytelności kodu, usunięto elementy związane z konfiguracją modułu VDMA. Założono, że pierwszy bajt bufora obrazu VDMA znajduje się pod adresem \texttt{framebuffer\_ptr}. Procedura \texttt{from\_vdma} jest odpowiedzialna za zbudowanie macierzy typu \texttt{cv::Mat} na bazie danych znajdujących się w buforze. Funkcja \texttt{to\_vdma} pełni przeciwną rolę i umożliwia zapis danych z macierzy do bufora VDMA.
 
-Domyślnie, procedura odczytu nie kopiuje danych z komórek pamięci związanych z modułem VDMA, co pozwala na uzyskanie możliwie największej wydajności. W przypadku, gdy macierz jest modyfikowana lub przechowywana przez okres dłuższy niż czas transmisji jednej ramki obrazu, konieczne jest uzyskanie kopii danych -- odpowiedzialne jest za to polecenie $image = image.clone();$.
+Domyślnie, procedura odczytu nie kopiuje danych z komórek pamięci związanych z modułem VDMA, co pozwala na uzyskanie możliwie największej wydajności. W przypadku, gdy macierz jest modyfikowana lub przechowywana przez okres dłuższy niż czas transmisji jednej ramki obrazu, konieczne jest uzyskanie kopii danych -- odpowiedzialne jest za to polecenie \texttt{image = image.clone();}.
 
 Na listingu \ref{lis:vdma-to-opencv-code} zaprezentowano metodę konwersji sygnału wizyjnego pomiędzy elementami obliczeniowymi wykonanymi w architekturach FPGA i ARM.
 

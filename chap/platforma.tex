@@ -21,7 +21,7 @@ Wśród zagadnień kryptograficznych, realizowanych przy użyciu omawianej rodzi
 
 Na rysunku \ref{fig:zynq-overview} przedstawiono schemat omawianej architektury.
 
-\begin{figure}[h]
+\begin{figure}[!htb]
 	\centering
 	\includegraphics[width=12cm]{img/zyng-platform.png}
 	\caption{Schemat architektury Zynq-7000. (Źródło: \cite{zybo-reference-manual})}
@@ -52,9 +52,7 @@ Pozwala to, dzięki zastosowaniu modułu VDMA, na przesyłanie obrazu o rozdziel
 Interfejs AXI opisano szerzej w rozdziale \ref{sec:axi-std}.
 
 Dzięki zastosowaniu kontrolera przerwań (\emph{General Interrupt Controller}) możliwe jest wykorzystanie modułów logiki programowalnej komunikujących się z procesorem z wykorzystaniem techniki zgłaszania żądań. Zagadnienie to opisano w rozdziale \ref{sec:axi-interrupts}.
-
 Ponadto, dostępne są powszechnie spotykane układy zegarowe (\emph{Timers}) i \emph{Watchdog}, odpowiedzialny za przerwanie pracy procesora w przypadku wykrycia błędnego wykonania programu.
-
 Kontekst pamięciowy synchronizowany jest pomiędzy oboma rdzeniami procesora dzięki modułowi \emph{Snoop Control Unit}.
 
 Układ logiki programowalnej należeć może do rodzin Artix-7 lub Kintex-7 i zbudowany jest z typowych elementów wykorzystywanych w FPGA o różnej liczebności, związanej z klasą układu:
@@ -106,7 +104,6 @@ Ponadto, rozpatrzono możliwość użycia systemu czasu rzeczywistego do wykonan
 
 Firma Xilinx zapewnia dostęp do zbioru narzędzi \emph{PetaLinux Tools} \cite{petalinux-tools} umożliwiających przeprowadzenie procesu konfiguracji, budowania i uruchamiania systemu Linux na platformie Zynq. 
 Dzięki zintegrowaniu koniecznych narzędzi w jednym pakiecie, proces ten jest w dużej części zautomatyzowany i ogranicza interakcję z programistą, zapewniając przy tym możliwość dowolnej konfiguracji systemu.
-
 Celem wykorzystania omawianego pakietu narzędzi jest zbudowanie systemu operacyjnego gotowego do uruchomienia i umożliwiającego szybką rekonfirugację zarówno elementów logiki reprogramowalnej jak i samego systemu operacyjnego.
 
 Pakiet wymaga dostarczenia zewnętrznych zależności, w tym narzędzi umożliwiających budowanie systemu -- kompilatora, generatora parserów, systemu budowania -- oraz zbioru narzędzi programistycznych i konfiguracyjnych.
@@ -126,7 +123,6 @@ apt-get install libgtk2.0-0:i386 libxtst6:i386 gtk2-engines-murrine:i386 lib32st
 \end{lstlisting}
 
 Praca z pakietem wymaga ponadto wykorzystania oprogramowania \emph{Vivado Design Suite} \cite{vivado-home} do zaprojektowania układu połączeń logiki reprogramowalnej oraz \emph{Xilinx SDK} \cite{xsdk-home} do kompilacji programów uruchamianych w środowisku systemu operacyjnego układu.
-
 Pierwszym krokiem jest wykonanie projektu w pakiecie \emph{Vivado}. 
 Szczegóły procesu opisano w rozdziale \ref{sec:vivado-conf}. %TODO sekcji -> rozdziale (wydaje mi się, ze w PL słowo sekcja nie powinno być uzywane w tym kontekście - kalka z ENG)
 % OK, poprawię masowo w całej pracy na końcu 1. korekty
@@ -194,7 +190,6 @@ Dzięki wykorzystaniu Ubuntu Core, możliwy jest dostęp do repozytorium oprogra
 W przeciwieństwie do dystrybucji PetaLinux, instalowane oprogramowanie może być aktualizowane w trakcie pracy systemu. 
 Cecha ta może być istotna w przypadku aplikacji działających przez długi czas, gdy aktualizacja oprogramowania jest korzystna ze względu na znalezione błędy lub poprawę bezpieczeństwa w kolejnej wersji. %TODO bezpieczeństwo.
 % ok?
-
 System Ubuntu Core może być zbudowany i uruchomiony na karcie ZYBO przy użyciu dedykowanego narzędzia \cite{ubuntu-core-zybo}.
 %TODO Uwaga tak jak wcześniej...
 % OK

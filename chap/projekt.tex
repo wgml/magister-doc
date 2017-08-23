@@ -144,7 +144,6 @@ W tabeli \ref{tab;frame-difference-utilization} przedstawiono zapotrzebowanie na
 Moduł przeznaczony jest do pracy z częstotliwością $200MHz$, co pozwala na analizę sygnału wideo o rozdzielczości $1920 \times 1080$ pikseli i częstotliwości obrazu $60Hz$.
 %TODO może jakieś zdjęcie pokazuję, że działa. No i jeszcze te wszyskie szczegóły konfiguracji tego modułu. I coś o tym źródle - że ma to być film HD. Kolejna kwestia to przygotowanie takiego projektu - działającego/wzorcowego i do repo na płytce, a tu napisać, że takie coś jest.
 % źródło opisałem ponad tabelą
-
 Proces konfiguracji modułu VDMA wykorzystywanego do buforowania ramki obrazu przedstawiono w rozdziale \ref{sec:vivado-axi-vdma}.
 Wynik działania aplikacji przedstawiono na rysunku \ref{fig:frame-difference-result}. Projekty Vivado i PetaLinux związane z omawianą aplikacją dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}.
 \begin{figure}[H]
@@ -316,7 +315,7 @@ Sprawdzono działanie aplikacji dla sygnału wizyjnego o rozdzielczości $1280 \
 Szacowane zapotrzebowanie wynikowego systemu na energię elektryczną nie powinno przekroczyć $1,936W$. Właściwa energia wymagana do przeprowadzania operacji obliczeniowych nie przekracza wartości $1,797W$, w tym $1,565W$ ( $87\%$) to energia wymagana do obsługi układu ARM.
 
 
-\begin{table}[h]
+\begin{table}[!htb]
 	\caption{Wykorzystanie zasobów przez aplikację.}
 	\centering
 	\label{tab;background-model-utilization}
@@ -340,7 +339,6 @@ Może ono być ograniczone przez wykorzystanie jednego modułu do obsługi bufor
 W przypadku złożonych aplikacji, konieczne może okazać się użycie układu z większą liczbą dostępnych zasobów obliczeniowych. %TODO z większą liczbą dostępnych...
 % OK
 Moduł przeznaczony jest do pracy z częstotliwością $200MHz$, co pozwala na analizę sygnału wideo o rozdzielczości $1920 \times 1080$ pikseli i częstotliwości obrazu $60Hz$.
-
 Wynik działania aplikacji przedstawiono na rysunku \ref{fig:background-model-result}. Projekty Vivado i PetaLinux związane z omawianą aplikacją dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}. Proces konfiguracji aplikacji przedstawiono w rozdziale \ref{sec:background-buffer-conf}.
 \begin{figure}[H]
 	\centering
