@@ -950,7 +950,79 @@ Potwierdza on obecność linii przerwania o identyfikatorze \texttt{63}, związa
 % 1) "nie działa" - podchodziłem do tego tematu chyba trzykrotnie i nie udało mi się osiągnąć zbyt wiele
 % 2) nie rozumiem praktyczności wykorzystania przerwań w tej formie, którą widziałem. Być może brakuje mi jakiegoś kluczowego fragmentu wiedzy, ale na tyle, na ile wiem teraz, przerwania nie byłyby dla mnie pomocne.
 % Dlatego opisałem teorię, by zebrać to, co wiem na przyszłość, może komuś się przyda. Ale praktycznych rozwiązań nie udało mi się zaprojektować...
+
 \section{Konfiguracja algorytmu generacji tła}
 \label{sec:background-buffer-conf}
 
+Algorytm generacji tła wykorzystuje funkcjonalności opisane dotychczas w rozdziale. Poniżej przedstawiono zagadnienia związane z integracją funkcjonalności w jednym projekcie.
+
+\subsection{Vivado}
+
+Wejściami modułu generacji tła są aktualna wartość piksela obrazu i jego wartość z poprzedniej ramki oraz piksel modelu tła wyznaczony dla ostatniej klatki. Ponadto, dostępne są sygnały wejściowe związane z parametrami pracy algorytmu. Wyjścia modułu stanowi zbiór trzech ramek obrazu, zawierający sygnały mask ruchu i przynależności do obiektów pierwszoplanowych oraz obliczany model tła.
+
+Aby umożliwić konfigurację parametrów algorytmu zaprojektowano moduł \texttt{algorithm\_parameters}. Udostępnia on wyjścia związane z każdym z parametrów i wykorzystuje interfejs AXI do komunikacji z procesorem. Sposób konfiguracji modułów tego typu opisano w rozdziale \ref{sec:vivado-axi-dma}.
+
+Buforowanie ramek obrazu wykorzystuje mechanizm AXI VDMA. Proces konfiguracji modułów tego typu opisano w rozdziale \ref{sec:vivado-axi-vdma}. Wykorzystano niezależne bufory do przechowywania ramki obrazu wejściowego oraz modelu tła. Alternatywnym rozwiązaniem jest wykorzystanie jednego modułu do obsługi obu sygnałów. Aby osiągnąć możliwie maksymalną wydajność, z każdym modułem związano niezależne interfejsy \texttt{AXI\_Interconnect} połączone z procesorem przy użyciu kanałów wysokiej wydajności.
+Trzeci moduł VDMA był odpowiedzialny za przesłanie wyników działania algorytmu do części procesorowej, w celu przeprowadzenia dalszego przetwarzania i prezentacji wyników.
+
+Dla  synchronizacji trzech strumieni wizyjnych, wykorzystano moduł \texttt{AXI4-Stream Combiner}, umożliwiający połączenie wielu strumieni \texttt{AXI-Stream} w jeden, o większej szerokości. Aby zagwarantować stabilność działania aplikacji, z każdym sygnałem wejściowym modułu związano element \texttt{AXI4-Stream Data FIFO}, zapewniający kolejkę FIFO o długości sześćdziesięciu czterech elementów.
+
+Przeciwny mechanizm zastosowano na wyjściu modułu generującego model tła -- trzy ramki obrazu przesyłane były w formie jednego strumienia o szerokości dziewięciu bajtów i dzielone na niezależnie strumienie przy użyciu modułu \texttt{AXI4-Stream Broadcaster}. Dzięki zastosowaniu opisywanych technik możliwa była synchronizacja sześciu niezależnych strumieni i utrzymanie stabilności działania projektu.
+
+Konwersja obrazu z przestrzeni \emph{RGB} do \emph{YCbCr} odbywała się przy użyciu zaprojektowanego modułu \texttt{rgb2ycbcr}. Otrzymywał on na wejściu wektor o szerokości dwudziestu czterech elementów, zawierających kanały składowych \emph{RGB}, a na wyjściu udostępniał wektor o tej samej szerokości, zawierający wartości składowych sygnału \emph{YCbCr}. Operacja miała miejsce przed konwersją strumienia wideo do formy \emph{AXI4-Stream}.
+
+Operacje akwizycji sygnału z interfejsu HDMI i wysłania obrazu wynikowego do interfejsu VGA, a także do konwersji do i z postaci \emph{AXI4-Stream} zrealizowano przy użyciu modułów dostępnych w bibliotece producenta karty ZYBO, której repozytorium dostępne jest pod adresem \cite{vivado-library}.
+
+Wykorzystano również moduł \texttt{AXI GPIO} do obsługi kanału \texttt{hpd} związanego z wejściem HDMI. Sygnał \texttt{hpd} odpowiedzialny jest za zdefiniowanie gotowości kanału do odbioru transmisji.
+
+% sądzę, że nie ma sensu, by omawiać każdy ze stworzonych modułów w bardziej obszernej formie. Wygodniej będzie chyba po prostu udostępnić repozytorium, bo moduły są albo proste (rgb2ycbcr), albo bardzo proste (synchronizer vdma wykonuje jedną operację), albo, tak jak właściwy moduł generacji tła, są zbyt duże i korzystają z mnożarek i sumatorów, więc trudno je w pełni przedstawić w tekście.
+% z podobnego powodu nie zamieściłem kompletnego schematu połączeń. Nie sądzę, by dało się go przedstawić jakkolwiek czytelnie.
+
+\subsection{SDK}
+
+Konfiguracja modułów VDMA opisana została w rozdziale \ref{sec:vivado-axi-vdma} i w omawianym projekcie ma ten sam przebieg dla każdego z trzech elementów. Pamiętać należy o zapewnieniu niezależnych przestrzeni adresowych dla każdego zbioru buforów obrazu.
+
+Moduł udostępniający parametry algorytmu zawiera trzy rejestry, związane z poszczególnymi wartościami. Wartości progów ruchu i tła mają charakter liczb całkowitych z zakresu od $0$ do $255$. Parametr bezwładności tła to liczba stałoprzecinkowa bez znaku, o jednym bicie części całkowitej i siedmiu bitach części ułamkowej. Moduł algorytmiczny współpracuje poprawnie z wartościami od $0$ do $1$. Proces konfiguracji modułu przedstawiono na listingu \ref{lis:background-model-parameters}.
+
+\begin{lstlisting}[breaklines,language=C, label=lis:background-model-parameters, caption=Konfiguracja modułu parametryzującego generację tła.]
+#define ALPHA_REGISTER 0
+#define BG_TH_REGISTER 4
+#define FD_TH_REGISTER 8
+
+// ...
+
+Xil_Out32(XPAR_ALGORITHM_PARAMETERS_0_CTL_BASEADDR + ALPHA_REGISTER, 32); // 00100000 = 0.25
+Xil_Out32(XPAR_ALGORITHM_PARAMETERS_0_CTL_BASEADDR + BG_TH_REGISTER, 25);
+Xil_Out32(XPAR_ALGORITHM_PARAMETERS_0_CTL_BASEADDR + FD_TH_REGISTER, 30);
+\end{lstlisting}
+
+W prezentowanym przykładzie, zdefiniowano wartości parametrów: $\alpha = 0,25$, $T_{bg} = 25$, $T_{fd} = 30$.
+
+Podobny przebieg ma procedura konfiguracji modułu odpowiedzialnego za sygnał \texttt{hpd}. Aby zachować zgodność ze specyfikacją interfejsu HDMI, aby zgłosić gotowość do odczytu, należy przeprowadzić następujące operacje:
+\begin{enumerate}
+	\item Wymuszenie stanu niskiego kanału.
+	\item Zdefiniowanie kanału jako wejściowy.
+	\item Wymuszenie stanu wysokiego kanału.
+\end{enumerate}
+
+Na listingu \ref{lis:background-model-hpd} przedstawiono kod związany z omawianymi operacjami.
+
+\begin{lstlisting}[breaklines,language=C, label=lis:background-model-hpd, caption=Konfiguracja modułu sterującego kanałem \texttt{hpd}.]
+Xil_Out32(XPAR_GPIO_0_BASEADDR, 0);
+Xil_Out32(XPAR_GPIO_0_BASEADDR + 4, 0);
+Xil_Out32(XPAR_GPIO_0_BASEADDR, 0xFFFFFFFF);
+\end{lstlisting}
+
+Zalecana kolejność konfiguracji modułów to:
+\begin{enumerate}
+	\item Moduł parametryzujący pracę algorytmu.
+	\item Moduł odpowiedzialny za obsługę kanału \texttt{hpd}.
+	\item Moduły AXI VDMA.
+\end{enumerate}
+
+Ponadto, funkcjonalność aplikacji można rozszerzyć dzięki użyciu przerwań systemowych, których konfigurację opisano w rozdziale \ref{sec:interrupts-config}.
+
+\subsection{PetaLinux}
+
 \lipsum[1-3]
+% Dodam opis podobny do tego związanego z SDK + sposób użycia mojej aplikacji, gdy doprowadzę kod do zadowalającego stanu. Wolałbym uniknąć dodawania obszernych fragmentóœ kodu, by zachować spójność tekstu.
