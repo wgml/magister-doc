@@ -73,7 +73,9 @@ backend=bibtex
 	{\end{tabular}\par\vspace{\belowdisplayskip}}
 
 \lstloadlanguages{TeX}
+\usepackage{xcolor}
 
+\belowcaptionskip=-10pt
 \lstset{
 	literate={ą}{{\k{a}}}1
            {ć}{{\'c}}1
@@ -94,7 +96,15 @@ backend=bibtex
            {Ź}{{\'Z}}1
            {Ż}{{\.Z}}1,
 	basicstyle=\footnotesize\ttfamily,
+	showstringspaces=false,
+	tabsize=2,
+	rulecolor=\color{gray},
+	frame=single,
+	xleftmargin=\fboxsep,
+	xrightmargin=-\fboxsep,
+	numbers=none
 }
+
 
 % ------------------------
 
