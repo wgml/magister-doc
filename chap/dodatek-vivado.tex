@@ -12,7 +12,7 @@ W poniższych podrozdziałach zebrano informacje związane z poruszanymi zagadni
 Omawiane zagadnienia wymagają użycia oprogramowania Vivado \cite{vivado-home} i zintegrowanego z nim środowiska programistycznego Xilinx SDK \cite{xsdk-home}. Ponadto, konfiguracja systemu operacyjnego odbywa się przy użyciu narzędzi pakietu PetaLinux Tools \cite{petalinux-tools}.
 
 \section{Podstawowa konfiguracja projektu}
-
+\label{sec:basic-proj-config}
 Wykorzystana w projekcie karta -- Digilent ZYBO -- nie jest bezpośrednio wspierana przez środowisko Vivado. %TODO karta
 % OK
 Wynika z tego konieczność sprecyzowania parametrów układu na etapie tworzenia projektu. 
@@ -1024,5 +1024,221 @@ Ponadto, funkcjonalność aplikacji można rozszerzyć dzięki użyciu przerwań
 
 \subsection{PetaLinux}
 
-\lipsum[1-3]
-% Dodam opis podobny do tego związanego z SDK + sposób użycia mojej aplikacji, gdy doprowadzę kod do zadowalającego stanu. Wolałbym uniknąć dodawania obszernych fragmentóœ kodu, by zachować spójność tekstu.
+Aplikacja PetaLinux związana z projektem odpowiedzialna jest za dwa niezależnie zadania. Pierwszym z nich jest przeprowadzenie konfiguracji modułów logiki programowalnej oraz uruchomienie modułu algorytmicznego. Po zakończeniu tego etapu, aplikacja może zakończyć działanie.
+W drugim przypadku, pracując w trybie ciągłym, program odpowiedzialny jest za monitorowanie stanu algorytmu i udostępnienie interfejsu sieciowego z wynikami.
+
+Konfiguracja modułów obliczeniowych opiera się na założeniach zgodnych z przedstawionymi w rozdziale poświęconym programowi \emph{bare-metal}. Elementy logiki, do komunikacji z którymi wykorzystano protokół AXI, zebrane są w strukturze \texttt{video\_transmit}. Zawiera ona elementy \texttt{axi\_vdma} umożliwiające współpracę z modułami VDMA oraz \texttt{axi\_interface} wykorzystywane do komunikacji z pozostałymi modułami. Ponadto, przechowuje wartość uchwytu do pamięci fizycznej oraz strukturę konfiguracyjną, w której zebrano informacje związane z pracą algorytmu i parametry obrazu. Opis struktur znaleźć można na listingu \ref{lis:peta-config-structures}.
+
+\begin{lstlisting}[breaklines,language=C, label=lis:peta-config-structures, caption=Struktury konfiguracyjne aplikacji.]
+struct video_transmit {
+	struct axi_vdma *vdma_frame_buffer;
+	struct axi_vdma *vdma_background_buffer;
+	struct axi_vdma *vdma_result_frame;
+	struct axi_interface *hpd;
+	struct axi_interface *parameters;
+	
+	struct video_config *config;
+	
+	memory_handle_t memory_handle;
+};
+
+struct vdma_framebuffer {
+	vdma_buffer_addr physical_addr;
+	vdma_buffer_addr virtual_addr;
+};
+
+typedef unsigned char* vdma_buffer_addr;
+
+struct axi_vdma {
+	struct axi_interface common;
+	size_t num_framebuffers;
+	size_t current_framebuffer_index;
+	struct vdma_framebuffer *framebuffers;
+};
+
+struct axi_interface {
+	unsigned int base_addr;
+	virt_address virt_addr;
+	
+	char id[32];
+};
+
+typedef unsigned int* virt_address;
+
+struct video_config {
+	struct {
+		int width;
+		int height;
+		size_t pixel_size;
+		size_t framebuffer_length;
+	} video;
+
+	struct {
+		unsigned char bg_th;
+		unsigned char fd_th;
+		double alpha;
+	} algo;
+};
+
+typedef int memory_handle_t;
+
+\end{lstlisting}
+
+Proces konfiguracji podzielono na dwa etapy - przygotowywania środowiska aplikacji (\texttt{setup}), oraz właściwej konfiguracji modułów (\texttt{initialize}). Na listingu \ref{lis:setup-and-init} przedstawiono fragment obu procesów, związany z konfiguracją modułu parametryzującego pracę algorytmu.
+
+\begin{lstlisting}[breaklines,language=C, label=lis:setup-and-init, caption=Konfiguracja modułu parametryzuącego pracę algorytmu.]
+struct video_transmit* setup(struct application_config config) {
+	struct video_transmit *video_transmit = (struct video_transmit*) malloc(sizeof(struct video_transmit));
+	video_transmit->memory_handle = open("/dev/mem", O_RDWR | O_SYNC);
+		
+	video_transmit->config = (struct video_config*) malloc(sizeof(struct video_config));
+	if (video_transmit->config == NULL) {
+		perror("config memory allocation failed.");
+		exit(1);
+	}
+	init_config(video_transmit->config, config.image_width, config.image_height, config.alpha, config.bg_th, config.fd_th);
+	
+	video_transmit->parameters = (struct axi_interface*) malloc(sizeof(struct axi_interface));
+	if (video_transmit->parameters == NULL) {
+		perror("parameters memory allocation failed.");
+		exit(1);
+	}
+	setup_virt_memory(video_transmit->parameters, 65535, video_transmit->memory_handle, algorithm_parameters_addr);
+	strcpy(video_transmit->parameters->id, "parameters");
+	
+	// konfiguracja pozostałych modułów AXI
+	return video_transmit;
+}
+
+void initialize(struct video_transmit *video_transmit) {
+	init_parameters(video_transmit->parameters, *video_transmit->config);
+	
+	// uruchomienie pozostałych modułów AXI
+}
+
+void update_parameters(struct axi_interface *interface, struct video_config config) {
+	unsigned char alpha_c = convert_alpha(config.algo.alpha);
+	axi_write(interface->virt_addr, ALPHA_REGISTER, alpha_c);
+	axi_write(interface->virt_addr, BG_REGISTER, config.algo.bg_th);
+	axi_write(interface->virt_addr, FD_REGISTER, config.algo.fd_th);
+}
+
+static unsigned char convert_alpha(double alpha) {
+	if (alpha >= 1)
+		return 0b10000000;
+	if (alpha <= 0)
+		return 0;
+	
+	unsigned char result = 0;
+	for (ssize_t bit = 6; bit >= 0; bit--)
+		if ((char) (alpha * 128) >= (result | (1 << bit)))
+			result |= 1 << bit;
+	return result;
+}
+\end{lstlisting}
+
+Procedura \texttt{setup} wykonuje operacje związane z alokacją pamięci oraz powiązaniem adresu fizycznego modułu logiki z adresem wirtualnym. Wewnątrz procedury \texttt{initialize} ma miejsce właściwa konfiguracja modułu, a więc, w przypadku elementu parametryzującego algorytm - zapis wartości parametrów do związanych z nimi rejestrów. Ze względu na konieczność konwersji wartości parametru $\alpha$ z postaci liczby zmiennoprzecinkowej do zapisu stałopozycyjnego, zaprojektowano procedurę \texttt{convert\_alpha}, która umożliwia poprawną konfigurację rejestrów modułu bez konieczności podania zdefiniowania reprezentacji binarnej przez użytkownika.
+Wykorzystanie kolejnych modułów wymaga zadeklarowania ich wewnątrz struktury \texttt{video\_transmit} oraz dodania wywołań związanych z nimi funkcji wewnątrz obu opisywanych procedur.
+Definicje procedur \texttt{setup\_virt\_memory} oraz \texttt{axi\_write} znaleźć można w rozdziale \ref{sec:vivado-axi-dma}.
+
+Aplikacja udostępnia ponadto serwer \texttt{http} wykorzystywany do prezentacji wyników działania algorytmu oraz wykonuje cyklicznie procedurę monitorowania stanu modułów AXI.
+Procedury konfiguracyjne zaimplementowano w języku \texttt{C}, z wykorzystaniem bibliotek systemowych oraz biblioteki \texttt{libpng}, wymaganej do zapisu wyników działania algorytmu w formie plików graficznych.
+Do projektu dołączono skrypt umożliwiający pobranie i budowę zewnętrznych zależności -- \texttt{dependencies.sh}. 
+Wykonać go można przy użyciu polecenia:
+
+\begin{lstlisting}
+bash dependencies.sh
+\end{lstlisting}
+, w wyniku wywołania zbudowana zostanie struktura katalogów zawierająca kod źródłowy oraz skompilowane pliki bibliotek. Dołączony do pracy projekt skonfigurowany jest w sposób wykorzystujący te pliki.
+
+Aplikację zintegrowano z modułem \texttt{C++} wykorzystującym funkcje biblioteki OpenCV w procesie indeksacji elementów na bazie maski obiektów pierwszoplanowych. Procedurę opisano w pracy \cite{Bradski2016}, a użytą implementację przedstawiono na listingu \ref{lis:opencv-label-module}.
+Procedura \texttt{label\_buffer} umożliwia wykonanie procesu indeksacji na podstawie danych zawartych w buforze VDMA.
+
+\begin{lstlisting}[breaklines,language=C, label=lis:opencv-label-module, caption=Moduł indeksacji obiektów pierwszoplanowych.]
+cv::Mat label(cv::Mat const foregroundMask) {
+	cv::Mat labels, stats, centroids, result;
+	int nccomps = cv::connectedComponentsWithStats(foregroundMask,
+		labels, stats, centroids);
+
+	std::vector<cv::Vec3b> colors(nccomps + 1);
+	colors[0] = cv::Vec3b(0, 0, 0);
+	
+	for (int i = 0; i < nccomps; i++) {
+		colors[i] = cv::Vec3b(rand() % 256, rand() % 256, rand() % 256);
+		if (stats.at<int>(i - 1, cv::CC_STAT_AREA) < 100)
+			colors[i] = cv::Vec3b(0, 0, 0);
+	}
+	
+	result = cv::Mat::zeros(foregroundMask.size(), CV_8UC3);
+	
+	for (int y = 0; y < foregroundMask.rows; y++) {
+		for (int x = 0; x < foregroundMask.cols; x++) {
+			int label = labels.at<int>(y, x);
+			result.at<cv::Vec3b>(y, x) = colors[label];
+		}
+	}
+	
+	return result;
+}
+
+void label_buffer(unsigned char *buffer_in, unsigned char *buffer_out, int width, int height) {
+	cv::Mat input = cv::Mat(height, width, CV_8UC3, buffer_in);
+	input = input.clone();
+	cv::Mat result = label(input);
+	std::memcpy(buffer_out, result.data, result.total() * result.elemSize());
+}
+\end{lstlisting}
+
+Uruchomienie aplikacji na systemie operacyjnym PetaLinux wymaga dołączenia do niego zbioru zależności: 
+\begin{lstlisting}
+petalinux-config -c rootfs
+  -> Filesystem Packages
+    -> base
+      -> gcc-runtime-xilinx
+        * libstdc++6
+      -> glibc-xilinx
+        * libc6
+        * libcidn1
+        * libthread-db1
+    -> libs
+      -> opencv
+        * opencv
+        * wykorzystywane moduły opencv
+      -> zlib
+        * libz1
+      -> libpng
+        * libpng16-16
+\end{lstlisting}
+
+Omawianą aplikację można dodać do obrazu systemu PetaLinux lub przesłać przy użyciu protokołu SSH.
+
+Konfiguracja aplikacji wykorzystuje argumenty wiersza poleceń:
+\begin{itemize}
+		\item \texttt{\--\--image-width} liczba pikseli w linii obrazu,
+		\item \texttt{\--\--image-width} liczba linii w obrazie,
+		
+		\item \texttt{\--\--algo-alpha} wartość parametru $\alpha$,
+		\item \texttt{\--\--algo-fd} wartość parametru $T_{fd}$,
+		\item \texttt{\--\--algo-bg} wartość parametru $T_{bg}$,
+		
+		
+		\item \texttt{\--\--mode} tryb pracy programu: 
+		\begin{itemize}
+			\item \texttt{setup} w przypadku procesu konfiguracji elementów logiki programowalnej,
+			\item \texttt{algo} dla pracy w trybie ciągłym.
+		\end{itemize}
+		
+		\item \texttt{\--\--server-port} port serwera \texttt{http},
+		
+		\item \texttt{\--\--help} -- wyświetlenie pełnego opisu konfiguracji aplikacji.
+\end{itemize}
+
+Wywołania dla obu trybów przestawiono na listingu \ref{lis:app-execution}.
+
+\begin{lstlisting}[breaklines, label=lis:app-execution, caption=Sposoby uruchomienia aplikacji.]
+./background-model --mode setup --image-width 1280 --image-height 720 \
+	--algo-alpha 0.2 --algo-fd 30 --algo-bg 20
+	
+./background-model --mode algo --image-width 1280 --image-height 720 \
+	--server-port 8080
+\end{lstlisting}
