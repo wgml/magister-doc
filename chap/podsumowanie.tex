@@ -1,24 +1,37 @@
 \chapter{Podsumowanie}
 \label{chap:summary}
 
-%TODO No tutaj to trzeba się nieco bardziej postarać. 1. Ta formuła "autor" mi się nie podobna. 2. Nie robiłbym z tego kolejnego spisu zawartości, oczyiwście ref mogą zostać, ale struktura pownnina być inna. 3. Po pownej lekturze (przy poprawkach) na pewno będzie łatwiej wybrać najważniejsze osiągnięcia. 4. Nad tymi kierunkami rozwoju też bym poprawcował jeszcze...
-% przeregadowałem
+%TODO TK - Do powtórnej lektury
+
+
 
 Celem niniejszej pracy była analiza możliwości systemu operacyjnego PetaLinux uruchomionego na układzie z~rodziny Zynq i próba wykorzystania go w zagadnieniach związanych z wbudowanymi systemami wizyjnymi. 
-Użycie systemu operacyjnego oferuje większy, względem aplikacji typu \textit{bare-metal}, zasób możliwości -- w tym komunikację sieciową, metody przechowywania danych, a także realizację zaawansowanych zadań algorytmicznych, dzięki zastosowaniu zewnętrznych bibliotek. %TODO realizację zaawans...
-% OK
+Użycie systemu operacyjnego oferuje większy, względem aplikacji typu \textit{bare-metal}, zasób możliwości -- w tym komunikację sieciową, metody przechowywania danych, a także realizację zaawansowanych zadań algorytmicznych dzięki zastosowaniu zewnętrznych bibliotek. 
 
-W ramach pracy zbadano możliwości wykorzystania istniejących systemów operacyjnych do działania na badanej platformie. Omówiono wady i zalety każdego ze znanych autorowi rozwiązań. Poruszono również zagadnienie realizacji obliczeń w czasie rzeczywistym w układzie Zynq. Zagadnienia te zebrano w rozdziale \ref{cha:platform}.
+W ramach pracy zbadano możliwości wykorzystania istniejących systemów operacyjnych do działania na badanej platformie. 
+Omówiono wady i zalety każdego ze znanych autorowi rozwiązań. 
+Poruszono również zagadnienie realizacji obliczeń w czasie rzeczywistym w układzie Zynq. 
+Zagadnienia te zebrano w rozdziale \ref{cha:platform}. %TODO powt. zagadnienia.
+%TODO Konkrety: zbudowano i uruchomiono: Peta, Ubuntu i ze zródeł.
 
-Kolejnym krokiem było opracowanie funkcjonalności, które mogą znaleźć zastosowanie w projektach realizujących zadania przetwarzania obrazów i sekwencji wizyjnych. Zebrano informacje teoretyczne oraz wnioski z zastosowań praktycznych protokołu AXI oraz wyjaśniono jego rolę w projektowaniu współczesnych układów obliczeniowych, realizowanych na platformie Zynq.
+Kolejnym krokiem było opracowanie funkcjonalności, które mogą znaleźć zastosowanie w projektach związanych z~przetwarzaniem obrazów i sekwencji wizyjnych. 
+Zebrano informacje teoretyczne oraz wnioski z zastosowań praktycznych protokołu AXI oraz wyjaśniono jego rolę w projektowaniu współczesnych układów obliczeniowych realizowanych na platformie Zynq.
 Wyniki analizy teoretycznej oraz wnioski uzyskane na etapie projektowania implementacji zebrano w rozdziale \ref{cha:functionalities}. 
 
-Na podstawie informacji zebranych w dwóch wymienionych rozdziałach, zaproponowano metodę realizacji algorytmu generacji tła w logice reprogramowalnej. Wynik działania modułu był następnie transmitowany do pamięci operacyjnej procesora ARM przy użyciu mechanizmu AXI VDMA. Aplikacja działająca pod kontrolą systemu PetaLinux była odpowiedzialna za końcową analizę obrazu i archiwizację wyników.
-W ramach realizacji projektu zaproponowano metodę buforowania pełnej ramki obrazu przy użyciu modułu AXI VDMA. Zaprojektowano również moduł wyznaczający różnicę dwóch kolejnych klatek obrazu, który może stanowić element składowy rozbudowanych systemów wizyjnych.
-W trakcie realizacji projektu napotkano na ograniczenia, w tym niewystarczającą ilość zasobów logicznych oraz niewielką wydajność procedur algorytmicznych uruchamianych na procesorze ARM, w wyniku których nie zbudowano kompletnego systemu wizyjnego wykorzystującego proponowane techniki.
+Na podstawie informacji zebranych w dwóch wymienionych powyżej rozdziałach, zaproponowano metodę realizacji algorytmu generacji tła w logice reprogramowalnej. %TODO no nie...  zrealizowano przykładowy system wizyjny -- segmentację obikeów pierwsszoplanowych. Został on podziaelony pomiędzy logikę programowlaną () i system procesorowy. 
+Wynik działania modułu był następnie transmitowany do pamięci operacyjnej procesora ARM przy użyciu mechanizmu AXI VDMA. 
+Aplikacja działająca pod kontrolą systemu PetaLinux była odpowiedzialna za końcową analizę obrazu i archiwizację wyników.
+%TODO i to dopasować.
+
+W ramach realizacji projektu zaproponowano metodę buforowania pełnej ramki obrazu przy użyciu modułu AXI VDMA. 
+Zaprojektowano również moduł wyznaczający różnicę dwóch kolejnych klatek obrazu, który może stanowić element składowy rozbudowanych systemów wizyjnych.
+W trakcie realizacji projektu napotkano na ograniczenia, w tym niewystarczającą liczbę zasobów logicznych oraz niewielką wydajność procedur algorytmicznych uruchamianych na procesorze ARM, w wyniku których nie zbudowano kompletnego systemu wizyjnego wykorzystującego proponowane techniki.
+%TODO Raczej działające w czasie rzeczywistym.
 Opis projektu i wnioski z jego realizacji zebrano w rozdziale \ref{cha:project}.
 
-Zebrano również informacje związane z praktycznym wykorzystaniem omawianych funkcjonalności w projektach wizyjnych. Przedstawiono metody konfiguracji kolejnych modułów w ujęciu ogólnym, możliwe do wykorzystania w trakcie projektowania rozwiązań algorytmicznych na dowolną kartę rodziny Zynq. Informacje te znaleźć można w rozdziale \ref{cha:vivado-conf}.
+Zebrano również informacje związane z praktycznym wykorzystaniem omawianych funkcjonalności w projektach wizyjnych. 
+Przedstawiono metody konfiguracji kolejnych modułów w ujęciu ogólnym, możliwe do wykorzystania w trakcie projektowania rozwiązań algorytmicznych na dowolny układ rodziny Zynq. 
+Informacje te znaleźć można w rozdziale \ref{cha:vivado-conf}.
 
 Materiał zebrany i przedstawiony w ramach niniejszej pracy może posłużyć za podstawę do realizacji zaawansowanych algorytmów wizyjnych z wykorzystaniem platformy Zynq i systemu operacyjnego PetaLinux. 
 Przedstawione techniki mogą zostać wykorzystane do rozwoju istniejących, jak i projektowania nowych aplikacji.
@@ -30,9 +43,13 @@ Innym kierunkiem rozwoju może być zastosowanie systemów czasu rzeczywistego w
 
 Zaproponowany moduł generacji tła może być dalej rozbudowywany i wykorzystywany w złożonych aplikacjach realizowanych na platformie Zynq.
 Zbiór funkcjonalności badanych w ramach pracy nie wyczerpuje możliwości dostępnych w systemie PetaLinux i pokrewnych. Dalszy rozwój badań może pozwolić na zwiększenie praktyczności użycia systemu do realizacji zadań przetwarzania obrazów dzięki zdefiniowaniu obszernego zbioru zasobów możliwych do wykorzystania na etapie projektowania aplikacji.
+%TODO Jakaś powtórka.
+%TODO Jeszcze dopracować te dalsze kierunki
 
 %TODO Przed tymi istniejącymy dodatkami jeszcze dodatek A - spis zawartości CD.
 %TODO Spis treści przed dodatki.
 % OK, dodałem dodatek, treść wypełnię później
 % pracę sformatowałem zgodnie z tym, co znalazłem w zasadach dyplomowania.
 % przenieść spis przed dotatki?
+
+%TODO - tzn. spis literatury :) nie treści :)

@@ -1,98 +1,74 @@
 \chapter{Wstęp}
 \label{cha:intruduction}
 
-%TODO Przed tym dodać abstrakt PL i EN (na jednej stronie)
 
-Przetwarzanie obrazów i ich sekwencji stanowi pole rozległych badań naukowych i przemysłowych. %TODO naukowych i przemysłowych 
-% OK
+Przetwarzanie obrazów i ich sekwencji stanowi pole rozległych badań naukowych i przemysłowych.
+W ich ramach, projektowane są algorytmy umożliwiające akwizycję, modyfikowanie, analizę, rozpoznawanie treści i prezentację obrazów.
+Często motywacją badań jest próba naśladowania zjawisk związanych z narządem wzroku człowieka i dążenie do uzyskania takiego opisu sposobu działania, aby umożliwić wykonanie zbliżonego do nich algorytmu przy użyciu układów elektronicznych. 
+Odmiennym zagadnieniem jest poszukiwanie możliwości realizacji przetwarzania obrazów w taki sposób, aby uzyskać informacje niewidoczne dla ludzkiego oka, w oparciu o parametry obrazu o niewielkiej zmienności. Temat ten obejmuje analizę obrazów w celu wykrycia możliwych modyfikacji obrazu oryginalnego czy algorytmy częstotliwościowe. %TODO częstotliwościowe -> niejasne
 
-W ich ramach, projektowane są algorytmy umożliwiające akwizycję, modyfikowanie, analizę, rozpoznawanie treści i prezentację obrazów. %TODO jeszcze rozpoznawanie treści
-% OK
-Często motywacją badań jest próba naśladowania zjawisk związanych z narządem wzroku człowieka i dążenie do uzyskania takiego opisu sposobu działania, aby umożliwić wykonanie zbliżonego do nich algorytmu przy użyciu układów elektronicznych. %TODO zjawisk -> sposobu działania, drugie zjawisk jest jakieś zbyt ogólne
-% OK
-Odmiennym zagadnieniem jest poszukiwanie możliwości realizacji przetwarzania obrazów w taki sposób, aby uzyskać informacje niewidoczne dla ludzkiego oka, w oparciu o parametry obrazu o niewielkiej zmienności. Temat ten obejmuje analizę obrazów w celu wykrycia możliwych modyfikacji obrazu oryginalnego czy algorytmy częstotliwościowe. %TODO tu mógłby Pan rozwinąć, co ma Pan na myśli...
-% OK
-
-Techniki przetwarzania obrazów opierają się zwykle na analizie i redukcji informacji zawartej w sekwencji pikseli w taki sposób, aby uzyskać obraz wynikowy, na którym uwypuklone będą kluczowe z punktu widzenia algorytmu własności. %TODO informacji zawartej w sekwencji.. 
-% OK
+Techniki przetwarzania obrazów opierają się zwykle na analizie i redukcji informacji zawartej w sekwencji pikseli w taki sposób, aby uzyskać obraz wynikowy, na którym uwypuklone będą kluczowe z punktu widzenia algorytmu własności.
 Wynikiem działania procedury może być również zbiór cech opisujących badane zjawiska.
-%TODO W tym miejscu bym przytoczył klasyczny podział na przetwarzanie, analizę i rozpoznawanie i krótko omówił...
-% OK
 
 Zdefiniować można szereg operacji składających się na proces przetwarzania obrazu \cite{Tadeusiewicz1997}.
 \begin{itemize}
-	\item Akwizycja -- przygotowanie cyfrowej reprezentacji obrazu, czytelnej dla układu obliczeniowego.
+	\item Akwizycja -- przygotowanie cyfrowej reprezentacji obrazu, ,,czytelnej'' dla układu obliczeniowego.
 	
-	\item Przetwarzanie -- proces modyfikacji danych wejściowych w celu przystosowania do obróbki algorytmicznej. Wykorzystujący, między innymi, operacje skalowania, zmiany przestrzeni barw czy usuwania zakłóceń.
+	\item Przetwarzanie -- proces modyfikacji danych wejściowych w celu przystosowania do obróbki algorytmicznej. Wykorzystujący, między innymi, operacje skalowania, zmiany przestrzeni barw czy usuwania zakłóceń (filtracji).
 	
 	\item Analiza -- redukcja informacji wizyjnej w celu uzyskania opisu jakościowego lub ilościowego badanych cech i eliminacja zbędnych z perspektywy rozpatrywanego zadania informacji.
 	
 	\item Rozpoznawanie -- proces uzyskiwania informacji wynikowych na podstawie wektora cech.
 \end{itemize}
 
-Techniki przetwarzania obrazów, a zwłaszcza ich sekwencji znajdują zastosowanie w coraz większej liczbie dziedzin. %TODO przypadków -> złe słowo.
-% OK?
-Jedną z dziedzin wykorzystujących techniki wizyjne, która jest prężnie rozwijana w ostatnich latach jest budowa systemów ADAS (\emph{ang.} Advanced driver-assistance systems). %TODO ulega rozwojowi -> średnie...
-% OK?
-Ich działanie, poza sygnałami wizyjnymi, wymaga użycia sygnałów o innych charakterystykach, między innymi czujników optycznych oraz systemów \emph{LIDAR}.
+Techniki przetwarzania obrazów, a zwłaszcza ich sekwencji znajdują zastosowanie w coraz większej liczbie dziedzin nauki i~techniki.
+Jedną z nich jest prężnie rozwijana w ostatnich latach budowa systemów ADAS (\emph{ang.} Advanced driver-assistance systems).
+Ich działanie, poza sygnałami wizyjnymi, wymaga użycia sygnałów o innych charakterystykach, między innymi czujników optycznych oraz systemów \emph{LIDAR}. %TODO rozwinąć skrót
 Celem projektowania zaawansowanych systemów wsparcia kierowcy jest stopniowe zwiększanie autonomii pojazdów i ograniczenie zaangażowania kierowcy. W szerszej perspektywie, rozwój systemów ADAS może pozwolić na zaprojektowanie pojazdów w pełni autonomicznych, pozwalających na transport osób i towarów bez udziału kierowców.
-Dane z czujników wizyjne mogą być przetwarzane w celu uzyskania informacji na temat jezdni, innych uczestników ruchu, oznakowania czy potencjalnych zagrożeń. 
+Dane z czujników wizyjnych mogą być przetwarzane w celu uzyskania informacji na temat lokalizacji i przebiegu jezdni, innych uczestników ruchu, oznakowania czy potencjalnych zagrożeń. 
 Opracowanie współcześnie stosowanych technik znaleźć można w pracach \cite{Bengler2014,Velez2017}.
-%TODO OK, choć kilka zdań więcej też by można. 1. Wprost nazwać co wchodzi w skład ADAS (jakie podsystemy) 2. Coś o pojazdach autonomicznych.,
-% OK
 
-Inny zbiór technik wykorzystywany jest w celu detekcji i rozpoznawania twarzy oraz badania emocji. %TODO może jeszcze detekcji twarzy.
-% OK
-Zagadnienie to znajduje zastosowanie w ramach projektowania nie tylko systemów przemysłowych, ale jest również powszechnie stosowane w oprogramowaniu współcześnie dostępnych aparatów cyfrowych czy w ramach serwisów społecznościowych. Metody te mogą również pozwolić na budowę systemów weryfikacji użytkownika bez konieczności zdefiniowania hasła dostępu. Znajdują także zastosowanie w interfejsach przystosowanych do pracy z osobami niepełnosprawnymi.
+Inny zbiór technik wykorzystywany jest w celu detekcji i rozpoznawania twarzy oraz badania emocji.
+Zagadnienie to znajduje zastosowanie w ramach projektowania nie tylko systemów przemysłowych, ale jest również powszechnie stosowane w oprogramowaniu współcześnie dostępnych aparatów cyfrowych czy w ramach serwisów społecznościowych. 
+Metody te mogą również pozwolić na budowę systemów weryfikacji użytkownika bez konieczności zdefiniowania hasła dostępu. 
+Znajdują także zastosowanie w interfejsach przystosowanych do pracy z osobami niepełnosprawnymi.
 Analizę wykorzystywanych w tym celu algorytmów znaleźć można w pracy \cite{Anil2016}.
-%TODO też nieco szerzej o tych aplikacjach
-% OK
 
-Współcześnie, coraz większe znaczenie mają również systemy śledzenia osób i analizy ich zachowań w celu wykrycia zachowań niepożądanych. %TODO przechodniów -> osób. działań -> zachowań
-% OK
-Motywując to zwiększeniem bezpieczeństwa, badane są takie zagadnienia jak detekcja porzuconych bagaży, obecność osób nieuprawnionych w ustalonych strefach czy śledzenie ruchu i reidentyfikacja przy użyciu wielu kamer. %TODO jeszcze re-identyfikacja
-% OK
-Potrzeba automatyzacji wynika ze złożoności projektowanych systemów, które zasięgiem obejmować mogą całe aglomeracje i pozwalać na obserwację zachować tysięcy osób. Z tego powodu, praktycznie niemożliwe jest zapewnienie liczby operatorów pozwalającej na wykorzystanie informacji wejściowych w pełni.
-Systemy te mogą działać niezależnie lub stanowić jeden z elementów zintegrowanego oprogramowania, wykorzystującego dane z wielu źródeł \cite{Sriram2016,Hussain2016,Gouo2015}.
-%TODO O tym monitoringu też 2 zdania więcej. Przede wszystkim z czego wynika potrzeba automatyzacji.
-% OK
+Współcześnie, coraz większe znaczenie mają również systemy śledzenia osób i analizy ich zachowań w celu wykrycia działań niepożądanych.
+Motywując to zwiększeniem bezpieczeństwa, badane są takie zagadnienia jak detekcja porzuconych bagaży, obecność osób nieuprawnionych w ustalonych strefach czy śledzenie ruchu i re-identyfikacja przy użyciu wielu kamer.
+Potrzeba automatyzacji wynika ze złożoności projektowanych systemów, które zasięgiem obejmować mogą całe aglomeracje i pozwalać na obserwację zachować tysięcy osób. 
+Z tego powodu, praktycznie niemożliwe jest zapewnienie odpowiedniej liczby operatorów -- tj. takiej, która w~pełni pozwoliłaby na wykorzystanie i analizę pozyskanych informacji w czasie rzeczywistym. 
+Omawiane systemy te mogą działać niezależnie lub stanowić jeden z elementów zintegrowanego oprogramowania, wykorzystującego dane z wielu źródeł \cite{Sriram2016,Hussain2016,Gouo2015}.
 
-Równolegle do rozwoju algorytmów wizyjnych, badane są techniki implementacji pozwalających na wykorzystanie ich w systemach uruchamianych na układach elektronicznych różnego typu. %TODO rzeczywistych -> a co te algorytmy na wirutalnych są rozwijane. Tzw. wiem o co Panu chodzi, ale zły dobór słów.
-% OK?
-Algorytmy wizyjne projektowane są z myślą o uruchamianiu na powszechnie stosowanych układach procesorowych w architekturach x86 lub ARM, mikrokontrolerach, układach ASIC (\emph{ang.} Application Specific Integrated Circuit) i FPGA (\emph{ang.} Field-Programmable Gate Array). %TODO rozwinąć skróty
-% OK
+
+Równolegle do rozwoju algorytmów wizyjnych, badane są techniki implementacji pozwalające na wykorzystanie ich w systemach uruchamianych na układach elektronicznych różnego typu. 
+Algorytmy wizyjne projektowane są z myślą o uruchamianiu na powszechnie stosowanych układach procesorowych w architekturach x86 lub ARM, mikrokontrolerach, układach ASIC (\emph{ang.} Application Specific Integrated Circuit) i FPGA (\emph{ang.} Field-Programmable Gate Array).
 
 Pośród wymienionych platform wyróżnić można rodzinę Zynq \cite{zybo-reference-manual}, integrującą możliwości układów FPGA oraz procesorów ARM. 
-Dzięki zastosowaniu logiki programowalnej, możliwe jest projektowanie algorytmów wizyjnych wykonywanych w sposób strumieniowy, zapewniając wysoką wydajność przy stosunkowo niskim zapotrzebowaniu na energię. %TODO może logiki programowalnej...
-% OK
-Uzupełnieniem takiego układu jest procesor ARM, umożliwiający wykorzystanie algorytmów, które wymagają swobodnego dostępu do kontekstu obliczeniowego. Procesor sekwencyjny jest również, w porównaniu do układów logicznych, lepiej przystosowany do wykonywania algorytmów zdominowanych przez instrukcje lub takich, których sprzętowa implementacja jest trudna lub niemożliwa.%TODO to jest jeden z aspektów, drugi to dominajca instrukcji, 3 trudność implementacji sprzętowe, itp
-% OK
+Dzięki zastosowaniu logiki programowalnej, możliwe jest projektowanie algorytmów wizyjnych wykonywanych w sposób strumieniowy, zapewniając wysoką wydajność przy stosunkowo niskim zapotrzebowaniu na energię.
+Uzupełnieniem takiego układu jest procesor ARM, umożliwiający wykorzystanie algorytmów, które wymagają swobodnego dostępu do kontekstu obliczeniowego. 
+Procesor sekwencyjny jest również, w porównaniu do układów logicznych, lepiej przystosowany do wykonywania algorytmów zdominowanych przez instrukcje lub takich, których sprzętowa implementacja jest trudna lub niemożliwa.
 
 Układy Zynq pozwalają wykorzystać zalety algorytmów projektowanych z myślą o implementacji przy użyciu języków HDL (\emph{ang.} Hardware Description Language) oraz powszechnie stosowanych języków proceduralnych. 
-Układ ten pozwala na uruchomienie systemu operacyjnego, ze szczególnym uwzględnieniem systemu PetaLinux \cite{petalinux-tools}, dzięki czemu możliwy jest dostęp do szerokiego zbioru narzędzi związanych z powszechnie stosowanymi systemami operacyjnymi.
+W szczególności umożliwiają także na uruchomienie systemu operacyjnego, ze szczególnym uwzględnieniem systemu PetaLinux \cite{petalinux-tools}, dzięki czemu możliwy jest dostęp do szerokiego zbioru narzędzi związanych z powszechnie stosowanymi systemami operacyjnymi.
 
 \section{Cel pracy}
 
-Celem niniejszej pracy było uruchomienie oraz konfiguracja systemu PetaLinux na platformie Zynq, ze szczególnym uwzględnieniem funkcjonalności, które mogą zostać wykorzystane we wbudowanych systemach wizyjnych. %TODO jest -> było
-% OK
-
-Na pierwszym etapie analizę architektury układu oraz dostępnych systemów operacyjnych i systemów czasu rzeczywistego. %TODO W pierwszym etapie przeprowadzono....
-% OK
-Następnie, opracowano należy zagadnienia teoretyczne i praktyczne związane z funkcjonalnościami systemu, które mogą znaleźć zastosowanie we wbudowanych systemach wizyjnych. %TODO oprawcowano
-% OK
-Ostatecznie, działanie komponentów zaprezentowano na przykładzie wybranego systemu wizyjnego. %TODO Ostateczenie działanie ... 
-% OK
+Celem niniejszej pracy było uruchomienie oraz skonfigurowanie systemu PetaLinux na platformie Zynq, ze szczególnym uwzględnieniem funkcjonalności, które mogą zostać wykorzystane we wbudowanych systemach wizyjnych.
+W pierwszym etapie przeprowadzono analizę architektury układu oraz dostępnych systemów operacyjnych i systemów czasu rzeczywistego. 
+Następnie, opracowano należy zagadnienia teoretyczne i praktyczne związane z funkcjonalnościami systemu, które mogą znaleźć zastosowanie we wbudowanych systemach wizyjnych. 
+Ostatecznie, działanie komponentów zaprezentowano na przykładzie wybranego systemu wizyjnego.
 
 \section{Zawartość pracy}
 
-Praca podzielona została na pięć rozdziałów. %TODO praca została podzielona na 4 rozdziały (5), bo zwykle wstęp też się ujmuje (choć post factum)
-% OK
+Praca podzielona została na pięć rozdziałów.
 
-Rozdział \ref{cha:platform} zawiera opis i analizę platformy Zynq-7000. Omówiono krótko specyfikację układu. Poruszono zagadnienia związane z dostępnymi systemami operacyjnymi, z uwzględnieniem zalet i wad każdego z proponowanych rozwiązań. Zbadano również możliwość wykorzystania systemów czasu rzeczywistego.
+Rozdział \ref{cha:platform} zawiera opis i analizę platformy Zynq-7000. Omówiono krótko specyfikację układu. Poruszono zagadnienia związane z dostępnymi systemami operacyjnymi, z uwzględnieniem zalet i wad każdego z proponowanych rozwiązań. Opisano również możliwość wykorzystania systemów czasu rzeczywistego.
 
 Rozdział \ref{cha:functionalities} zawiera analizę funkcjonalności układu, które mogą zostać wykorzystane w systemach wizyjnych. Zbadano możliwości wykorzystania systemu operacyjnego PetaLinux i jego integracji z układem reprogramowalnym. Opisano również protokół AXI, ze szczególnym uwzględnieniem modułów AXI DMA (\emph{ang.} Direct Memory Access) oraz VDMA (\emph{ang.} Video DMA).
 
-W rozdziale \ref{cha:project} zaprezentowano system wizyjny wykorzystujący omawiane funkcjonalności, którego zadaniem jest generacja tła. Zaproponowano metody integracji rozwiązań budowanych z wykorzystaniem obu części układu, wskazano ograniczenia i potencjalne kierunki rozwoju. %TODO co to są te dwie niezależne platformy ? Tez oprocz wnioskow sam system. Trochę to inaczej ująć...
-% OK?
+W rozdziale \ref{cha:project} zaprezentowano system wizyjny wykorzystujący omawiane funkcjonalności, którego zadaniem jest generacja tła i~segmentacja obiektów pierwszoplanowych. Zaproponowano metody integracji rozwiązań implementowanych w obu częściach układu, wskazano ograniczenia i potencjalne kierunki rozwoju.
 
-Rozdział \ref{cha:vivado-conf} zawiera zbiór instrukcji związanych z konfiguracją funkcjonalności omawianych w poprzednich rozdziałach, na przykładzie układu ZYBO. Zaprezentowano w nim kroki wymagane do poprawnej konfiguracji wykorzystywanych elementów systemu oraz wskazano metody umożliwiające weryfikację poprawności działania.
+Rozdział \ref{cha:vivado-conf} zawiera zbiór instrukcji związanych z konfiguracją funkcjonalności omawianych w poprzednich rozdziałach, na przykładzie platformy uruchomieniowej ZYBO. Zaprezentowano w nim kroki wymagane do poprawnej konfiguracji wykorzystywanych elementów systemu oraz wskazano metody umożliwiające weryfikację poprawności działania.
+
+%TODO Pracę koczńy krótkie podsumowanie oraz wskazanie dalszych kierunków rozwoju.
