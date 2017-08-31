@@ -128,7 +128,7 @@ Szacowane zapotrzebowanie wynikowego systemu na energię elektryczną nie powinn
 W tabeli \ref{tab;frame-difference-utilization} przedstawiono zapotrzebowanie na zasoby FPGA układu Zynq.
 Moduł przeznaczony jest do pracy z częstotliwością $200MHz$, co pozwala na analizę sygnału wideo o rozdzielczości $1920 \times 1080$ pikseli i częstotliwości obrazu $60Hz$.
 Proces konfiguracji modułu VDMA wykorzystywanego do buforowania ramki obrazu przedstawiono w rozdziale \ref{sec:vivado-axi-vdma}.
-Wynik działania aplikacji przedstawiono na rysunku \ref{fig:frame-difference-result}. 
+Wynik działania modelu programowego zaprezentowano na rysunku \ref{fig:frame-difference-result}. 
 Projekty Vivado i PetaLinux związane z omawianą aplikacją dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}.
 \begin{figure}[H]
 	\centering
@@ -231,7 +231,7 @@ W tym celu wprowadzono dwa warunki wykonania obliczeń:
 	gdzie:
 	\begin{conditions}
 		k & indeks składowej barwnej sygnału. \\ 
-		% OK
+
 	\end{conditions}
 	
 	Większe wartości parametru $T_{bg}$ pozwalają na aktualizację modelu tła w sytuacji, gdy różnica piksela względem aktualnego modelu tła jest znaczna. 
@@ -302,7 +302,7 @@ Proporcjonalnie duże zużycie zasobów wynika z konieczności wykorzystania wie
 Może ono być ograniczone przez wykorzystanie jednego modułu do obsługi buforowania zarówno ramki obrazu, jak i modelu tła. 
 W przypadku złożonych aplikacji, konieczne może okazać się użycie układu z większą liczbą dostępnych zasobów obliczeniowych. 
 Moduł przeznaczony jest do pracy z częstotliwością $200MHz$, co pozwala na analizę sygnału wideo o rozdzielczości $1920 \times 1080$ pikseli i częstotliwości obrazu $60Hz$.
-Wynik działania aplikacji przedstawiono na rysunku \ref{fig:background-model-result}. Projekty Vivado i PetaLinux związane z omawianą aplikacją dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}. Proces konfiguracji aplikacji przedstawiono w rozdziale \ref{sec:background-buffer-conf}.
+Wynik działania modelu programowego przedstawiono na rysunku \ref{fig:background-model-result}. Projekty Vivado i PetaLinux związane z omawianą aplikacją dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}. Proces konfiguracji aplikacji przedstawiono w rozdziale \ref{sec:background-buffer-conf}.
 \begin{figure}[H]
 	\centering
 	\begin{subfigure}[b]{0.49\textwidth}
@@ -326,7 +326,7 @@ Wynik działania aplikacji przedstawiono na rysunku \ref{fig:background-model-re
 		\includegraphics[width=\textwidth]{img/bg-model.png}
 		\caption{Model tła.}
 	\end{subfigure}
-	\caption{Ramka obrazu i wyznaczona różnica ramek.}
+	\caption{Ramka obrazu wejściowego oraz wyznaczane przez model programowy obrazy masek i tła.}
 	\label{fig:background-model-result}
 \end{figure}
 
@@ -342,7 +342,8 @@ Dzięki zastosowaniu maski ruchu, obiekty poruszające się nie wpływają na st
 % na wyjściu modułu dostępne są wartości maski, zaktualizowałem schemat
 
 %TODO OK. A to są zdjęcie z modelu czy sprzętu. Bardziej wiarygodne byłoby z moniotrem :) I przy odejmowaniu ramek również. Ew. jeśli to jest png zapisany w peta to proszę to wyraźnie napisać.
-
+% to zdjęcia z modelu progarmowego, sprecyzowałem. Impl. sprzętowa jest wciąż na etapie dynamicznego rozwoju, to znaczy regularnie przechodzę pomiędzy stanami działa/nie działa... Pracuję nad tym w wolnych chwilach, ale z tego powodu dodałem zrzuty z modelu.
+% No i, oczywiście, było mi je znacznie wygodniej wygenerować w ten sposób. :)
 
 \section{Integracja z systemem PetaLinux}
 

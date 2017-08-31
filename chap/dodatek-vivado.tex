@@ -1,14 +1,47 @@
 \chapter{Proces konfiguracji modułów logiki programowalnej i systemu operacyjnego PetaLinux}
 \label{cha:vivado-conf}
 
-
-
 Użycie funkcjonalności opisywanych w niniejszej pracy wymaga przeprowadzenia konfiguracji wykorzystywanych modułów logicznych oraz systemu operacyjnego. 
 W poniższych podrozdziałach zebrano informacje związane z poruszanymi zagadnieniami. 
 Przedstawiono proces konfiguracji bazowego projektu Vivado i wykorzystania go na etapie budowy systemu PetaLinux, a także omówiono proces użycia modułów AXI i wybranych funkcjonalności systemu PetaLinux -- obliczeń równoległych, biblioteki OpenCV, mechanizmu przerwań systemowych.
 Przedstawiono również proces konfiguracji modułu generacji tła zaproponowanego w rozdziale \ref{cha:project}.
 
 Omawiane zagadnienia wymagają użycia oprogramowania Vivado \cite{vivado-home} i zintegrowanego z nim środowiska programistycznego Xilinx SDK \cite{xsdk-home}. Ponadto, konfiguracja systemu operacyjnego odbywa się przy użyciu narzędzi pakietu PetaLinux Tools \cite{petalinux-tools}.
+
+\section{Instalacja środowiska PetaLinux}
+
+Zbiór narzędzi PetaLinux może zostać pobrany ze strony producenta \cite{petalinux-tools}. Pamiętać należy, że pakiet współpracuje ze środowiskiem Vivado wyłącznie w tej samej wersji.
+
+PetaLinux wymaga zainstalowania zbioru kilkudziesięciu bibliotek i programów w ramach zależności. Pełen zbiór znaleźć można w opracowaniu \cite{petalinux-doc}. W przypadku systemu Debian, większość bibliotek jest do niego dołączona, a brakujące pakiety mogą zostać dodane przy użyciu polecenia:
+
+\begin{lstlisting}[breaklines]
+sudo apt-get install tofrodos iproute2 gawk gcc git make net-tools \
+	libncurses5-dev tftpd zlib1g-dev libssl-dev flex bison libselinux1
+\end{lstlisting}
+
+Ponadto, w przypadku systemu w wersji \emph{64-bit}, konieczna jest również instalacja bibliotek \emph{32-bit}:
+\begin{lstlisting}[breaklines]
+sudo dpkg --add-architecture i386
+sudo apt-get update
+
+sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 \
+	libgtk2.0-0:i386 libxtst6:i386 gtk2-engines-murrine:i386 \
+	lib32stdc++6 libxt6:i386 libdbus-glib-1-2:i386 libasound2:i386
+\end{lstlisting}
+
+Proces instalacji przeprowadzić można przy użyciu poleceń:
+\begin{lstlisting}[breaklines]
+PETALINUX_DIR=(*@\textit{ścieżka-instalacji}@*)
+mkdir -p $PETALINUX_DIR
+./petalinux-v2016.3-final-installer.run $PETALINUX_DIR
+\end{lstlisting}
+
+Użycie narzędzi pakietu wymaga wcześniejszego wykonania skryptu przygotowującego środowisko po każdym uruchomieniu konsoli:
+\begin{lstlisting}[breaklines]
+source $PETALINUX_DIR/settings.sh
+\end{lstlisting}
+
+Proces ten można uprościć, dodając powyższy wpis do pliku konfiguracyjnego powłoki \emph{bash} -- \texttt{.bashrc} wewnątrz katalogu domowego użytkownika.
 
 \section{Podstawowa konfiguracja projektu}
 \label{sec:basic-proj-config}
@@ -94,6 +127,7 @@ Aplikację uruchomić można przy użyciu konsoli użytkownika, również stosuj
 %TODO - a tu nie trzeba zrobić czegoś wcześniej ? Pobrać zainstalowć itp ?
 % nie opisywałem procesu instalacji Vivado, uznałem więc, że nie ma też powodu by opisywać instalację petalinux. Dodam na początku rozdziału informację o wykorzystywanych narzędziach
 %TODO Vivado to proste, ale o tym PetaLinux to bym coś napisał....
+% Ok, dodałem sekcję na początku rozdziału
 
 Utworzenie struktury katalogów projektu wykonywane jest przy użyciu poniższego polecenia.
 
@@ -553,12 +587,63 @@ Wykorzystanie omawianych rozwiązań wiąże się z użyciem dedykowanych proced
 Etap projektowania aplikacji działającej pod kontrolą systemu operacyjnego PetaLinux nie różni się od budowania oprogramowania na inne platformy. Należy jednak pamiętać, że układ Zynq wyposażony jest w procesor ARM o dwóch rdzeniach, więc potencjalne korzyści zastosowania aplikacji wielowątkowej nie przekraczają dwukrotnego zwiększenia szybkości działania aplikacji.
 Sposób zastosowania bibliotek znaleźć można w dokumentacji każdego z narzędzi i literaturze cytowanej w związanym z tym zagadnieniem rozdziale.
 
+\section{OpenAMP}
+\label{sec:openamp-config}
+
+Informacje związane z procesem konfiguracji i uruchamiania systemu operacyjnego czasu rzeczywistego znaleźć można w opracowaniu \cite{openamp-guide}. Poniżej przedstawiono zwięzłe podsumowanie kroków koniecznych do wykonania w przypadku karty ZYBO.
+\subsection{Vivado}
+Uruchomienie systemu operacyjnego czasu rzeczywistego wymaga powiązania z nim portu szeregowego oraz zegara.
+Skonfigurować należy moduł procesora ZYNQ:
+\begin{itemize}
+	\item Włączyć obsługę portu UART: \emph{,,Peripheral I/O Pins --> UART 0''}.
+	\item Z systemem powiązać należy sygnał zegarowy: \emph{,,MIO Configuration --> Application Processor Unit --> Timer 1 (EMIO)}.
+\end{itemize}
+
+\subsection{PetaLinux}
+
+Uruchomienie systemu czasu rzeczywistego wymaga zbudowania projektu typu \emph{Board Support Package} i przeprowadzenie procesu konfiguracji. Proces ten wymaga zewnętrznych zależności i może być trudny do wykonania dla kart uruchomieniowych, które nie są w pełni wspierane przez producenta PetaLinux, takich jak ZYBO. Zamierzony efekt można osiągnąć przez wykorzystanie zasobów dostępnych dla karty Zedboard lub w repozytorium projektu OpenAMP \cite{openamp-repo}.
+
+W przypadku wykorzystania plików BSP karty Zedboard, skopiować należy pliki \emph{device-tree} \texttt{openamp.dts} oraz \texttt{openamp-overlay.dtsi} do ścieżki \path{subsystems/linux/configs/device-tree} wewnątrz projektu PetaLinux, a następnie zmodyfikować plik \texttt{system-top.dts}, dodając na końcu listy dyrektyw \texttt{/include/} wpis \texttt{/include/ "openamp-overlay.dtsi"}.
+
+Następnie należy włączyć wymagane do obsługi systemu czasu rzeczywistego funkcjonalności PetaLinux.
+
+\begin{lstlisting}
+petalinux-config -c kernel
+	-> Kernel Features
+		-> Memory split
+			-> 2G/2G user/kernel split
+		* High Memory Support
+	-> Device Drivers
+		-> Generic Driver Options
+			* Userspace firmware loading support
+			-> Remoteproc drivers
+\end{lstlisting}
+
+A także dodać do obrazu systemu aplikacje testowe i moduły:
+\begin{lstlisting}
+petalinux-config -c rootfs
+Apps
+	* echo_test
+	* mat_mul_demo
+	* proxy_app
+Modules
+	* rpmsg_proxy_dev_driver
+	* rpmsg_user_dev_driver
+\end{lstlisting}
+
+Po uruchomieniu systemu operacyjnego, uruchomienie i test funkcjonalności może być wykonany przy użyciu poniższych poleceń.
+
+\begin{lstlisting}
+modprobe zynq_remoteproc firmware=image_echo_test
+modprobe rpmsg_user_dev_driver
+echo_test
+\end{lstlisting}
 
 \section{Biblioteka OpenCV}
 \label{sec:opencv-config}
 \subsection{OpenCV 2}
 Biblioteka OpenCV w wersji 2.4 nie jest oficjalnie dostępna w pakiecie PetaLinux, może jednak zostać dołączona do systemu operacyjnego dzięki mechanizmowi aplikacji użytkownika.
-Należy zatem przeprowadzić proces kompilacji kodu źródłowego biblioteki wraz z zależnościami, ponieważ prekompilowane pliki na platrofmę ARM nie są publicznie dostępne. Poniżej przedstawiono proces instalacji zależności.%
+Należy zatem przeprowadzić proces kompilacji kodu źródłowego biblioteki wraz z zależnościami, ponieważ prekompilowane pliki na platformę ARM nie są publicznie dostępne. Poniżej przedstawiono proces instalacji zależności.
 
 \begin{lstlisting}[breaklines=true, language=Bash, caption=Definicja zmiennych środowiskowych.]
 export ARMPREFIX=(*@\textit{ścieżka/instalacji}@*)
@@ -916,6 +1001,17 @@ W przypadku modułu AXI Timer, spodziewany jest wpis o treści:
 \end{lstlisting}
 Potwierdza on obecność linii przerwania o identyfikatorze \texttt{63}, związanej ze sterownikiem \texttt{axi-timer}, która została wywołana jeden raz w przypadku pierwszego rdzenia procesora.
 
+Moduł systemowy odpowiedzialny jest za obsługę przerwań. W przeciwieństwie do aplikacji \emph{bare-metal}, nie jest możliwe bezpośrednie powiadomienie programu pracującego poza obszarem jądra systemu w chwili wystąpienia zdarzenia. Ograniczenie to wynika z dużej złożoności jądra Linuxa i konieczności obsługi przerwań w możliwie najkrótszym czasie.
+W przypadku wymogu wiedzy o wystąpieniu zdarzenia z poziomu aplikacji, wykorzystać można jedno z dwóch rozwiązań:
+\begin{itemize}
+	\item Obsługa interfejsu UIO (\emph{ang.} Userspace Input/Output) -- moduł systemowy może umożliwić dostęp do urządzenia przez uchwyt wewnątrz interfejsu \texttt{/dev} systemu. Po otworzeniu uchwytu przez program użytkownika, wykonać można operacje odczytu i zapisu do rejestrów urządzenia. Wystąpienie przerwania może zostać zaobserwowane przez cykliczny odczyt rejestru odpowiedzialnego za obsługę analizowanego zdarzenia. Podobne wyniki osiągnąć można przy użyciu metod bezpośredniej komunikacji z urządzeniem dzięki znajomości jego adresu fizycznego, co opisano w rozdziale \ref{sec:vivado-axi-dma-sdk}.
+	Wadą obu metod jest konieczność cyklicznego odczytywania wartości rejestrów kontrolnych urządzenia (\emph{polling}), co może ograniczać wydajność aplikacji.
+	
+	\item Wysłanie sygnału do programu użytkownika -- moduł systemowy definiuje dedykowany sygnał i w trakcie obsługi przerwania wysyła powiadomienie o wystąpieniu zdarzenia do procesu programu użytkownika. Proces ten może przeprowadzić obsługę wystąpienia sygnału w sposób podobny do obsługi puli sygnałów systemowych. Metoda ta została opisana w pracy \cite{Bovet2002}. 
+	Konieczność znajomości identyfikatora procesu użytkownika wewnątrz procedury obsługi przerwań w module systemowym stanowi poważne ograniczenie. Konieczność przeprowadzania procesu konfiguracji przy każdym uruchomieniu aplikacji zmniejsza w dużym stopniu możliwości praktycznego wykorzystania tej metody.
+\end{itemize}
+
+Ze względu na ograniczenia obu proponowanych metod, wykorzystanie przerwań systemowych w aplikacjach uruchamianych pod kontrolą systemu operacyjnego może być utrudnione. W przypadku aplikacji, których podstawowym zadaniem jest obsługa przerwań pochodzących z modułów logiki programowalnej, zastosować można metodę \emph{pollingu}. Jeśli jednak program odpowiedzialny jest za wykonanie również innych zadań, konieczne może być wykorzystanie sygnałów systemowych.
 %TODO Tak samo opisać eksperymenty, jakiś screen. VDMA też działao ? 
 %TODO Mam też wrażenie, że nie ma wszystkich informacji jak to przerwanie uruchomić, chyba, że to inaczej działą niż w bare i nie trzeba powiązać funkcji. Ogólnie czy zrobił Pan to samo co w bare-metal ?
 % nie testowałem VDMA, nie doszedłem do etapu, w którym potrzebowałbym przerwania z vdma. Tzn na bare-metal działało, jest nawet na listingu aplikacji, więc "powinno" działać i w peta.
@@ -931,6 +1027,7 @@ Potwierdza on obecność linii przerwania o identyfikatorze \texttt{63}, związa
 % Dlatego opisałem teorię, by zebrać to, co wiem na przyszłość, może komuś się przyda. Ale praktycznych rozwiązań nie udało mi się zaprojektować...
 
 %TODO Ale to co tu Pan opisał, proszę w nieco przeregagowanej formie zawrzeć w pracy...
+% ok, poczytałem jeszcze trochę na temat przerwań w ostatnich dniach i dopisałem nieco na temat użycia przerwań. Wykorzystanie sygnałów daje w efekcie coś, co właściwie wcześniej sobie wyobrażałem jako obsługę przerwań - to znaczy tak, jak bare-metal.
 
 \section{Konfiguracja algorytmu generacji tła}
 \label{sec:background-buffer-conf}
@@ -1135,7 +1232,8 @@ static unsigned char convert_alpha(double alpha) {
 
 Procedura \texttt{setup} wykonuje operacje związane z alokacją pamięci oraz powiązaniem adresu fizycznego modułu logiki z adresem wirtualnym.
 Wewnątrz procedury \texttt{initialize} ma miejsce właściwa konfiguracja modułu, a więc, w przypadku elementu parametryzującego algorytm -- zapis wartości parametrów do związanych z nimi rejestrów. 
-Ze względu na konieczność konwersji wartości parametru $\alpha$ z postaci liczby zmiennoprzecinkowej do zapisu stałopozycyjnego, zaprojektowano procedurę \texttt{convert\_alpha}, która umożliwia poprawną konfigurację rejestrów modułu bez konieczności podania zdefiniowania reprezentacji binarnej przez użytkownika. %TODO podania czy zdefiniowania ?
+Ze względu na konieczność konwersji wartości parametru $\alpha$ z postaci liczby zmiennoprzecinkowej do zapisu stałopozycyjnego, zaprojektowano procedurę \texttt{convert\_alpha}, która umożliwia poprawną konfigurację rejestrów modułu bez konieczności podania reprezentacji binarnej przez użytkownika. %TODO podania czy zdefiniowania ?
+% poprawiłem
 Wykorzystanie kolejnych modułów wymaga zadeklarowania ich wewnątrz struktury \texttt{video\_transmit} oraz dodania wywołań związanych z nimi funkcji wewnątrz obu opisywanych procedur.
 Definicje procedur \texttt{setup\_virt\_memory} oraz \texttt{axi\_write} znaleźć można w rozdziale \ref{sec:vivado-axi-dma}.
 

@@ -5,7 +5,8 @@
 Przetwarzanie obrazów i ich sekwencji stanowi pole rozległych badań naukowych i przemysłowych.
 W ich ramach, projektowane są algorytmy umożliwiające akwizycję, modyfikowanie, analizę, rozpoznawanie treści i prezentację obrazów.
 Często motywacją badań jest próba naśladowania zjawisk związanych z narządem wzroku człowieka i dążenie do uzyskania takiego opisu sposobu działania, aby umożliwić wykonanie zbliżonego do nich algorytmu przy użyciu układów elektronicznych. 
-Odmiennym zagadnieniem jest poszukiwanie możliwości realizacji przetwarzania obrazów w taki sposób, aby uzyskać informacje niewidoczne dla ludzkiego oka, w oparciu o parametry obrazu o niewielkiej zmienności. Temat ten obejmuje analizę obrazów w celu wykrycia możliwych modyfikacji obrazu oryginalnego czy algorytmy częstotliwościowe. %TODO częstotliwościowe -> niejasne
+Odmiennym zagadnieniem jest poszukiwanie możliwości realizacji przetwarzania obrazów w taki sposób, aby uzyskać informacje niewidoczne dla ludzkiego oka, w oparciu o parametry obrazu o niewielkiej zmienności. Temat ten obejmuje analizę obrazów w celu wykrycia możliwych modyfikacji obrazu oryginalnego czy algorytmy wykorzystujące analizę widmową sygnału. %TODO częstotliwościowe -> niejasne
+% OK
 
 Techniki przetwarzania obrazów opierają się zwykle na analizie i redukcji informacji zawartej w sekwencji pikseli w taki sposób, aby uzyskać obraz wynikowy, na którym uwypuklone będą kluczowe z punktu widzenia algorytmu własności.
 Wynikiem działania procedury może być również zbiór cech opisujących badane zjawiska.
@@ -23,7 +24,8 @@ Zdefiniować można szereg operacji składających się na proces przetwarzania 
 
 Techniki przetwarzania obrazów, a zwłaszcza ich sekwencji znajdują zastosowanie w coraz większej liczbie dziedzin nauki i~techniki.
 Jedną z nich jest prężnie rozwijana w ostatnich latach budowa systemów ADAS (\emph{ang.} Advanced driver-assistance systems).
-Ich działanie, poza sygnałami wizyjnymi, wymaga użycia sygnałów o innych charakterystykach, między innymi czujników optycznych oraz systemów \emph{LIDAR}. %TODO rozwinąć skrót
+Ich działanie, poza sygnałami wizyjnymi, wymaga użycia sygnałów o innych charakterystykach, między innymi czujników optycznych oraz systemów \emph{LIDAR} (\emph{ang.} Light Detection and Ranging). %TODO rozwinąć skrót
+% OK
 Celem projektowania zaawansowanych systemów wsparcia kierowcy jest stopniowe zwiększanie autonomii pojazdów i ograniczenie zaangażowania kierowcy. W szerszej perspektywie, rozwój systemów ADAS może pozwolić na zaprojektowanie pojazdów w pełni autonomicznych, pozwalających na transport osób i towarów bez udziału kierowców.
 Dane z czujników wizyjnych mogą być przetwarzane w celu uzyskania informacji na temat lokalizacji i przebiegu jezdni, innych uczestników ruchu, oznakowania czy potencjalnych zagrożeń. 
 Opracowanie współcześnie stosowanych technik znaleźć można w pracach \cite{Bengler2014,Velez2017}.
@@ -71,4 +73,6 @@ W rozdziale \ref{cha:project} zaprezentowano system wizyjny wykorzystujący omaw
 
 Rozdział \ref{cha:vivado-conf} zawiera zbiór instrukcji związanych z konfiguracją funkcjonalności omawianych w poprzednich rozdziałach, na przykładzie platformy uruchomieniowej ZYBO. Zaprezentowano w nim kroki wymagane do poprawnej konfiguracji wykorzystywanych elementów systemu oraz wskazano metody umożliwiające weryfikację poprawności działania.
 
+Pracę kończy rozdział zawierający krótkie podsumowanie wykonywanych zadań oraz wskazanie dalszych kierunków rozwoju.
 %TODO Pracę koczńy krótkie podsumowanie oraz wskazanie dalszych kierunków rozwoju.
+% OK

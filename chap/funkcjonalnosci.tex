@@ -100,20 +100,23 @@ Poniżej przedstawiono polecenie kompilacji testowej implementacji wykorzystują
 arm-linux-gnueabihf-gcc -Wall -O3 -mcpu=cortex-a9 -mfpu=neon -ftree-vectorize -mvectorize-with-neon-quad -mfloat-abi=hard -ffast-math -funsafe-math-optimizations -g -c -o "src/main.o" "../src/main.c"
 \end{lstlisting}
 
-Wyniki testów wydajności zebrano w tabeli \ref{tab:neon-time-results}. 
-W sytuacji, gdy wyłączono optymalizację na etapie kompilacji, zauważalny jest znaczny wzrok wydajności w przypadku wykorzystania instrukcji udostępnianych przez architekturę NEON. 
+Wyniki testów wydajności zebrano w tabeli \ref{tab:neon-time-results}. Aby zminimalizować wpływ systemu operacyjnego na przebieg eksperymentu, każdy etap wykonywany był tysiąc razy, a na bazie wyników wyznaczono wartości maksymalnego i minimalnego czasu wykonania, a także wartość średnią. Dane wejściowe algorytmu były wspólne dla każdej implementacji i generowane w sposób pseudolosowy na etapie wykonania programu, co uniemożliwiało zastosowanie przez kompilator części technik optymalizacyjnych, które mogłyby mieć niepożądany wpływ na wiarygodność testu. Czas wymagany do wygenerowania danych wejściowych nie został uwzględniony w zebranych wynikach.
+
+W sytuacji, gdy wyłączono optymalizację na etapie kompilacji, zauważalny jest znaczny wzrost wydajności w przypadku wykorzystania instrukcji udostępnianych przez architekturę NEON. 
 Pozwala ona na niemal czterokrotne zwiększenie szybkości działania programu względem pozostałych implementacji. 
 Różnica ta zanika w przypadku wykorzystania możliwości optymalizacji kodu programu na etapie kompilacji. 
-Różnica w szybkości wykonania programu NEON jest niewielka, gdyż pozostałe implementacje zostały zoptymalizowane do stanu, w którym koszt ich wykonania porównywalny jest z implementacją w NEON. 
+Użyty kompilator -- \texttt{arm-linux-gnueabihf-gcc} w wersji 5.2.1 -- wykorzystał w przypadku implementacji bazowej instrukcje VFP. Dzięki temu, również różnica czasu wykonania procedury bazowej względem implementacji w asemblerze jest niewielka.
 
 Wyniki pozwalają wnioskować o słuszności wykorzystania instrukcji udostępnianych przez architekturę NEON ze względu na możliwy wzrost wydajności. Istotna jest jednak weryfikacja wyników i potwierdzenie poprawy działania aplikacji. 
-W przypadku, gdy różnice między programami są niewielkie, użycie instrukcji NEON może być niekorzystne ze względu na zwiększoną latencję wykonania rozkazów.
+W przypadku, gdy różnice między programami są niewielkie, użycie instrukcji NEON może być niekorzystne ze względu na zwiększoną latencję wykonania rozkazów -- w przypadku aplikacji o niewielkiej liczbie instrukcji warunkowych i skoków, porównywalne wyniki może dać wykorzystanie VFP.
+Dzięki możliwości wykorzystania na etapie kompilacji technik optymalizacji szybkości działania aplikacji, projektowanie wersji algorytmów dedykowanych używanej architekturze w asemblerze nie jest konieczne w zdecydowanej większości przypadków.
 
 %TODO No dobrze, a wie Pan dlaczego tak się stało ??? Czy zły przykład, czy optymalizacja wykorzytstuje tego NEONA, czy jak ? Ew. proszę to jeszcze jakoś sprawdzić...
 % Przykład powinien być dobry, bo mierzę czas wykonania samej sekcji krytycznej, a sam eksperyment zajmuje kilka minut, więc zakłócenia powinny być niewielkie. Postarałem się też "utrudnić" optymalizacje kompilatorowi, losując dane wejściowe przed każdą iteracją, etc. Jedyne co mi przychodzi do głowy, to że procesor mógł rozsądnie pipeline'ować instrukcje, bo nie robił żadnych dziwnych skoków, etc.
 % Konfiguracja też wyglądała dobrze, spróbowałem jeszcze raz przetestować, z dodatkową flagą kompilacji, która mogła pomóc, ale nie zauważyłem różnicy. I dwie z implementacji używają instrukcji VFP, sądzę, że dlatego wydajność jest porównywalna.
 
 %TODO Może opisać te wnioski nieco bardziej formalnie...
+% dodałem wnioski do pozostałych
 
 \section{Protokół AXI}
 \label{sec:axi-std}
@@ -361,13 +364,41 @@ Realizacja tego zadania w obu kierunkach może być dokonana przy użyciu elemen
 W ramach pracy, zbadano możliwość wykorzystania modułu VDMA do transmisji danych wizyjnych z poziomu FPGA do procesora ARM, w celu ich odczytu i prezentacji z wykorzystaniem komunikacji sieciowej.
 Zbadano również możliwość konwersji danych do struktur dostępnych w bibliotece OpenCV, co umożliwia wykorzystanie biblioteki do realizacji algorytmów wizyjnych. 
 Procedury odczytu oraz zapisu danych przedstawiono w dodatku \ref{sec:vdma-to-opencv}.
-Sprawdzono szybkość działania procedur transmisji danych pomiędzy dwoma elementami obliczeniowymi dla sygnału wizyjnego o rozdzielczości HD ($1280 \times 720$ pikseli), przyjmując rozmiar piksela równy trzydziestu dwóm bitom w cyklu dziesięciu tysięcy iteracji odczytu i zapisu.
+
+Sprawdzono szybkość działania procedur transmisji danych pomiędzy dwoma elementami obliczeniowymi dla sygnału wizyjnego o rozdzielczości HD ($1280 \times 720$ pikseli), przyjmując rozmiar piksela równy trzydziestu dwóm bitom w cyklu dziesięciu tysięcy iteracji odczytu i zapisu. Wyniki zebrano w tabeli \ref{tab:vdma-to-opencv}. Schemat komunikacji i wykorzystania pamięci w obu przypadkach przedstawiono na rysunkach \ref{fig:vdma-opencv-no-copy} i \ref{fig:vdma-opencv-with-copy}.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[height=4cm]{img/vdma-cv-comm-no-copy.pdf}
+	\caption{Wymiana danych bez użycia procedur kopiowania.}
+	\label{fig:vdma-opencv-no-copy}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[height=4cm]{img/vdma-cv-comm-with-copy.pdf}
+	\caption{Wymiana danych z wykorzystaniem procedur kopiowania.}
+	\label{fig:vdma-opencv-with-copy}
+\end{figure}
+
+\begin{table}[H]
+	\caption{Wyniki testu transmisji danych.}
+	\centering
+	\label{tab:vdma-to-opencv}
+\begin{tabular}{c|c|c|c|c|}
+	\cline{2-5}
+	& \multicolumn{2}{c|}{Bez kopiowania} & \multicolumn{2}{c|}{Z kopiowaniem} \\ \cline{2-5} 
+	& Łącznie {[}s{]}  & Średnio {[}s{]}  & Łącznie {[}s{]}  & Średnio {[}s{]} \\ \hline
+	\multicolumn{1}{|c|}{Odczyt} & $0,13$            & $0,000013$        & $151,34$           & $0,015$           \\ \hline
+	\multicolumn{1}{|c|}{Zapis}  & ---              & ---              & $121,56$           & $0,012$           \\ \hline
+\end{tabular}
+\end{table}
 %TODO napisać rozdzielczość w pikselech, jakie wyniki ?
 % właściwie nie wiem, jak oszacować wydajność...
 %TODO No ale napisał Pan "sprawdzono szybkość". No albo doprecyzować, albo przeregagować. Sam zapis do pamięci to pewnie działa real-time. Pytanie jak odczyt w ARM itp.
-
+% dodałem wyniki zebrane w tabeli
 Biblioteka OpenCV pozwala na użycie zewnętrznych źródeł danych do budowy struktur obrazu, a w konsekwencji pominąć etap kopiowania pamięci udostępnianej przez sterownik VDMA. 
-W takim przypadku, czas odczytu i zapisu pełnej ramki obrazu nie przekracza kilkunastu mikrosekund. 
+W takim przypadku, czas odczytu pełnej ramki obrazu nie przekracza kilkunastu mikrosekund.
 Należy jednak pamiętać, że stosując tę technikę, zagwarantować trzeba, że przetwarzanie obrazu zakończy się do chwili rozpoczęcia odczytu danych z wykorzystywanego bufora przez moduł VDMA. 
 W przypadku zastosowania układu trzech buforów i sygnału wejściowego o częstotliwości sześćdziesięciu klatek na sekundę, daje to okno przetwarzania o długości szesnastu milisekund. 
 Przekroczenie tej wartości może wpłynąć na błędną pracę algorytmu ze względu na nadpisanie danych przez moduł VDMA.
@@ -377,14 +408,15 @@ Procedura odczytu wymaga średnio piętnastu milisekund, natomiast zapis zajmuje
 Zastosowanie tej techniki nie pozwala na przetwarzanie sygnału wizyjnego w czasie rzeczywistym, gwarantuje jednak nienaruszalność danych. 
 W połączeniu z zastosowaniem modułu VDMA o większej liczbie buforów, pozwala na integrację algorytmu o dużej złożoności obliczeniowej pomiędzy elementami obliczeniowymi obu typów. 
 Jednakże, w celu zachowania limitów czasowych, konieczne może być ograniczenie przetwarzania danych do części klatek obrazu i pominięcie pozostałych. 
-Nie powinno to jednak wpłynąć na zachowanie algorytmu wewnątrz logiki programowalnej. %TODO no ale łąmie to ogranicze czasu czy nie...
+Nie powinno to jednak wpłynąć na zachowanie algorytmu wewnątrz logiki programowalnej.
+%TODO no ale łąmie to ogranicze czasu czy nie...
 %TODO trochę to niejasne. Może jakieś rysunek/schemat pokazujący oba podejscia ?
 % wydaje mi się, że nie uda mi się przedstawić tego czytelniej niż w postaci kilku linii kodu w dodatki sec:vdma-to-opencv
 
 % avg read = 0.000013, avg read_with_copy = 0.015134, avg write = 0.012156
 
 %TODO OK, choć moim zdaniem rysunek dałoby się wyprodukować.
-
+% hm... spróbowałem wykreować diagramy. O ile są czytelne, mogą zostać.
 \section{Przerwania systemowe}
 \label{sec:axi-interrupts}
 

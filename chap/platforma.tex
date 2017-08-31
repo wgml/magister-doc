@@ -4,15 +4,23 @@
 W trakcie realizacji pracy wykorzystywano kartę uruchomieniową ZYBO wyposażoną w układ SoC (\emph{ang}. System-on-a-chip) Zynq-7000. 
 SoC to układy scalone integrujące szereg układów elektronicznych, takich jak mikroprocesor, układy koprocesujące, interfejsy wejścia i wyjścia, czy pamięci. 
 Są one powszechnie wykorzystywane do projektowania systemów wbudowanych. 
-Centralną część układu rodziny Zynq-7000 stanowi dwurdzeniowy procesor o architekturze ARM w wersji Cortex-A9, współpracujący z działającym równolegle układem FPGA, opartym na architekturze Artix-7 lub Kintex-7 \cite{zynq-homepage}.
-Są to układy heterogeniczne, łączące w sobie elementy klasycznego układu FPGA (\emph{PL}, \emph{ang.} Programmable Logic) oraz procesora ARM (\emph{PS}, \emph{ang.} Processing System). %TODO to zdanie jest powt. wcześniejszego - jakoś trzeba to zintegrować.
+Zynq-7000 to rodzina układów heterogenicznych, których centralną część stanowi dwurdzeniowy procesor o architekturze ARM w wersji Cortex-A9 (\emph{PS}, \emph{ang.} Processing System), współpracujący z działającym równolegle układem FPGA (\emph{PL}, \emph{ang.} Programmable Logic), opartym na architekturze Artix-7 lub Kintex-7 \cite{zynq-homepage}.
+%TODO to zdanie jest powt. wcześniejszego - jakoś trzeba to zintegrować.
 % OK
 %TODO No nie OK, bo dalej dwa zdania mają tą samą treść.
+%Poprawiłem
 
 Karta ZYBO wyposażona jest ponadto w 512 MB pamięci RAM, złącza HDMI i VGA do transmisji obrazu, gniazda Jack do przesyłu sygnału dźwiękowego, gniazdo USB oraz slot pamięci MicroSD.
-Komunikacja sieciowa jest możliwa dzięki implementacji stosu TCP/IP i obecności gniazda RJ-45 \cite{zynq-datasheet}.
+Komunikacja sieciowa jest możliwa dzięki implementacji stosu TCP/IP i obecności gniazda RJ-45 \cite{zynq-datasheet}. Kartę przedstawiono na rysunku \ref{fig:zybo-img}. Elementy układu podpisane zostały nadrukami.
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=12cm]{img/zybo.png}
+	\caption{Karta Diligent ZYBO. (Źródło: \cite{zybo-reference-manual})}
+	\label{fig:zybo-img}
+\end{figure}
 %TODO Zamieściłbym rysunek/zdjęcie ZYBO.
+% OK
 
 Układy rodziny Zynq-7000 są stosowane w aplikacjach systemów wsparcia kierowców, systemach wizyjnych wysokich rozdzielczości, cyfrowego przetwarzania sygnałów czy kryptograficznych. 
 W pracy \cite{GuanwenZhong} zaproponowano wykorzystanie zalet elementów FPGA i CPU do projektowania systemów wsparcia kierowców ADAS, co pozwoliło na redukcję czasu odpowiedzi systemu i zapotrzebowania na energię.
@@ -21,7 +29,7 @@ Wśród zagadnień kryptograficznych, realizowanych przy użyciu omawianej rodzi
 
 Na rysunku \ref{fig:zynq-overview} przedstawiono schemat omawianej architektury.
 
-\begin{figure}[!htb]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=12cm]{img/zyng-platform.png}
 	\caption{Schemat architektury Zynq-7000. (Źródło: \cite{zybo-reference-manual})}
@@ -53,9 +61,9 @@ Kontekst pamięciowy synchronizowany jest pomiędzy oboma rdzeniami procesora dz
 
 Układ logiki programowalnej należeć może do rodzin Artix-7 lub Kintex-7 i zbudowany jest z typowych elementów wykorzystywanych w FPGA o różnej liczebności, związanej z klasą układu:
 \begin{itemize}
-	\item CLB (\emph{ang.} Configurable Logic Blocks) -- w tym tablice Look-up (\emph{LUT}) -- $14400 - 277400$ elementów, przerzutniki (\emph{FF}) -- $28800 - 554800$ elementów.
+	\item CLB (\emph{ang.} Configurable Logic Blocks) -- w tym tablice Look-up (\emph{LUT}) -- $14400 - 277400$ elementów, przerzutniki (\emph{FF}) -- $28800 - 554800$ elementów. \emph{LUT} mogą pracować w trybie pamięci RAM zawierającej szesnaście jednobitowych komórek, kolejka FIFO o długości szesnastu elementów lub generator czteroargumentowej funkcji logicznej. Przerzutniki \emph{FF} pozwalają na synchronizację zegarową elementów obliczeniowych.
 	
-	\item Pamięci \emph{Block RAM} -- od $1,8Mb$ do $26,5Mb$ ($50 - 755$ elementów).
+	\item Pamięci \emph{Block RAM} -- od $1,8Mb$ do $26,5Mb$ ($50 - 755$ elementów). \emph{BRAM} to moduły pamięci konfigurowalnej, wspierające operacje odczytu i zapisu. Stanowić mogą alternatywę dla zewnętrznych modułów pamięciowych.
 	
 	\item Elementy \emph{DSP} -- wykorzystywane zwykle do implementacji operacji dodawania i mnożenia -- $66 - 2020$ elementów.
 	
@@ -69,9 +77,10 @@ Układ logiki programowalnej należeć może do rodzin Artix-7 lub Kintex-7 i zb
 % OK, dodałem te, które mogą być jakkolwiek istotne z mojej perspektywy.
 
 %TODO BRAM, LUT, FF - brakuje opsiu
+% uzupełniłem
 
-
-\section{Zastosowanie systemu operacyjnego} %TODO Może lepiej Systemy operacyjne dostępne dla platformy Zynq.
+\section{Systemy operacyjne dostępne dla platformy Zynq} %TODO Może lepiej Systemy operacyjne dostępne dla platformy Zynq.
+% OK
 \label{sec:arm-programming}
 
 Centralny element architektury stanowi dwurdzeniowy procesor ARM. 
@@ -158,13 +167,13 @@ W przypadku układu Zynq, wykorzystanie tej struktury pozwala na konfigurację i
 
 \item Po przeprowadzeniu wstępnej konfiguracji elementów systemu, możliwe jest wykonanie procesu konfiguracji, budowania i przygotowania wynikowych plików binarnych.
 \end{enumerate}
-Opisany proces jest skomplikowany i wymaga specjalistycznej wiedzy. 
+Opisany proces jest skomplikowany i wymaga specjalistycznej wiedzy. Ze względu na konieczność integracji wielu niezależnych modułów, takich jak programy rozruchowe czy \emph{device tree}, jego przebieg może ulegać zmianom w kolejnych wersjach systemu.
 Dostępne są obszerne opracowania dotyczące tematu, zawierające precyzyjny opis kolejnych wymaganych kroków \cite{zybo-zynq-getting-started,zybo-stock-linux,xilinx-build-kernel}.
 
 %TODO A Pan to robił ? Jeśli tak to link to szczegółowego opisu.
 % robiłem, ale na bazie źródeł, które cytuję powyżej. Proces jest dość skomplikowany i podatny na zmiany, ze względu na liczbę narzędzi, które się wykorzystuje, więc nie widziałem sensu budowania kolejnego tutoriala.
 %TODO OK. Ale proszę to wyraźnie podkreślić. Tu oraz potem w podsumowaniu.
-
+% Ok
 \subsubsection{Ubuntu Core}
 
 Ubuntu Core to dystrybucja systemu Linux dedykowana do zastosowań w urządzeniach tzw. internetu rzeczy (IoT -- \emph{ang.} Internet of Things). 
@@ -203,12 +212,13 @@ modprobe rpmsg_user_dev_driver
 echo_test
 \end{lstlisting}
 
-W rezultacie uruchomiono moduły odpowiedzialne za obsługę systemu czasu rzeczywistego i przeprowadzono test komunikacji.
-Konfiguracja i wykorzystanie systemów czasu rzeczywistego wykracza poza zakres niniejszej pracy, a zagadnienie jest obiektem obszernych opracowań \cite{adam-taylor-openamp,zynq-openamp-gsg}.
+W rezultacie uruchomiono moduły odpowiedzialne za obsługę systemu czasu rzeczywistego i przeprowadzono test komunikacji. Proces konfiguracji pozwalający na zastosowanie OpenAMP przedstawiono w rozdziale \ref{sec:openamp-config}.
+Wykorzystanie systemów czasu rzeczywistego wykracza poza zakres niniejszej pracy, a zagadnienie jest obiektem obszernych opracowań \cite{adam-taylor-openamp,zynq-openamp-gsg}. 
 
 %TODO to źle kojarzę, że coś Pan z tym eksperymentował ?
 % sprawdzałem to, ale moje wnioski właściwie przeczyły temu, co znalazłem w innych źródłach. Tzn. ja to w jakimś stopniu "zhackowałem", Xilinx upiera się, że wymagane jest dostarczenie BSP dedykowanej dwóm systemom, moje próby zbudowania BSP spełzły na niczym, ale gdy uruchomiłem `echo_test` na domyślnej konfiguracji, to jeden rdzeń procesora "zniknął" z Peta i zaczął działać real-time. Ten temat był dopiero rozwijany przez Xilinx gdy nad tym pracowałem, spodziewałbym się, że uporządkują to w przyszłości, bo mocno forsują swoje rozwiązanie - więc nie chciałem opisywać tutaj żadnych niepełnych rozwiązań...
 %TODO Ale jednak proszę to opisać. Jak wcześniej tu i w zakończeniu. Przecież to jest kawałek konkretnej wykonanej roboty.
+% OK, dodam sekcję opisującą konfigurację OpenAMP, wspomnę też o niejasnościach w podsumowaniu.
 
 \subsection*{Podsumowanie} 
 
@@ -221,7 +231,7 @@ Dystrybucja Ubuntu Core zapewnia dostęp do aktualizacji samego systemu, pozwala
 Może to być kluczowe w przypadku wykorzystania układu Zynq do działania przez długi czas z oczekiwaną niezawodnością. 
 
 W przypadku konieczności dostosowania kodu systemu operacyjnego do własnych potrzeb, praktyczne staje się natomiast wykorzystanie technik budowy systemu bezpośrednio ze źródeł. 
-Ogranicza to jednak możliwości instalacji dodatkowego oprogramowania i wymaga dobrej znajomości zagadnień związanych z działaniem systemu Linux.
+Ogranicza to jednak możliwości instalacji dodatkowego oprogramowania i wymaga dobrej znajomości zagadnień związanych z działaniem systemu Linux. Proces budowy systemu operacyjnego może być trudny do zautomatyzowania ze względu na konieczność integracji wielu elementów. Zmiany w implementacji każdego z nich mogą wpłynąć na przebieg zadania i wymagać modyfikacji procedur budowania.
 
 Pakiet PetaLinux pozwala jednak na największą integrację z oprogramowaniem Vivado, co ułatwia prototypowanie aplikacji. 
 Dzięki udostępnieniu repozytorium oprogramowania oraz braku konieczności ingerencji użytkownika w proces budowania systemu, wykorzystanie go jest najlepszym rozwiązaniem w większości projektów. 
@@ -231,4 +241,4 @@ Zastosowanie systemu czasu rzeczywistego współpracującego z innym systemem op
 
 Firma Xilinx zrezygnowała ze wsparcia dla systemu FreeRTOS i podobnych i zdecydowano się na oparcie na bibliotece OpenAMP do realizacji zadań wykonywanych w czasie rzeczywistym. 
 W okresie powstawania pracy, literatura omawiająca integrację biblioteki z systemem operacyjnym dla kart innych producentów nie była powszechnie dostępna. 
-Z tego powodu, realizacja omawianych zadań w przypadku karty ZYBO była poważnie utrudniona.
+Z tego powodu, realizacja omawianych zadań w przypadku karty ZYBO była poważnie utrudniona. Udostępnione materiały nie uwzględniały możliwości użycia biblioteki na karcie ZYBO. Ponadto, środowisko SDK nie wspierało budowy aplikacji czasu rzeczywistego na wykorzystywaną kartę i wymagało użycia rozwiązań dedykowanych innym kartom rodziny Zynq-7000.
