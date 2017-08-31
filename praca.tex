@@ -104,9 +104,10 @@ backend=bibtex
 	xrightmargin=-\fboxsep,
 	numbers=none
 }
-\usepackage{luatexbase}
-\usepackage[nosingleletter]{impnattypo}
 
+% usuwa sierotki, wymaga lualatex
+\usepackage{fontspec}
+\usepackage[nosingleletter]{impnattypo}
 % ------------------------
 
 \AtBeginDocument{
