@@ -394,8 +394,8 @@ Zaproponowano moduł indeksacji obiektów na bazie generowanego modelu tła.
 W tym celu wykorzystano procedurę \texttt{cv::connectedComponents} dostępną w bibliotece OpenCV. 
 
 Ze względu na ograniczenia sprzętowe, moduł indeksacji nie był w stanie spełnić wymagań pracy w czasie rzeczywistym dla sygnału wizyjnego o częstotliwości $60Hz$ i rozdzielczości $1280 \times 720 $ pikseli -- jego wydajność nie przekraczała piętnastu ramek na sekundę.
-Na rysunku \ref{fig:background-buffer-www} przedstawiono widok interfejsu \emph{www} udostępnianego przez aplikację, przedstawiający aktualny stan i wyniki działania programu. Interfejs wyświetla model tła oraz najnowszą ramkę obrazu, a także pokazuje wartości parametrów algorytmu.
-Związane z omawianą aplikacją dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}.
+Na rysunku \ref{fig:background-buffer-www} przedstawiono widok interfejsu \emph{www} udostępnianego przez aplikację, przedstawiający aktualny stan i wyniki działania programu. Interfejs wyświetla model tła oraz najnowszą ramkę obrazu, a także pokazuje wartości parametrów algorytmu i umożliwia ich modyfikację w trakcie działania aplikacji.
+Związane z omawianą aplikacją projektu dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}.
 \begin{figure}[!htb]
 	\centering
 	\includegraphics[width=12cm]{img/www-iface.png}
@@ -443,3 +443,4 @@ W trakcie realizacji projektu napotkano szereg ograniczeń.
 % Myślałem o tym, by umożliwić modyfikację parametrów z poziomu http, ale serwer, który napisałem siedzi w C i podejrzewam, że dodanie obsługi parametrów zapytania będzie uciążliwa.
 
 %TODO OK. No konfiguracja z http to byłoby już prawie smart camera :)
+% hm...w sumie to dodałem teraz możliwość zmieniania wartości parametrów

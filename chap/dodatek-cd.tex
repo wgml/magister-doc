@@ -1,3 +1,28 @@
 \section{Spis zawartości płyty CD}
-\lipsum[1-2]
-%TODO
+
+Dołączona do pracy płyta CD zawiera pliki źródłowe omawianych projektów:
+\begin{itemize}
+	\item \texttt{ip-repo} --moduły logiki programowalnej, wykorzystane do realizacji projektów wizyjnych:
+	\begin{itemize}
+		\item \texttt{algorithm\_parameters} -- moduł konfiguracji parametrów algorytmu,
+		\item \texttt{background\_model} -- moduł algorytmu generacji tła,
+		\item \texttt{frame\_difference} -- moduł odejmowania dwóch ramek obrazu,
+		\item \texttt{frame\_synchronizer} -- moduł synchronizujący dwa strumienie \emph{AXI-Stream},
+		\item \texttt{rgb2ycbcr} -- moduł odpowiedzialny za konwersję obrazu z przestrzeni bart \emph{RGB} do \emph{YCbCr},
+	\end{itemize}
+	
+	\item \texttt{proj-background-model-petalinux} -- projekt PetaLinux pozwalający na uruchomienie projektów odejmowania ramek i generacji tła,
+	\item \texttt{proj-background-model-sdk} -- aplikacje \emph{bare-metal} oraz systemowa związane z algorytmem generacji tła,
+	
+	\item \texttt{proj-background-model-vivado} -- projekt sprzętowy związany z algorytmem generacji tła,
+		
+	\item \texttt{proj-frame-difference-sdk} -- aplikacje \emph{bare-metal} oraz systemowa związane z algorytmem odejmowania ramek,
+	
+	\item \texttt{proj-frame-difference-vivado} -- projekt sprzętowy związany z algorytmem odejmowania ramek,
+	
+	\item \texttt{proj-rtos-petalinux} -- projekt PetaLinux pozwalający na uruchomienie systemu operacyjnego czasu rzeczywistego,
+	
+	\item \texttt{proj-frame-difference-vivado} -- projekt sprzętowy pozwalający na uruchomienie systemu operacyjnego czasu rzeczywistego,
+	
+	\item \texttt{praca-dyplomowa-w-gumula.pdf} -- plik zawierający treść niniejszej pracy.
+\end{itemize}
