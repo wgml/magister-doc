@@ -16,7 +16,7 @@ Komunikacja sieciowa jest możliwa dzięki implementacji stosu TCP/IP i obecnoś
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=12cm]{img/zybo.png}
-	\caption{Karta Diligent ZYBO. (Źródło: \cite{zybo-reference-manual})}
+	\caption{Karta Digilent ZYBO. (Źródło: \cite{zybo-reference-manual})}
 	\label{fig:zybo-img}
 \end{figure}
 %TODO Zamieściłbym rysunek/zdjęcie ZYBO.
@@ -25,7 +25,7 @@ Komunikacja sieciowa jest możliwa dzięki implementacji stosu TCP/IP i obecnoś
 Układy rodziny Zynq-7000 są stosowane w aplikacjach systemów wsparcia kierowców, systemach wizyjnych wysokich rozdzielczości, cyfrowego przetwarzania sygnałów czy kryptograficznych. 
 W pracy \cite{GuanwenZhong} zaproponowano wykorzystanie zalet elementów FPGA i CPU do projektowania systemów wsparcia kierowców ADAS, co pozwoliło na redukcję czasu odpowiedzi systemu i zapotrzebowania na energię.
 W innej pracy \cite{MaleenAbeydeera} zbadano możliwość wykorzystania układu do transmisji sygnału o rozdzielczości 4K ($3840 \times 2160$ pikseli) przy możliwie niewielkim zużyciu zasobów i energii.
-Wśród zagadnień kryptograficznych, realizowanych przy użyciu omawianej rodziny układu wymienić można algorytmy generowania liczb pseudolosowych o wysokiej rozdzielczości	\cite{PawelDabal2014}.
+Wśród zagadnień kryptograficznych realizowanych przy użyciu omawianej rodziny układu wymienić można algorytmy generowania liczb pseudolosowych o wysokiej rozdzielczości	\cite{PawelDabal2014}.
 
 Na rysunku \ref{fig:zynq-overview} przedstawiono schemat omawianej architektury.
 
@@ -43,7 +43,7 @@ Wyposażono ją jednak w zbiór portów umożliwiających wydajną komunikację 
 Ponadto, konfiguracja tej części wykonywana jest na starcie przez procesor lub przy użyciu interfejsu JTAG i układ nie zawiera elementów pozwalających na wykorzystanie logiki programowalnej w pełni niezależnie.
 Część procesorowa wyposażona jest w szereg interfejsów, w tym kontroler pamięci DDR3, interfejs komunikacji AMBA oraz zbiór interfejsów peryferyjnych.
 
-Procesor wyposażony jest w koprocesor arytmetyczny (\emph{FPU}) -- wsparcie obliczeń  na liczbach zmiennoprzecinkowych oraz \emph{NEON} -- wsparcie obsługi architektury SIMD (\emph{ang.} Single Instruction, Multiple Data) -- pozwalającej na przetwarzanie wielu strumieni danych przy użyciu jednego strumienia instrukcji. 
+Procesor wyposażony jest w koprocesor arytmetyczny (\emph{FPU}) -- wsparcie obliczeń  na liczbach zmiennoprzecinkowych oraz \emph{NEON} -- wsparcie obsługi architektury SIMD (\emph{ang.} Single Instruction, Multiple Data), pozwalającej na przetwarzanie wielu strumieni danych przy użyciu jednego strumienia instrukcji. 
 Zagadnienia te szerzej opisane zostały w rozdziale \ref{sec:arm-neon}.
 
 
@@ -61,7 +61,7 @@ Kontekst pamięciowy synchronizowany jest pomiędzy oboma rdzeniami procesora dz
 
 Układ logiki programowalnej należeć może do rodzin Artix-7 lub Kintex-7 i zbudowany jest z typowych elementów wykorzystywanych w FPGA o różnej liczebności, związanej z klasą układu:
 \begin{itemize}
-	\item CLB (\emph{ang.} Configurable Logic Blocks) -- w tym tablice Look-up (\emph{LUT}) -- $14400 - 277400$ elementów, przerzutniki (\emph{FF}) -- $28800 - 554800$ elementów. \emph{LUT} mogą pracować w trybie pamięci RAM zawierającej szesnaście jednobitowych komórek, kolejka FIFO o długości szesnastu elementów lub generator czteroargumentowej funkcji logicznej. Przerzutniki \emph{FF} pozwalają na synchronizację zegarową elementów obliczeniowych.
+	\item CLB (\emph{ang.} Configurable Logic Blocks) -- w tym tablice Look-up (\emph{LUT}) -- $14400 - 277400$ elementów, przerzutniki (\emph{FF}) -- $28800 - 554800$ elementów. \emph{LUT} mogą pracować w trybie pamięci RAM zawierającej szesnaście jednobitowych komórek, kolejki FIFO o długości szesnastu elementów lub generatora czteroargumentowej funkcji logicznej. Przerzutniki \emph{FF} pozwalają na synchronizację zegarową elementów obliczeniowych.
 	
 	\item Pamięci \emph{Block RAM} -- od $1,8Mb$ do $26,5Mb$ ($50 - 755$ elementów). \emph{BRAM} to moduły pamięci konfigurowalnej, wspierające operacje odczytu i zapisu. Stanowić mogą alternatywę dla zewnętrznych modułów pamięciowych.
 	
@@ -90,7 +90,7 @@ Powszechnie stosowana jest konfiguracja \textit{bare-metal}, w której procesor 
 Pozwala to na uzyskanie możliwie największej kontroli nad pracą układu, ogranicza jednak możliwości wykorzystania pełni zasobów procesora oraz utrudnia projektowanie rozbudowanych aplikacji. 
 Brak systemu operacyjnego ogranicza możliwość wykorzystania komunikacji sieciowej na etapie wykonania programu. 
 Możliwości przechowywania wyników i logów aplikacji są niewielkie. 
-Ponadto, użycie zewnętrznych bibliotek, w tym związanych z przetwarzaniem obrazów, takich jak OpenCV, jest niemożliwa.
+Ponadto, użycie zewnętrznych bibliotek, w tym związanych z przetwarzaniem obrazów, takich jak OpenCV, jest niemożliwe.
 W efekcie, wykorzystanie konfiguracji pozbawionej systemu operacyjnego nie jest możliwe w przypadku aplikacji wymagających nadzoru bez fizycznego dostępu do układu czy przechowywania wyników.
 
 W niniejszej pracy badano możliwość wykorzystania systemu operacyjnego Linux na przykładzie aplikacji systemów wizyjnych. 
@@ -127,7 +127,7 @@ apt-get install libgtk2.0-0:i386 libxtst6:i386 gtk2-engines-murrine:i386 lib32st
 Praca z pakietem wymaga ponadto wykorzystania oprogramowania \emph{Vivado Design Suite} \cite{vivado-home} do zaprojektowania układu połączeń logiki reprogramowalnej oraz \emph{Xilinx SDK} \cite{xsdk-home} do kompilacji programów uruchamianych w środowisku systemu operacyjnego układu.
 Pierwszym krokiem jest wykonanie projektu w pakiecie \emph{Vivado}. 
 Szczegóły procesu opisano w rozdziale \ref{sec:vivado-conf}. 
-Wyeksportowany projekt Vivado jest konieczny do przeprowadzenia procesu budowania systemu, proces konfiguracji projektu PetaLinux opisano w rozdziale \ref{sec:petalinux-config}. 
+Wyeksportowany projekt Vivado jest konieczny do przeprowadzenia procesu budowania systemu. Proces konfiguracji projektu PetaLinux opisano w rozdziale \ref{sec:petalinux-config}. 
 
 Pakiet udostępnia możliwość dodania do budowanego systemu zbioru programów i bibliotek. 
 Dostępne jest kilkaset pakietów oprogramowania oferowanych na zasadach wolnych licencji, w tym biblioteki do przetwarzania obrazów. 
@@ -152,7 +152,7 @@ Wykorzystanie pakietu PetaLinux związane jest z ograniczeniem dostępności pro
 W przypadku konieczności uruchomienia projektu na systemie nie wspieranym przez twórców oprogramowania lub potrzeby wprowadzenia dużych zmian w kodzie źródłowym systemu i konfiguracji, konieczne może być przeprowadzenie pełnego procesu budowania samodzielnie. 
 Takie podejście pozwala również na pełne zrozumienie znaczenia kolejnych kroków procesu konfiguracji.
 
-Proces budowy systemu składa się z kilku kroków. 
+Proces budowy systemu składa się z kilku etapów. 
 \begin{enumerate}
 \item Plik binarny zawierający konfigurację części oprogramowania wykorzystującej logikę programowalną dołączany jest w trakcie procesu budowania systemu operacyjnego.
 
@@ -168,7 +168,7 @@ W przypadku układu Zynq, wykorzystanie tej struktury pozwala na konfigurację i
 \item Po przeprowadzeniu wstępnej konfiguracji elementów systemu, możliwe jest wykonanie procesu konfiguracji, budowania i przygotowania wynikowych plików binarnych.
 \end{enumerate}
 Opisany proces jest skomplikowany i wymaga specjalistycznej wiedzy. Ze względu na konieczność integracji wielu niezależnych modułów, takich jak programy rozruchowe czy \emph{device tree}, jego przebieg może ulegać zmianom w kolejnych wersjach systemu.
-Dostępne są obszerne opracowania dotyczące tematu, zawierające precyzyjny opis kolejnych wymaganych kroków \cite{zybo-zynq-getting-started,zybo-stock-linux,xilinx-build-kernel}.
+Dostępne są obszerne opracowania tematu, zawierające precyzyjny opis kolejnych wymaganych kroków \cite{zybo-zynq-getting-started,zybo-stock-linux,xilinx-build-kernel}.
 
 %TODO A Pan to robił ? Jeśli tak to link to szczegółowego opisu.
 % robiłem, ale na bazie źródeł, które cytuję powyżej. Proces jest dość skomplikowany i podatny na zmiany, ze względu na liczbę narzędzi, które się wykorzystuje, więc nie widziałem sensu budowania kolejnego tutoriala.
@@ -189,7 +189,7 @@ System Ubuntu Core może być zbudowany i uruchomiony na karcie ZYBO przy użyci
 
 System operacyjny czasu rzeczywistego (\emph{RTOS}, \emph{ang.} Real Time Operating System) to system operacyjny, którego zadaniem jest obsługa aplikacji przy zachowaniu założeń o nieprzekroczeniu maksymalnego dopuszczalnego czasu odpowiedzi programu. 
 Pozwala to na projektowanie aplikacji, w których czas odpowiedzi ma kluczowe znaczenie, w tym systemów sterowania lub krytycznych aplikacji wizyjnych.
-Dzięki zastosowaniu dwurdzeniowego procesora w układzie Zynq, rozważyć można zaprojektowanie rozwiązania, w których jeden z rdzeni odpowiada za wykonanie programu Linuxa, a drugi -- aplikacji lub systemu czasu rzeczywistego.
+Dzięki zastosowaniu dwurdzeniowego procesora w układzie Zynq, rozważyć można zaprojektowanie rozwiązań, w których jeden z rdzeni odpowiada za wykonanie programu Linuxa, a drugi -- aplikacji lub systemu czasu rzeczywistego.
 
 Rozpatrzono możliwość uruchomienia systemu operacyjnego PetaLinux i jego współpracę z aplikacjami czasu rzeczywistego na przykładzie OpenAMP \cite{openamp-home}. 
 OpenAMP zapewnia interfejs umożliwiający komunikację pomiędzy programami działającymi w systemie Linux oraz aplikacjami czasu rzeczywistego, wykorzystując do tego narzędzia dostępne już w systemie.
@@ -212,7 +212,7 @@ modprobe rpmsg_user_dev_driver
 echo_test
 \end{lstlisting}
 
-W rezultacie uruchomiono moduły odpowiedzialne za obsługę systemu czasu rzeczywistego i przeprowadzono test komunikacji. Proces konfiguracji pozwalający na zastosowanie OpenAMP przedstawiono w rozdziale \ref{sec:openamp-config}.
+W rezultacie uruchomione zostaną moduły odpowiedzialne za obsługę systemu czasu rzeczywistego i przeprowadzony będzie test komunikacji. Proces konfiguracji pozwalający na zastosowanie OpenAMP przedstawiono w rozdziale \ref{sec:openamp-config}.
 Wykorzystanie systemów czasu rzeczywistego wykracza poza zakres niniejszej pracy, a zagadnienie jest obiektem obszernych opracowań \cite{adam-taylor-openamp,zynq-openamp-gsg}. 
 
 %TODO to źle kojarzę, że coś Pan z tym eksperymentował ?

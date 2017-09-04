@@ -35,7 +35,7 @@ Aby uprościć proces logowania, wykorzystać można mechanizm wymiany kluczy, z
 Korzystając z tej zależności, klucz publiczny może być powszechnie znany i wykorzystywany do budowania kryptograficznie bezpiecznych wiadomości, pod warunkiem zachowania klucza prywatnego w tajemnicy.
 
 Algorytmy kryptografii asymetrycznej wykorzystywane są przez narzędzie SSH na etapie weryfikacji tożsamości obu stron komunikacji. 
-Po nawiązaniu połączenia, komunikacja zabezpieczana jest wybranych algorytmem symetrycznym. 
+Po nawiązaniu połączenia, komunikacja zabezpieczana jest wybranym algorytmem symetrycznym. 
 Wykorzystanie mechanizmu kluczy wymaga użycia poniższego polecenia.
 
 
@@ -55,7 +55,7 @@ Elementy te pozwalają na zwiększenie wydajności projektowanych aplikacji w pr
 
 Koprocesor arytmetyczny, FPU (\emph{ang.} Floating-point unit), to układ działający we współpracy z jednostką procesora, dedykowany do wykonywania obliczeń na liczbach zmiennoprzecinkowych. 
 Wykorzystanie dedykowanego układu pozwala na zwiększenie szybkości wykonywania operacji arytmetycznych, pierwiastkowania i przesunięć bitowych. 
-W przypadku braku dedykowanego układu FPU, konieczne jest symulowanie jego działania dla jednej operacji na liczbach zmiennoprzecinkowych przez wykonywanie większej liczby operacji na typach całkowitych, co wiąże się ze spadkiem wydajności. 
+W przypadku braku układu FPU, konieczne jest symulowanie jego działania dla jednej operacji na liczbach zmiennoprzecinkowych przez wykonywanie większej liczby operacji na typach całkowitych, co wiąże się ze spadkiem wydajności. 
 
 Technologia NEON pozwala na rozszerzenie puli rozkazów procesora ARM o polecenia wykorzystujące architekturę SIMD zdefiniowaną przez taksonomię Flynna \cite{Flynn1972}.
 SIMD (\emph{ang.} Single Instruction stream, Multiple Data streams) to klasa systemów, które pozwalają na przetwarzanie wielu strumieni danych na podstawie jednego strumienia instrukcji. 
@@ -73,7 +73,7 @@ VFP to układ niezależny od FPU, pozwalający na wykonanie jednej instrukcji dl
 Układ ten nie należy do rodziny SIMD i wykonuje instrukcje sekwencyjnie, w przeciwieństwie do architektury NEON.
 
 
-\begin{table}[h]
+\begin{table}[!htb]
 	\caption{Wyniki testu wydajnościowego.}
 	\centering
 	\label{tab:neon-time-results}
@@ -265,7 +265,7 @@ W ramach pracy rozważono możliwości wykorzystania wątków natywnych oraz bib
 Użycie wątków natywnych wymaga wykorzystania bibliotek systemowych -- w przypadku aplikacji w języku C++ działającej w systemie PetaLinux zastosować można biblioteki \texttt{<thread>} lub \texttt{<pthread.h>} wchodzące w skład bibliotek standardowych \cite{Williams2013}.
 Ich wykorzystanie pozwala na możliwie najbardziej efektywne użycie zasobów maszyny obliczeniowej. 
 Wymaga to jednak dużych umiejętności programisty oraz dobrej znajomości architektury docelowej oraz wykonywanego zadania. 
-Ponadto zastosowanie biblioteki \texttt{<pthread.h>} wymaga zgodności systemu docelowego ze standardem POSIX, natomiast w przypadku \texttt{<thread>}, konieczne jest przeprowadzenie procesu kompilacji kompilatorem zgodnym ze standardem C++11. 
+Ponadto, zastosowanie biblioteki \texttt{<pthread.h>} wymaga zgodności systemu docelowego ze standardem POSIX, natomiast w przypadku \texttt{<thread>}, konieczne jest przeprowadzenie procesu kompilacji kompilatorem zgodnym ze standardem C++11. 
 Założenia te mogą okazać się problematyczne w przypadku konieczności migracji aplikacji na system nie spełniający opisanych wymagań.
 
 Stosowanie wątków natywnych pozwala na budowę wielowątkowych aplikacji działających heterogenicznie. 
@@ -330,7 +330,7 @@ Ze względu na swoją popularność, część rozwiązań została zintegrowana 
 Zbiór ten zawiera wydajne implementacje najczęściej stosowanych algorytmów, dedykowanych uruchamianiu na układach CPU oraz GPU (\emph{ang.} Graphics Processing Unit). 
 Biblioteka jest szeroko stosowana ze względu na wysoką wydajność, stabilność działania i możliwość przenoszenia rozwiązań pomiędzy platformami o różnych architekturach.
 
-Zastosowanie zewnętrznej biblioteki pozwala, w porównaniu do autorskiej implementacji algorytmu, na ograniczenie czasu wymaganego do zbudowania działającego prototypu algorytmu. 
+Zastosowanie zewnętrznej biblioteki pozwala, w porównaniu do autorskiej implementacji algorytmu, na ograniczenie czasu wymaganego do zbudowania działającego prototypu. 
 Ponadto, gotowe rozwiązania zapewniają zwykle większą stabilność i wystarczającą wydajność w większości przypadków. 
 Kluczowym ograniczeniem względem autorskiej implementacji jest brak możliwości dostosowania algorytmu do rozpatrywanego przypadku. 
 Może to wiązać się z koniecznością sprowadzenia danych wejściowych do struktury wspieranej przez bibliotekę, co może prowadzić do ograniczenia wydajności działania aplikacji.
@@ -350,13 +350,13 @@ Przebieg procesu dla obu przypadków opisano w rozdziale \ref{sec:opencv-config}
 \section{Integracja algorytmów w FPGA i CPU}
 
 
-Zagadnienie integracji rozwiązań algorytmicznych wewnątrz logiki programowalnej z obliczeniami prowadzonymi przez procesor ARM może pozwalać na zwiększenie wydajności działania aplikacji względem algorytmów realizowanych wyłącznie w jednym z tych układów.
+Zagadnienie integracji rozwiązań algorytmicznych wewnątrz logiki programowalnej z obliczeniami prowadzonymi przez procesor ARM może pozwolić na zwiększenie wydajności działania aplikacji względem algorytmów realizowanych wyłącznie w jednym z tych układów.
 Podział algorytmu na sekwencję etapów, realizowanych w logice reprogramowalnej lub w systemie procesorowym pozwala wykorzystać zalety obu rozwiązań. 
 Układy FPGA pozwalają na użycie zbioru algorytmów w technice strumieniowej, co umożliwia dokonać przetwarzania obrazów w czasie rzeczywistym, z zachowaniem przyjętych opóźnień. 
 
 Implementacja części algorytmów w sposób umożliwiający przetwarzanie strumieniowe może być niemożliwa. 
 Procedury wymagające dużego kontekstu na etapie wykonania lub dostępu do danych historycznych projektowane są w celu uruchamiania na układach CPU o swobodnym dostępie do pamięci operacyjnej. 
-Ponadto, realizacja algorytmów zdominowanych przez instrukcje lub wymagających zastosowanie wyrażeń warunkowych i pętli może być nieefektywna w porównaniu do implementacji na CPU. 
+Ponadto, realizacja algorytmów zdominowanych przez instrukcje lub wymagających zastosowania wyrażeń warunkowych i pętli może być nieefektywna w porównaniu do implementacji na CPU. 
 Przykładami takich procedur mogą być śledzenie zmiennej liczby obiektów w kadrze czy stosunkowo proste operacje rotacji lub odbicia obrazu.
 
 Podział algorytmu wizyjnego na etapy wykonywane naprzemiennie w logice programowalnej i procesorze ARM wymaga transmisji danych pomiędzy dwoma modułami. 
@@ -428,8 +428,7 @@ Druga klasa przerwań związana jest zwykle ze zdarzeniami o krytycznym znaczeni
 Wykorzystanie przerwań pozwala na zaprojektowanie interfejsu aplikacji współpracującej ze zbiorem urządzeń peryferyjnych, takich jak czujniki, przyciski, czy klawiatury. 
 W przypadku układu Zynq, rolę urządzeń wysyłających sygnał przerwania przyjąć mogą również elementy logiki programowalnej, takie jak układy VDMA, zegary, czy moduły zaprojektowane przez użytkownika.
 
-Układ Zynq wyposażony jest w moduł GIC (\emph{ang.} Generic Interrupt Controller), który pełni rolę kontrolera przerwań, odpowiedzialnego za obsługę zdarzeń. \
-emph{GIC} obsługuje przerwania z kilku źródeł:
+Układ Zynq wyposażony jest w moduł GIC (\emph{ang.} Generic Interrupt Controller), który pełni rolę kontrolera przerwań, odpowiedzialnego za obsługę zdarzeń. \emph{GIC} obsługuje przerwania z kilku źródeł:
 \begin{itemize}
 	\item przerwania programowe -- zbiór nie więcej niż szesnastu zdarzeń, które pozwalają na wywołanie procedury obsługi przerwania bezpośrednio z kodu aplikacji. Zachowanie to pozwala na komunikację z systemem operacyjnym i jest zwykle wykorzystywane do wywoływania operacji wejścia lub wyjścia. 
 	
@@ -471,6 +470,6 @@ Podobne zachowanie uzyskać można korzystając z funkcji procesora i związanyc
 
 Przerwania definiowane przez moduł AXI VDMA pozwalają na zgłoszenie zdarzenia po wykonaniu procesu odczytu lub zapisu określonej liczby ramek obrazu lub po upływie określonego czasu od uzyskania sygnałów synchronizacji obrazu. 
 Wykorzystanie tych mechanizmów pozwala na zaprojektowanie procedur aplikacji, które powinny być wykonane co określoną liczbę klatek sygnału wizyjnego. 
-W szczególnym przypadku, mechanizm ten pozwala na wykonanie przez procesor operacji algorytmicznych dla każdej ramki obrazu, których implementacja sprzętowa byłaby trudna lub niemożliwa. 
+W szczególnym przypadku, mechanizm ten pozwala na wykonanie przez procesor dla każdej ramki obrazu operacji algorytmicznych, których implementacja sprzętowa byłaby trudna lub niemożliwa. 
 Mechanizm ten pozwala również na przeprowadzenie operacji końcowej analizy wyników algorytmu wizyjnego, zaimplementowanego w logice programowalnej. 
 Proces konfiguracji projektu wykorzystującego mechanizm przerwań opisano w rozdziale \ref{sec:interrupts-config}.

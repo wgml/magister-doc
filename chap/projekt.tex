@@ -34,8 +34,8 @@ Wśród algorytmów wymagających kontekstu związanego z więcej niż jedną ra
 
 Implementacja wymienionych typów algorytmów w architekturze potokowej może być utrudniona lub niemożliwa bez użycia zewnętrznego elementu pamięciowego. 
 Jedna ramka obrazu kolorowego o rozdzielczości $1280 \times 720$ pikseli ma rozmiar $2,8$MB. 
-Układ Zynq dostępny na karcie Zybo wyposażony jest w bloki pamięci BRAM o łącznej pojemności $2,1$ MB. 
-Zatem nawet w najprostszych systemach, wymagających buforowania wyłącznie jednej ramki obrazu nie jest więc możliwa realizacja tego zadania bez użycia pamięci zewnętrznej.
+Układ Zynq dostępny na karcie ZYBO wyposażony jest w bloki pamięci BRAM o łącznej pojemności $2,1$ MB. 
+Zatem nawet w najprostszych systemach, wymagających buforowania wyłącznie jednej ramki obrazu nie jest możliwa realizacja tego zadania bez użycia pamięci zewnętrznej.
 
 Ponadto, końcowa analiza wyników algorytmu w architekturze FPGA jest odgórnie ograniczona do przewidywanych parametrów działania systemu, a w efekcie mniej elastyczna -- na przykład, zagadnienie śledzenia obiektów może być ograniczone do maksymalnej zadanej liczby niezależnych elementów. Proces analizy wymagać może budowania rozbudowanych maszyn stanu, których realizacja może być podatna na błędy, a dodanie nowych funkcjonalności utrudnione.
 Ze względu na te ograniczenia, korzystny może okazać się podział algorytmu na niezależne etapy, wykonywane przez moduły sprzętowe zrealizowane w logice programowalnej lub procedury uruchamiane na ARM.  
@@ -394,7 +394,7 @@ Zaproponowano moduł indeksacji obiektów na bazie generowanego modelu tła.
 W tym celu wykorzystano procedurę \texttt{cv::connectedComponents} dostępną w bibliotece OpenCV. 
 
 Ze względu na ograniczenia sprzętowe, moduł indeksacji nie był w stanie spełnić wymagań pracy w czasie rzeczywistym dla sygnału wizyjnego o częstotliwości $60Hz$ i rozdzielczości $1280 \times 720 $ pikseli -- jego wydajność nie przekraczała piętnastu ramek na sekundę.
-Na rysunku \ref{fig:background-buffer-www} przedstawiono widok interfejsu \emph{www} udostępnianego przez aplikację, przedstawiający aktualny stan i wyniki działania programu. Interfejs wyświetla model tła oraz najnowszą ramkę obrazu, a także pokazuje wartości parametrów algorytmu i umożliwia ich modyfikację w trakcie działania aplikacji.
+Na rysunku \ref{fig:background-buffer-www} przedstawiono widok interfejsu \emph{www} udostępnianego przez aplikację, przedstawiający aktualny stan i wyniki działania programu. Widok wygenerowany został na bazie wyników wyznaczonych przez model programowy. Interfejs wyświetla model tła oraz najnowszą ramkę obrazu, a także pokazuje wartości parametrów algorytmu i umożliwia ich modyfikację w trakcie działania aplikacji.
 Związane z omawianą aplikacją projektu dodano jako załączniki do pracy oraz udostępniono w repozytorium \cite{git-repository}.
 \begin{figure}[!htb]
 	\centering
@@ -408,7 +408,7 @@ Zaproponowane rozwiązania projektowe pozwalają na wykorzystanie części funkc
 Szczególnie istotnym zagadnieniem jest komunikacja pomiędzy elementami zaprojektowanymi w dwóch architekturach. 
 Dzięki wykorzystaniu transmisji danych, możliwe jest zaprojektowanie algorytmów podzielonych na moduły wykonywane naprzemiennie przez obie części układu, wykorzystując atuty obu architektur do możliwie maksymalnego zwiększenia wydajności pełnego algorytmu.
 
-Ponadto, wykorzystanie systemu operacyjnego pozwala na realizację zadań zwykle niemożliwych w przypadku projektu aplikacji realizowanych wyłącznie przy użyciu elementów logiki reprogramowalnej lub sterowanych przez aplikację \textit{bare-metal}. 
+Ponadto, wykorzystanie systemu operacyjnego pozwala na realizację zadań zwykle niemożliwych w przypadku projektów aplikacji realizowanych wyłącznie przy użyciu elementów logiki reprogramowalnej lub sterowanych przez aplikację \textit{bare-metal}. 
 Program działający pod kontrolą systemu operacyjnego umożliwia prowadzenie zadań konfiguracji, kontroli i monitorowania działania aplikacji z wykorzystaniem komunikacji sieciowej.
 
 Wykorzystanie systemu operacyjnego pozwala również na implementację aplikacji w dowolnym języku programowania. 

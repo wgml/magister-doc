@@ -76,7 +76,7 @@ W kolejnych krokach należy dokonać konfiguracji modułu procesora, klikając d
 		\label{fig:vivado-mio-configuration}
 	\end{figure}
 	
-	\item Parametry sygnałów zegarowych dostępnych z poziomu układów logiki reprogramowalnej modyfikować można w zakładce \emph{,,Clock Configuration/PL Fabric Clocks''}. W projekcie projekcie wymagającym obsługi AXI VDMA wykorzystano trzy sygnały zegarowe:
+	\item Parametry sygnałów zegarowych dostępnych z poziomu układów logiki reprogramowalnej modyfikować można w zakładce \emph{,,Clock Configuration/PL Fabric Clocks''}. W projekcie wymagającym obsługi AXI VDMA wykorzystano trzy sygnały zegarowe:
 	\begin{itemize}[label=\textbullet]
 		\item bazowy, o częstotliwości $100$MHz,
 		\item wykorzystywany do komunikacji interfejsem AXI, o częstotliwości $140$MHz,
@@ -101,7 +101,7 @@ Przykład wynikowej konfiguracji projektu przedstawiono na rysunku \ref{fig:viva
 	
 Przedstawiona konfiguracja stanowi podstawę każdego projektu wykorzystującego moduł procesora Zynq.
 Po zakończeniu konfiguracji, wygenerować należy warstwę HDL, korzystając z opcji \emph{,,Create HDL Wrapper''} dostępnej po kliknięciu prawym przyciskiem myszy na utworzony wcześniej plik źródłowy.
-Skonfigurowany w ten sposób projekt może być budowany i uruchamiany na platformie Zybo.
+Skonfigurowany w ten sposób projekt może być budowany i uruchamiany na platformie ZYBO.
 
 \subsection{SDK}
 
@@ -109,10 +109,10 @@ W celu utworzenia projektu aplikacji w SDK, konieczne jest wyeksportowanie plik�
 W efekcie, dostępny powinien być projekt \texttt{\textit{nazwa\_projektu}\_hw\_platform\_0}, zawierająca plik \texttt{nazwa\_projektu.hdf}, zawierający konfigurację sprzętową, stanowiący podstawę każdego budowanego programu \textit{bare-metal}. 
 
 W przypadku budowania aplikacji na platformę PetaLinux, na etapie tworzenia projektu, zmodyfikować należy pole \emph{,,OS Platform''} na wartość \emph{,,linux''}, \emph{,,Processor Type''} na \emph{,,ps7\_cortexa9''} oraz wybrać właściwy język programowania.
-Tak zdefiniowana aplikacja nie może korzystać z bibliotek udostępnianych przez firmę \emph{Xilinx} )(na przykład zawierających procedury obsługi modułów VDMA czy kontrolera przerwań), ale mogą korzystać z pełnej biblioteki standardowej jeżyka \emph{C} oraz rozszerzeń \emph{POSIX}, w tym operacji wejścia/wyjścia, komunikacji sieciowej czy bibliotek matematycznych.
+Tak zdefiniowana aplikacja nie może korzystać z bibliotek udostępnianych przez firmę \emph{Xilinx} (na przykład zawierających procedury obsługi modułów VDMA czy kontrolera przerwań), ale mogą korzystać z pełnej biblioteki standardowej jeżyka \emph{C} oraz rozszerzeń \emph{POSIX}, w tym operacji wejścia/wyjścia, komunikacji sieciowej czy bibliotek matematycznych.
 
 
-W celu uruchomienia aplikacji systemowej na platformie ZYBO, przeprowadzić należy proces budowania i skopiować wynikowy plik z katalogu \texttt{Debug} lub \texttt{Release} do systemu plików systemu PetaLinux. 
+W celu uruchomienia aplikacji systemowej na karcie ZYBO, przeprowadzić należy proces budowania i skopiować wynikowy plik z katalogu \texttt{Debug} lub \texttt{Release} do systemu plików systemu PetaLinux. 
 Wykorzystać można do tego narzędzie SSH:
 
 \begin{lstlisting}[breaklines=true]
@@ -134,6 +134,7 @@ Utworzenie struktury katalogów projektu wykonywane jest przy użyciu poniższeg
 \begin{lstlisting}[breaklines=true]
 petalinux-create -t project --template zynq --name (*@\textit{nazwa-projektu}@*)
 cd (*@\textit{nazwa-projektu}@*)
+git init .
 \end{lstlisting}
 
 Powstała struktura zintegrowana jest z systemem kontroli wersji \emph{git}, co pozwala zachować uporządkowanie danych wewnątrz projektu oraz wersjonowanie. 
@@ -155,7 +156,7 @@ Należy również zmodyfikować argumenty przekazywane systemowi na etapie uruch
 
 \begin{lstlisting}[breaklines=true]
 petalinux-config
-Kernel Bootargs -> dezaktywować opcję Generate boot args automatically i zdefiniować własną wartość
+Kernel Bootargs -> dezaktywowac opcje Generate boot args automatically i zdefiniowac wlasna wartosc:
 console=ttyPS0,115200 earlyprintk uio_pdrv_genirq.of_id=generic-uio root=/dev/mmcblk0p2 rw rootwait 
 \end{lstlisting}
 Następnie, przeprowadzić należy proces budowania systemu oraz wygenerować pliki wynikowe.
@@ -192,7 +193,7 @@ cd -
 \end{lstlisting}
 
 Ze względu na mechanizm buforowania przez kontroler operacji zapisu danych, pamiętać należy o wywołaniu polecenia \texttt{sync}, zapewniającego zachowanie integralności danych.
-Karta SD pozwala na uruchomienie systemu operacyjnego na układzie i przechowywanie danych użytkownika pomiędzy startami układu. 
+Karta SD pozwala na uruchomienie systemu operacyjnego na karcie i przechowywanie danych użytkownika pomiędzy startami układu. 
 Dalsza praca z systemem odbywać się może przez protokoły komunikacji \emph{SSH} lub \emph{UART}.
 
 \section{Konfiguracja modułu wykorzystującego interfejs AXI}
@@ -645,7 +646,7 @@ echo_test
 Biblioteka OpenCV w wersji 2.4 nie jest oficjalnie dostępna w pakiecie PetaLinux, może jednak zostać dołączona do systemu operacyjnego dzięki mechanizmowi aplikacji użytkownika.
 Należy zatem przeprowadzić proces kompilacji kodu źródłowego biblioteki wraz z zależnościami, ponieważ prekompilowane pliki na platformę ARM nie są publicznie dostępne. Poniżej przedstawiono proces instalacji zależności.
 
-\begin{lstlisting}[breaklines=true, language=Bash, caption=Definicja zmiennych środowiskowych.]
+\begin{lstlisting}[breaklines=true, language=Bash, caption=Definicje zmiennych środowiskowych.]
 export ARMPREFIX=(*@\textit{ścieżka/instalacji}@*)
 export CCPREFIX=arm-linux-gnueabihf-
 \end{lstlisting}
@@ -739,7 +740,7 @@ petalinux-config -c rootfs
 
 
 Bibliotekę skompilowano i potwierdzono poprawność działania dla plików testowych dostępnych na stronie internetowej twórców. 
-Porównano wyniki działania aplikacji modyfikującej obraz na wejściu i zapisującego wynik do pliki z programem uruchomionym na procesorze architektury \emph{x86} i nie stwierdzono różnic.
+Porównano wyniki działania aplikacji modyfikującej obraz na wejściu i zapisującego wynik do pliku z programem uruchomionym na procesorze architektury \emph{x86} i nie stwierdzono różnic.
 
 \subsection{OpenCV 3}
 Biblioteka OpenCV w wersji 3.1 dołączona jest do pakietu PetaLinux. 
@@ -1036,14 +1037,14 @@ Algorytm generacji tła wykorzystuje funkcjonalności opisane dotychczas w rozdz
 
 \subsection{Vivado}
 
-Wejściami modułu generacji tła są aktualna wartość piksela obrazu i jego wartość z poprzedniej ramki oraz piksel modelu tła wyznaczony dla ostatniej klatki. Ponadto, dostępne są sygnały wejściowe związane z parametrami pracy algorytmu. Wyjścia modułu stanowi zbiór trzech ramek obrazu, zawierający sygnały mask ruchu i przynależności do obiektów pierwszoplanowych oraz obliczany model tła.
+Wejściami modułu generacji tła są aktualna wartość piksela obrazu i jego wartość z poprzedniej ramki oraz piksel modelu tła wyznaczony dla ostatniej klatki. Ponadto, dostępne są sygnały wejściowe związane z parametrami pracy algorytmu. Wyjścia modułu stanowi zbiór trzech ramek obrazu, zawierający sygnały masek ruchu i przynależności do obiektów pierwszoplanowych oraz obliczany model tła.
 
 Aby umożliwić konfigurację parametrów algorytmu zaprojektowano moduł \texttt{algorithm\_parameters}. Udostępnia on wyjścia związane z każdym z parametrów i wykorzystuje interfejs AXI do komunikacji z procesorem. Sposób konfiguracji modułów tego typu opisano w rozdziale \ref{sec:vivado-axi-dma}.
 
 Buforowanie ramek obrazu wykorzystuje mechanizm AXI VDMA. Proces konfiguracji modułów tego typu opisano w rozdziale \ref{sec:vivado-axi-vdma}. Wykorzystano niezależne bufory do przechowywania ramki obrazu wejściowego oraz modelu tła. Alternatywnym rozwiązaniem jest wykorzystanie jednego modułu do obsługi obu sygnałów. Aby osiągnąć możliwie maksymalną wydajność, z każdym modułem związano niezależne interfejsy \texttt{AXI\_Interconnect} połączone z procesorem przy użyciu kanałów wysokiej wydajności.
 Trzeci moduł VDMA był odpowiedzialny za przesłanie wyników działania algorytmu do części procesorowej, w celu przeprowadzenia dalszego przetwarzania i prezentacji wyników.
 
-Dla  synchronizacji trzech strumieni wizyjnych, wykorzystano moduł \texttt{AXI4-Stream Combiner}, umożliwiający połączenie wielu strumieni \texttt{AXI-Stream} w jeden, o większej szerokości. Aby zagwarantować stabilność działania aplikacji, z każdym sygnałem wejściowym modułu związano element \texttt{AXI4-Stream Data FIFO}, zapewniający kolejkę FIFO o długości sześćdziesięciu czterech elementów.
+Dla  synchronizacji trzech strumieni wizyjnych wykorzystano moduł \texttt{AXI4-Stream Combiner}, umożliwiający połączenie wielu strumieni \texttt{AXI-Stream} w jeden, o większej szerokości. Aby zagwarantować stabilność działania aplikacji, z każdym sygnałem wejściowym modułu związano element \texttt{AXI4-Stream Data FIFO}, zapewniający kolejkę FIFO o długości sześćdziesięciu czterech elementów.
 
 Przeciwny mechanizm zastosowano na wyjściu modułu generującego model tła -- trzy ramki obrazu przesyłane były w formie jednego strumienia o szerokości dziewięciu bajtów i dzielone na niezależnie strumienie przy użyciu modułu \texttt{AXI4-Stream Broadcaster}. Dzięki zastosowaniu opisywanych technik możliwa była synchronizacja sześciu niezależnych strumieni i utrzymanie stabilności działania projektu.
 
@@ -1066,7 +1067,7 @@ Pamiętać należy o zapewnieniu niezależnych przestrzeni adresowych dla każde
 Moduł udostępniający parametry algorytmu zawiera trzy rejestry, związane z poszczególnymi wartościami. 
 Wartości progów ruchu i tła mają charakter liczb całkowitych z zakresu od $0$ do $255$. 
 Parametr bezwładności tła to liczba stałoprzecinkowa bez znaku, o jednym bicie części całkowitej i siedmiu bitach części ułamkowej. 
-Moduł algorytmiczny współpracuje poprawnie z wartościami od $0$ do $1$. 
+Moduł algorytmiczny współpracuje poprawnie z wartościami z zakresu od $0$ do $1$. 
 Proces konfiguracji modułu przedstawiono na listingu \ref{lis:background-model-parameters}.
 
 \begin{lstlisting}[breaklines,language=C, label=lis:background-model-parameters, caption=Konfiguracja modułu parametryzującego generację tła.]
@@ -1179,7 +1180,7 @@ typedef int memory_handle_t;
 Proces konfiguracji podzielono na dwa etapy -- przygotowywania środowiska aplikacji (\texttt{setup}) oraz właściwej konfiguracji modułów (\texttt{initialize}). 
 Na listingu \ref{lis:setup-and-init} przedstawiono fragment obu procesów, związany z konfiguracją modułu parametryzującego pracę algorytmu.
 
-\begin{lstlisting}[breaklines,language=C, label=lis:setup-and-init, caption=Konfiguracja modułu parametryzuącego pracę algorytmu.]
+\begin{lstlisting}[breaklines,language=C, label=lis:setup-and-init, caption=Konfiguracja modułu parametryzującego pracę algorytmu.]
 struct video_transmit* setup(struct application_config config) {
 	struct video_transmit *video_transmit = (struct video_transmit*) malloc(sizeof(struct video_transmit));
 	video_transmit->memory_handle = open("/dev/mem", O_RDWR | O_SYNC);
@@ -1199,14 +1200,14 @@ struct video_transmit* setup(struct application_config config) {
 	setup_virt_memory(video_transmit->parameters, 65535, video_transmit->memory_handle, algorithm_parameters_addr);
 	strcpy(video_transmit->parameters->id, "parameters");
 	
-	// konfiguracja pozostałych modułów AXI
+	// konfiguracja pozostalych modułlw AXI
 	return video_transmit;
 }
 
 void initialize(struct video_transmit *video_transmit) {
 	init_parameters(video_transmit->parameters, *video_transmit->config);
 	
-	// uruchomienie pozostałych modułów AXI
+	// uruchomienie pozostalych modulów AXI
 }
 
 void update_parameters(struct axi_interface *interface, struct video_config config) {
