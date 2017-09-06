@@ -277,7 +277,6 @@ Niezależny moduł VDMA pozwala jednak na przesyłanie wyników również w przy
 
 
 Ze względu na duże zapotrzebowanie algorytmu na elementy obliczeniowe logiki reprogramowalnej, zdecydowano się ograniczyć rozmiar kolejek FIFO do $64$ elementów.
-Sprawdzono działanie aplikacji dla sygnału wizyjnego o rozdzielczości $1280 \times 720$ pikseli i częstotliwości sześćdziesięciu ramek na sekundę.
 Szacowane zapotrzebowanie wynikowego systemu na energię elektryczną nie powinno przekroczyć $1,936W$. Właściwa energia wymagana do przeprowadzania operacji obliczeniowych nie przekracza wartości $1,797W$, w tym $1,565W$ ( $87\%$) to energia wymagana do obsługi układu ARM.
 
 
@@ -330,7 +329,7 @@ Wynik działania modelu programowego przedstawiono na rysunku \ref{fig:backgroun
 	\label{fig:background-model-result}
 \end{figure}
 
-Dzięki zastosowaniu maski ruchu, obiekty poruszające się nie wpływają na stan modelu tła. Ponadto, dzięki badanu warunku przynależności do tła, osoba znajdująca się na pierwszym planie i nie będąca w ruchu również nie wpływa negatywnie na wynik działania algorytmu generacji tła.
+Dzięki zastosowaniu maski ruchu, obiekty poruszające się nie wpływają na stan modelu tła. Ponadto, dzięki badaniu warunku przynależności do tła, osoba znajdująca się na pierwszym planie i nie będąca w ruchu również nie wpływa negatywnie na wynik działania algorytmu generacji tła.
 
 
 %TODO 2. Uwagi podobnie jak wczęsniej tj.
@@ -345,8 +344,21 @@ Dzięki zastosowaniu maski ruchu, obiekty poruszające się nie wpływają na st
 % to zdjęcia z modelu progarmowego, sprecyzowałem. Impl. sprzętowa jest wciąż na etapie dynamicznego rozwoju, to znaczy regularnie przechodzę pomiędzy stanami działa/nie działa... Pracuję nad tym w wolnych chwilach, ale z tego powodu dodałem zrzuty z modelu.
 % No i, oczywiście, było mi je znacznie wygodniej wygenerować w ten sposób. :)
 
+\subsection*{Napotkane trudności implementacyjne}
+W trakcie realizacji projektu napotkano na szereg trudności. Środowisko Vivado nie udostępnia narzędzi wymaganych do zaprojektowania aplikacji wizyjnych wykorzystujących mechanizm buforowania pełnych ramek obrazu. W konsekwencji, proces ten wymaga użycia kilku niezależnych elementów manipulujących strumieniami AXI, co prowadzi do skomplikowania projektu i wprowadza opóźnienia.
+Ponadto, omawiany algorytm wymaga zapewnienia synchronizacji kilku sygnałów wizyjnych na kolejnych etapach przetwarzania. Biblioteka AXI nie oferuje modułu dedykowanego temu zadaniu, przez co konieczne jest użycie elementów \texttt{AXI4-Stream Combiner} oraz \texttt{AXI4-Stream Broadcaster}, których działanie wymaga modyfikacji parametrów wykorzystywanych strumieni.
+Użycie modułów VDMA do buforowania ramek wymaga zapewnienia sygnału, względem którego synchronizowana jest chwila rozpoczęcia transmisji klatki obrazu.
+
+Ze względu na konieczność przeprowadzenia procesu \textit{handshake}\footnote{Proces wymiany informacji pomiędzy dwoma urządzeniami, który ma na celu ustalenie parametrów transmisji i zadeklarowanie gotowości do komunikacji. W przypadku interfejsu AXI-Stream, wykorzystuje sygnały \texttt{valid} oraz \texttt{ready} i ma na celu przekazanie informacji o poprawności danych przez moduł \textit{master} oraz o gotowości do ich odczytu przez moduł \texttt{slave}.} przed przesłaniem danych pomiędzy modułami, komunikacja przy użyciu protokołu AXI jest dwukierunkowa. Wystąpienie opóźnień w transmisji lub brak synchronizacji prowadzić może do zakleszczenia (\emph{ang.} deadlock) procesu komunikacji, co może skutkować utratą przesyłanych danych.
+
+Zjawisko to zaobserwowano w trakcie realizacji modułu generacji tła. Ze względu na opóźnienia wymagane do poprawnej pracy algorytmu, komunikacja z modułem VDMA wykorzystywanym do przechowywania modelu tła narażona była na błędy i, w efekcie, prowadziła do niepoprawnego działania całego modułu. Zbadano kilka możliwości alternatywnej realizacji komunikacji pomiędzy modułami, jednak nie osiągnięto efektów gwarantujących poprawność działania całej aplikacji. Opisanych problemów nie zaobserwowano w sytuacji, gdy moduł działał bez opóźnień.
+Projekt zawierający moduły wprowadzające opóźnienia do komunikacji z użyciem protokołu AXI może wymagać użycia dedykowanego elementu odpowiedzialnego za proces komunikacji. Zadania tego nie zrealizowano w ramach niniejszej pracy.
+
+Ze względu na przedstawione ograniczenia i zaobserwowaną w pracy modułu niestabilność, nie zaprezentowano kompletnego systemu wizyjnego implementującego algorytm generacji tła. Zrealizowane jego składowe -- moduły wyznaczania różnicy klatek obrazu, buforowania i synchronizacji dwóch kolejnych ramek, czy moduł generacji tła, a także aplikacja systemowa, pozwalająca na monitorowanie i konfigurację modułów algorytmicznych z poziomu PetaLinux -- stanowić mogą przykłady realizacji projektów wykorzystujących funkcjonalności platformy Zynq.
+
 \section{Integracja z systemem PetaLinux}
 
+Równolegle do procesu projektowania elementów logiki programowalnej, rozwijania była aplikacja przeznaczona do pracy pod kontrolą systemu PetaLinux, udostępniająca funkcjonalności monitorowania oraz modyfikowania stanu algorytmu.
 Na etapie prototypowania, elementy logiki reprogramowalnej kontrolowane były przez aplikację działającą w trybie \textit{bare-metal}, bez wsparcia dla systemu operacyjnego.
 Po zakończeniu tego etapu, możliwe stało się zaprojektowanie aplikacji działającej pod kontrolą systemu PetaLinux, umożliwiającej wykorzystanie zaawansowanych funkcji systemu.
 Założono, że projektowana aplikacja powinna spełniać szereg wymagań:
@@ -402,6 +414,7 @@ Związane z omawianą aplikacją projektu dodano jako załączniki do pracy oraz
 	\caption{Interfejs www aplikacji.}
 	\label{fig:background-buffer-www}
 \end{figure}
+
 \section*{Podsumowanie}
 
 Zaproponowane rozwiązania projektowe pozwalają na wykorzystanie części funkcji systemu operacyjnego, które badane były w ramach pracy. 
@@ -434,6 +447,8 @@ W trakcie realizacji projektu napotkano szereg ograniczeń.
 	W konsekwencji, konieczne może być zaprojektowanie dwóch aplikacji związanych z projektem: aplikacji \textit{bare-metal}, wykorzystywanej na etapie prototypu oraz programu działającego pod obsługą systemu operacyjnego, projektowanego po ukończeniu implementacji sprzętowej.
 	
 	Z tego powodu, aplikacje systemu operacyjnego nie pozwalają w pełni zastąpić programów \textit{bare-metal} i powinny być traktowane jako metoda rozbudowy możliwości projektu.
+	
+	\item Proces komunikacji przy użyciu protokołu AXI narażony jest na błędy związane z koniecznością synchronizacji strumieni wizyjnych oraz opóźnienia wprowadzane przez moduły algorytmiczne. Prowadzi to do niestabilnego działania algorytmu.
 \end{itemize}
 
 %TODO Tak samo jakieś screeny.
