@@ -2,13 +2,10 @@
 \label{cha:platform}
 
 W trakcie realizacji pracy wykorzystywano kartę uruchomieniową ZYBO wyposażoną w układ SoC (\emph{ang}. System-on-a-chip) Zynq-7000. 
-SoC to układy scalone integrujące szereg układów elektronicznych, takich jak mikroprocesor, układy koprocesujące, interfejsy wejścia i wyjścia, czy pamięci. 
+SoC to układy scalone integrujące szereg układów elektronicznych, takich jak mikroprocesor, układy koprocesorowe, interfejsy wejścia i wyjścia, czy pamięci. 
 Są one powszechnie wykorzystywane do projektowania systemów wbudowanych. 
 Zynq-7000 to rodzina układów heterogenicznych, których centralną część stanowi dwurdzeniowy procesor o architekturze ARM w wersji Cortex-A9 (\emph{PS}, \emph{ang.} Processing System), współpracujący z działającym równolegle układem FPGA (\emph{PL}, \emph{ang.} Programmable Logic), opartym na architekturze Artix-7 lub Kintex-7 \cite{zynq-homepage}.
-%TODO to zdanie jest powt. wcześniejszego - jakoś trzeba to zintegrować.
-% OK
-%TODO No nie OK, bo dalej dwa zdania mają tą samą treść.
-%Poprawiłem
+
 
 Karta ZYBO wyposażona jest ponadto w 512 MB pamięci RAM, złącza HDMI i VGA do transmisji obrazu, gniazda Jack do przesyłu sygnału dźwiękowego, gniazdo USB oraz slot pamięci MicroSD.
 Komunikacja sieciowa jest możliwa dzięki implementacji stosu TCP/IP i obecności gniazda RJ-45 \cite{zynq-datasheet}. Kartę przedstawiono na rysunku \ref{fig:zybo-img}. Elementy układu podpisane zostały nadrukami.
@@ -19,8 +16,7 @@ Komunikacja sieciowa jest możliwa dzięki implementacji stosu TCP/IP i obecnoś
 	\caption{Karta Digilent ZYBO. (Źródło: \cite{zybo-reference-manual})}
 	\label{fig:zybo-img}
 \end{figure}
-%TODO Zamieściłbym rysunek/zdjęcie ZYBO.
-% OK
+
 
 Układy rodziny Zynq-7000 są stosowane w aplikacjach systemów wsparcia kierowców, systemach wizyjnych wysokich rozdzielczości, cyfrowego przetwarzania sygnałów czy kryptograficznych. 
 W pracy \cite{GuanwenZhong} zaproponowano wykorzystanie zalet elementów FPGA i CPU do projektowania systemów wsparcia kierowców ADAS, co pozwoliło na redukcję czasu odpowiedzi systemu i zapotrzebowania na energię.
@@ -71,16 +67,9 @@ Układ logiki programowalnej należeć może do rodzin Artix-7 lub Kintex-7 i zb
 	
 	\item Inne -- w tym interfejs JTAG, PCI Express czy konwertery analogowo-cyfrowe.
 \end{itemize}
-%TODO Brakuje choćby podstawowego opisu zasobów PL - dodać.
-% OK dodałem opis
-%TODO Proszę dodać opisy pozostałych elementów PS (choć 1-2 zdania na każdy bloczek)
-% OK, dodałem te, które mogą być jakkolwiek istotne z mojej perspektywy.
 
-%TODO BRAM, LUT, FF - brakuje opsiu
-% uzupełniłem
 
-\section{Systemy operacyjne dostępne dla platformy Zynq} %TODO Może lepiej Systemy operacyjne dostępne dla platformy Zynq.
-% OK
+\section{Systemy operacyjne dostępne dla platformy Zynq} 
 \label{sec:arm-programming}
 
 Centralny element architektury stanowi dwurdzeniowy procesor ARM. 
@@ -170,10 +159,7 @@ W przypadku układu Zynq, wykorzystanie tej struktury pozwala na konfigurację i
 Opisany proces jest skomplikowany i wymaga specjalistycznej wiedzy. Ze względu na konieczność integracji wielu niezależnych modułów, takich jak programy rozruchowe czy \emph{device tree}, jego przebieg może ulegać zmianom w kolejnych wersjach systemu.
 Dostępne są obszerne opracowania tematu, zawierające precyzyjny opis kolejnych wymaganych kroków \cite{zybo-zynq-getting-started,zybo-stock-linux,xilinx-build-kernel}.
 
-%TODO A Pan to robił ? Jeśli tak to link to szczegółowego opisu.
-% robiłem, ale na bazie źródeł, które cytuję powyżej. Proces jest dość skomplikowany i podatny na zmiany, ze względu na liczbę narzędzi, które się wykorzystuje, więc nie widziałem sensu budowania kolejnego tutoriala.
-%TODO OK. Ale proszę to wyraźnie podkreślić. Tu oraz potem w podsumowaniu.
-% Ok
+
 \subsubsection{Ubuntu Core}
 
 Ubuntu Core to dystrybucja systemu Linux dedykowana do zastosowań w urządzeniach tzw. internetu rzeczy (IoT -- \emph{ang.} Internet of Things). 
@@ -215,10 +201,7 @@ echo_test
 W rezultacie uruchomione zostaną moduły odpowiedzialne za obsługę systemu czasu rzeczywistego i przeprowadzony będzie test komunikacji. Proces konfiguracji pozwalający na zastosowanie OpenAMP przedstawiono w rozdziale \ref{sec:openamp-config}.
 Wykorzystanie systemów czasu rzeczywistego wykracza poza zakres niniejszej pracy, a zagadnienie jest obiektem obszernych opracowań \cite{adam-taylor-openamp,zynq-openamp-gsg}. 
 
-%TODO to źle kojarzę, że coś Pan z tym eksperymentował ?
-% sprawdzałem to, ale moje wnioski właściwie przeczyły temu, co znalazłem w innych źródłach. Tzn. ja to w jakimś stopniu "zhackowałem", Xilinx upiera się, że wymagane jest dostarczenie BSP dedykowanej dwóm systemom, moje próby zbudowania BSP spełzły na niczym, ale gdy uruchomiłem `echo_test` na domyślnej konfiguracji, to jeden rdzeń procesora "zniknął" z Peta i zaczął działać real-time. Ten temat był dopiero rozwijany przez Xilinx gdy nad tym pracowałem, spodziewałbym się, że uporządkują to w przyszłości, bo mocno forsują swoje rozwiązanie - więc nie chciałem opisywać tutaj żadnych niepełnych rozwiązań...
-%TODO Ale jednak proszę to opisać. Jak wcześniej tu i w zakończeniu. Przecież to jest kawałek konkretnej wykonanej roboty.
-% OK, dodam sekcję opisującą konfigurację OpenAMP, wspomnę też o niejasnościach w podsumowaniu.
+
 
 \subsection*{Podsumowanie} 
 

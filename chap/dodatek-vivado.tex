@@ -124,10 +124,6 @@ Aplikację uruchomić można przy użyciu konsoli użytkownika, również stosuj
 \subsection{PetaLinux}
 \label{sec:petalinux-config}
 
-%TODO - a tu nie trzeba zrobić czegoś wcześniej ? Pobrać zainstalowć itp ?
-% nie opisywałem procesu instalacji Vivado, uznałem więc, że nie ma też powodu by opisywać instalację petalinux. Dodam na początku rozdziału informację o wykorzystywanych narzędziach
-%TODO Vivado to proste, ale o tym PetaLinux to bym coś napisał....
-% Ok, dodałem sekcję na początku rozdziału
 
 Utworzenie struktury katalogów projektu wykonywane jest przy użyciu poniższego polecenia.
 
@@ -1057,7 +1053,6 @@ Wykorzystano również moduł \texttt{AXI GPIO} do obsługi kanału \texttt{hpd}
 % sądzę, że nie ma sensu, by omawiać każdy ze stworzonych modułów w bardziej obszernej formie. Wygodniej będzie chyba po prostu udostępnić repozytorium, bo moduły są albo proste (rgb2ycbcr), albo bardzo proste (synchronizer vdma wykonuje jedną operację), albo, tak jak właściwy moduł generacji tła, są zbyt duże i korzystają z mnożarek i sumatorów, więc trudno je w pełni przedstawić w tekście.
 % z podobnego powodu nie zamieściłem kompletnego schematu połączeń. Nie sądzę, by dało się go przedstawić jakkolwiek czytelnie.
 
-%TODO OK
 
 \subsection{SDK}
 
@@ -1233,8 +1228,7 @@ static unsigned char convert_alpha(double alpha) {
 
 Procedura \texttt{setup} wykonuje operacje związane z alokacją pamięci oraz powiązaniem adresu fizycznego modułu logiki z adresem wirtualnym.
 Wewnątrz procedury \texttt{initialize} ma miejsce właściwa konfiguracja modułu, a więc, w przypadku elementu parametryzującego algorytm -- zapis wartości parametrów do związanych z nimi rejestrów. 
-Ze względu na konieczność konwersji wartości parametru $\alpha$ z postaci liczby zmiennoprzecinkowej do zapisu stałopozycyjnego, zaprojektowano procedurę \texttt{convert\_alpha}, która umożliwia poprawną konfigurację rejestrów modułu bez konieczności podania reprezentacji binarnej przez użytkownika. %TODO podania czy zdefiniowania ?
-% poprawiłem
+Ze względu na konieczność konwersji wartości parametru $\alpha$ z postaci liczby zmiennoprzecinkowej do zapisu stałopozycyjnego, zaprojektowano procedurę \texttt{convert\_alpha}, która umożliwia poprawną konfigurację rejestrów modułu bez konieczności podania reprezentacji binarnej przez użytkownika. 
 Wykorzystanie kolejnych modułów wymaga zadeklarowania ich wewnątrz struktury \texttt{video\_transmit} oraz dodania wywołań związanych z nimi funkcji wewnątrz obu opisywanych procedur.
 Definicje procedur \texttt{setup\_virt\_memory} oraz \texttt{axi\_write} znaleźć można w rozdziale \ref{sec:vivado-axi-dma}.
 

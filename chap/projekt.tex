@@ -332,19 +332,10 @@ Wynik działania modelu programowego przedstawiono na rysunku \ref{fig:backgroun
 Dzięki zastosowaniu maski ruchu, obiekty poruszające się nie wpływają na stan modelu tła. Ponadto, dzięki badaniu warunku przynależności do tła, osoba znajdująca się na pierwszym planie i nie będąca w ruchu również nie wpływa negatywnie na wynik działania algorytmu generacji tła.
 
 
-%TODO 2. Uwagi podobnie jak wczęsniej tj.
-%TODO może jakieś zdjęcie pokazuję, że działa. No i jeszcze te wszyskie szczegóły konfiguracji tego modułu. I coś o tym źródle - że ma to być film HD. Kolejna kwestia to przygotowanie takiego projektu - działającego/wzorcowego i do repo na płytce, a tu napisać, że takie coś jest.
 
-%TODO Wydaje mi się, że jeszcze umawialiśmy się na przesył maski (kwestię indeksacji pozostawię) i coś po stronie PetaLiunx.
-% co do indeksacji, nie sądzę, by moduł "zmieścił" się obok vdma na ZYBO. Musiałbym mocno zoptymalizować te struktury vdma, a wydaje mi się, że cenniejsza jest jednak czytelność tego, co mam teraz. Dlatego nie zająłem się indeksacją po stronie fpga. W CPU to w zasadzie wywołanie jednej metody w CV, ale nie ma szans na real-time.
-% rzeczy po stronie peta opisałem w kolejnej sekcji.
-% na wyjściu modułu dostępne są wartości maski, zaktualizowałem schemat
-
-%TODO OK. A to są zdjęcie z modelu czy sprzętu. Bardziej wiarygodne byłoby z moniotrem :) I przy odejmowaniu ramek również. Ew. jeśli to jest png zapisany w peta to proszę to wyraźnie napisać.
-% to zdjęcia z modelu progarmowego, sprecyzowałem. Impl. sprzętowa jest wciąż na etapie dynamicznego rozwoju, to znaczy regularnie przechodzę pomiędzy stanami działa/nie działa... Pracuję nad tym w wolnych chwilach, ale z tego powodu dodałem zrzuty z modelu.
-% No i, oczywiście, było mi je znacznie wygodniej wygenerować w ten sposób. :)
 
 \subsection*{Napotkane trudności implementacyjne}
+
 W trakcie realizacji projektu napotkano na szereg trudności. Środowisko Vivado nie udostępnia narzędzi wymaganych do zaprojektowania aplikacji wizyjnych wykorzystujących mechanizm buforowania pełnych ramek obrazu. W konsekwencji, proces ten wymaga użycia kilku niezależnych elementów manipulujących strumieniami AXI, co prowadzi do skomplikowania projektu i wprowadza opóźnienia.
 Ponadto, omawiany algorytm wymaga zapewnienia synchronizacji kilku sygnałów wizyjnych na kolejnych etapach przetwarzania. Biblioteka AXI nie oferuje modułu dedykowanego temu zadaniu, przez co konieczne jest użycie elementów \texttt{AXI4-Stream Combiner} oraz \texttt{AXI4-Stream Broadcaster}, których działanie wymaga modyfikacji parametrów wykorzystywanych strumieni.
 Użycie modułów VDMA do buforowania ramek wymaga zapewnienia sygnału, względem którego synchronizowana jest chwila rozpoczęcia transmisji klatki obrazu.
@@ -451,11 +442,3 @@ W trakcie realizacji projektu napotkano szereg ograniczeń.
 	\item Proces komunikacji przy użyciu protokołu AXI narażony jest na błędy związane z koniecznością synchronizacji strumieni wizyjnych oraz opóźnienia wprowadzane przez moduły algorytmiczne. Prowadzi to do niestabilnego działania algorytmu.
 \end{itemize}
 
-%TODO Tak samo jakieś screeny.
-%TODO No i co z tego, że indeksacja 15 fps - a da się to jakoś pokazać ? Że to działa ? Wizualnie.
-%TODO Co z HTTP ? 
-% http -działa. Dołączę screen interfejsu, choć to będzie coś bardzo prostego. Tzn np aktualny wynik generacji tła czy indeksacji + gdzieś obok wartości parametrów algorytmu. Do tej pory zadowalałem się tym, że gdy uderzałem pod IP ZYBO dostawałem w odpowiedzi png z aktualnym stanem vdma, dlatego nie dodawałem tego do pracy.
-% Myślałem o tym, by umożliwić modyfikację parametrów z poziomu http, ale serwer, który napisałem siedzi w C i podejrzewam, że dodanie obsługi parametrów zapytania będzie uciążliwa.
-
-%TODO OK. No konfiguracja z http to byłoby już prawie smart camera :)
-% hm...w sumie to dodałem teraz możliwość zmieniania wartości parametrów

@@ -1,27 +1,28 @@
 \chapter{Podsumowanie}
 \label{chap:summary}
 
-%TODO TK - Do powtórnej lektury
-% przeredagowałem na ile potrafię :)
 
-Platforma Zynq umożliwia realizację aplikacji wizyjnych z wykorzystaniem funkcjonalności układu FPGA i procesora ARM. Pozwala to na integrację strumieniowych algorytmów wizyjnych projektowanych z myślą o układach logiki programowalnej z oprogramowaniem pracującym na klasycznym procesorze obliczeniowym. Badany układ umożliwia również wykorzystanie systemu operacyjnego PetaLinux, powiększając zasób możliwości w porównaniu do aplikacji typu \emph{bare-metal} o nowe funkcje -- w tym komunikację sieciową, metody przechowywania danych, a także realizację zaawansowanych zadań algorytmicznych dzięki zastosowaniu zewnętrznych bibliotek. 
+Platforma Zynq umożliwia realizację aplikacji wizyjnych z wykorzystaniem funkcjonalności układu FPGA i procesora ARM. 
+Pozwala to na integrację strumieniowych algorytmów wizyjnych projektowanych z myślą o układach logiki programowalnej z oprogramowaniem pracującym na klasycznym procesorze ogólnego przeznaczenia. 
+Badany układ umożliwia również wykorzystanie systemu operacyjnego PetaLinux, powiększając zasób możliwości w porównaniu do aplikacji typu \emph{bare-metal} o nowe funkcje -- w tym komunikację sieciową, metody przechowywania danych, a także realizację zaawansowanych zadań algorytmicznych dzięki zastosowaniu zewnętrznych bibliotek. 
 
-Procesory architektury ARM  są szeroko stosowane w systemach wbudowanych, i, dzięki swej popularności, zyskały wsparcie dla dużego zbioru narzędzi, w tym kompatybilność systemów operacyjnych wielu typów. W ramach pracy, zbadano możliwości wykorzystania i uruchomiono system PetaLinux oraz porównano jego funkcjonalności z systemami Ubuntu Core i podstawową wersją Linuxa. Ponadto, omówiono zagadnienie zastosowania systemu operacyjnego czasu rzeczywistego i uruchomiono aplikacje realizujące zadania w czasie rzeczywistym.
-%TODO powt. zagadnienia.
-%TODO Konkrety: zbudowano i uruchomiono: Peta, Ubuntu i ze zródeł.
-% przeredagowałem
+Procesory architektury ARM  są szeroko stosowane w systemach wbudowanych i, dzięki swej popularności, zyskały wsparcie dla dużego zbioru narzędzi, w tym kompatybilność systemów operacyjnych wielu typów. 
+W ramach pracy, zbadano możliwości wykorzystania i uruchomiono system PetaLinux oraz porównano jego funkcjonalności z systemami Ubuntu Core i podstawową wersją Linuxa. 
+Ponadto, omówiono zagadnienie zastosowania systemu operacyjnego czasu rzeczywistego i uruchomiono aplikacje realizujące zadania w czasie rzeczywistym.
 
-System PetaLinux oferuje dostęp do szeregu funkcjonalności, które mogą znaleźć zastosowanie w projektach związanych z przetwarzaniem obrazów i sekwencji wizyjnych. W pracy omówiono możliwości wykorzystania biblioteki OpenCV i przedstawiono proces projektowania aplikacji z jej wykorzystaniem. Zebrano również informacje teoretyczne związane z protokołem AXI, umożliwiającym komunikację pomiędzy elementami obliczeniowymi logiki programowalnej a programem pracującym pod kontrolą systemu operacyjnego. Protokół AXI pełni istotną rolę we współczesnych realizacjach zaawansowanych algorytmów wizyjnych.
+System PetaLinux oferuje dostęp do szeregu funkcjonalności, które mogą znaleźć zastosowanie w projektach związanych z przetwarzaniem obrazów i sekwencji wizyjnych. 
+W pracy omówiono możliwości wykorzystania biblioteki OpenCV i przedstawiono proces projektowania aplikacji z jej wykorzystaniem. 
+Zebrano również informacje teoretyczne związane z protokołem AXI, umożliwiającym komunikację pomiędzy elementami obliczeniowymi logiki programowalnej a programem pracującym pod kontrolą systemu operacyjnego. 
+Protokół AXI pełni istotną rolę we współczesnych realizacjach zaawansowanych algorytmów wizyjnych.
 
-Powszechnie spotykanymi ograniczeniami systemów wizyjnych realizowanych przy użyciu wyłącznie elementów logiki programowalnej są niewielka interaktywność i brak możliwości przechowywania wyników. System wizyjny realizowany w ramach pracy -- segmentacja obiektów pierwszoplanowych -- jest przykładem rozwiązania tych ograniczeń dzięki wykorzystaniu systemu PetaLinux. Algorytm podzielony został na dwa niezależne moduły -- zrealizowany przy użyciu elementów logiki programowalnej moduł odpowiedzialny za generację tła, oraz pracujący pod kontrolą systemu operacyjnego program odpowiedzialny za indeksację obiektów pierwszoplanowych. Aplikacja umożliwiła również prezentację stanu oraz wyników pracy algorytmu w formie interfejsu \emph{www}, a także udostępniała możliwość zmiany wartości parametrów algorytmu w trakcie działania.
-%TODO no nie...  zrealizowano przykładowy system wizyjny -- segmentację obikeów pierwsszoplanowych. Został on podziaelony pomiędzy logikę programowlaną () i system procesorowy. 
-% przeredagowałem
+Powszechnie spotykanymi ograniczeniami systemów wizyjnych realizowanych przy użyciu wyłącznie elementów logiki programowalnej są niewielka interaktywność i brak możliwości przechowywania wyników. 
+System wizyjny realizowany w ramach pracy -- segmentacja obiektów pierwszoplanowych -- jest przykładem rozwiązania tych ograniczeń dzięki wykorzystaniu systemu PetaLinux. 
+Algorytm podzielony został na dwa niezależne moduły -- zrealizowany przy użyciu elementów logiki programowalnej moduł odpowiedzialny za generację tła, oraz pracujący pod kontrolą systemu operacyjnego program odpowiedzialny za indeksację obiektów pierwszoplanowych. 
+Aplikacja umożliwiła również prezentację stanu oraz wyników pracy algorytmu w formie interfejsu \emph{www}, a także udostępniała możliwość zmiany wartości parametrów algorytmu w trakcie działania.
 
 W ramach realizacji projektu zaproponowano metodę buforowania pełnej ramki obrazu przy użyciu modułu AXI VDMA. 
 Zaprojektowano również moduł wyznaczający różnicę dwóch kolejnych klatek obrazu, który może stanowić element składowy rozbudowanych systemów wizyjnych.
 W trakcie realizacji projektu napotkano na ograniczenia, w tym niewystarczającą liczbę zasobów logicznych oraz niewielką wydajność procedur algorytmicznych uruchamianych na procesorze ARM, w wyniku czego nie była możliwa realizacja pełnego algorytmu działającego w czasie rzeczywistym.
-%TODO Raczej działające w czasie rzeczywistym.
-% przered.
 
 Zebrano również informacje związane z praktycznym wykorzystaniem omawianych funkcjonalności w projektach wizyjnych. 
 Przedstawiono metody konfiguracji kolejnych modułów w ujęciu ogólnym, możliwe do wykorzystania w trakcie projektowania rozwiązań algorytmicznych na dowolny układ rodziny Zynq. 
@@ -30,7 +31,8 @@ Informacje te znaleźć można w rozdziale \ref{cha:vivado-conf}.
 Materiał zebrany i przedstawiony w ramach niniejszej pracy może posłużyć za podstawę do realizacji zaawansowanych algorytmów wizyjnych z wykorzystaniem platformy Zynq i systemu operacyjnego PetaLinux. 
 Przedstawione techniki mogą zostać wykorzystane do rozwoju istniejących, jak i projektowania nowych aplikacji.
 
-System operacyjny PetaLinux pozwala na realizację projektów wizyjnych o większych, w porównaniu do aplikacji \emph{bare-metal}, możliwościach. Dzięki wykorzystaniu interfejsu sieciowego, budować można interaktywne panele kontrolne, zawierające informacje o stanie algorytmu a także pozwalające na jego konfigurację w trakcie pracy. Dostęp do przestrzeni przechowywania danych pozwala również na archiwizację i prezentację wyników historycznych pracy algorytmu.
+System operacyjny PetaLinux pozwala na realizację projektów wizyjnych o większych, w porównaniu do aplikacji \emph{bare-metal}, możliwościach. Dzięki wykorzystaniu interfejsu sieciowego, budować można interaktywne panele kontrolne, zawierające informacje o stanie algorytmu a także pozwalające na jego konfigurację w trakcie pracy. 
+Dostęp do przestrzeni przechowywania danych pozwala również na archiwizację i prezentację wyników historycznych pracy algorytmu.
 
 Zbiór przedstawionych w ramach pracy technik nie wyczerpuje możliwości badanego systemu operacyjnego. 
 W ujęciu ogólnym, PetaLinux lub inny system operacyjny działający na układzie z rodziny Zynq pozwala na projektowanie aplikacji, które różnią się w znacznym stopniu od programów wykorzystywanych w systemach wbudowanych o ograniczonych możliwościach. 
@@ -38,15 +40,3 @@ Zastosowanie zaawansowanych technik projektowania aplikacji pozwala na uzyskanie
 
 Zaproponowany moduł generacji tła może być wykorzystywany w złożonych aplikacjach realizowanych na platformie Zynq. Konieczna jest jednak integracja rozwiązania z elementem odpowiedzialnym za komunikację przy użyciu protokołu AXI, aby wyeliminować ograniczenia napotkane w trakcie realizacji projektu, prowadzące do niestabilnego działania algorytmu. 
 Ponadto, aplikacja odpowiedzialna za udostępnienie interfejsu sieciowego, a także komunikację z elementami logiki programowalnej i przetwarzanie obrazów przy użyciu biblioteki OpenCV może zostać w prosty sposób zintegrowana z innymi algorytmami wizyjnymi realizowanymi na platformie Zynq.
-%TODO Jakaś powtórka.
-%TODO Jeszcze dopracować te dalsze kierunki
-%przered.
-
-%TODO Przed tymi istniejącymy dodatkami jeszcze dodatek A - spis zawartości CD.
-%TODO Spis treści przed dodatki.
-% OK, dodałem dodatek, treść wypełnię później
-% pracę sformatowałem zgodnie z tym, co znalazłem w zasadach dyplomowania.
-% przenieść spis przed dotatki?
-
-%TODO - tzn. spis literatury :) nie treści :)
-% ok, ten spis już wcześniej przeniosłem zaraz za podsumowanie
